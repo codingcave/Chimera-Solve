@@ -27,3 +27,13 @@
 *.exe
 *.out
 *.app
+
+# Code::Blocks
+NetworkSimulation.cbp
+NetworkSimulation.cscope_file_list
+NetworkSimulation.depend
+NetworkSimulation.layout
+
+# other
+bin/
+
