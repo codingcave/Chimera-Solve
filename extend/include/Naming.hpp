@@ -11,6 +11,7 @@ namespace Naming
 
     const char * const EntryPoint_dynamics = "dynamics";
     const char * const EntryPoint_integrator = "integrator";
+    const char * const EntryPoint_output = "output";
 
     const char * const Logging_log = "";
     const char * const Logging_warning = "[WARNING] ";
@@ -42,6 +43,7 @@ namespace Naming
     const char * const Lua_global_random = "random";
     const char * const Lua_global_math = "math";
     const char * const Lua_global_matrix = "matrix";
+    const char * const Lua_global_vector = "vector";
 
 
     const char * const Type_null = "nil";
@@ -59,5 +61,9 @@ namespace Naming
     const char * const Type_Vector = "Vector";
     const char * const Type_Matrix = "Matrix";
     const char * const Type_MatrixRow = "MatrixRow";
+
+    const char * const Feature_state_type = "state_type";
+    const char * const Feature_time_type = "time_type";
+    const char * const Feature_size = "size";
 }
 #endif // NAMING_HPP_INCLUDED

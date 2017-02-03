@@ -240,8 +240,8 @@ int lua_complex_add(lua_State* const L)
 {
     if(lua_gettop(L) == 2)
     {
-        std::complex<double> **a = (std::complex<double> **)luaL_checkudata(L, 1, complexMetaName.c_str());
-        std::complex<double> **b = (std::complex<double> **)luaL_checkudata(L, 2, complexMetaName.c_str());
+        std::complex<double> **a = (std::complex<double> **)lua_touserdata(L, 1);
+        std::complex<double> **b = (std::complex<double> **)lua_touserdata(L, 2);
         if((a || lua_isnumber(L, 1)) && (b || lua_isnumber(L, 2)))
         {
             std::complex<double>** c = (std::complex<double>**)lua_newuserdata(L, sizeof(std::complex<double>*));

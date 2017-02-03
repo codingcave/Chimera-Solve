@@ -31,7 +31,7 @@ flags = {
 		'resinc': [],
 		'libdir': [],
 		'lib': [],
-		'ldflags': ['-shared', '-Wl,-soname']
+		'ldflags': ['-lboost_system', '-shared', '-Wl,-soname']
 	},
 	part_module: {
 		'inc': ['-Imodules/include', '-Iextend/include', '-Ilua-5.3.3/src'],

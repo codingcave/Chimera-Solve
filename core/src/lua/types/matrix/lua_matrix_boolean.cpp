@@ -57,7 +57,7 @@ int lua_matrix_real_new(lua_State* const L)
                 (*m)(i, j) = v;
     }
     struct T_MatrixDef** md = (struct T_MatrixDef**)lua_newuserdata(L, sizeof(struct T_MatrixDef*));
-    *md = new struct T_MatrixDef({a, b, false, m});
+    *md = new struct T_MatrixDef({a, b, false, true, m});
     luaL_setmetatable(L, matrixRealMetaName.c_str());
     return 1;
 }

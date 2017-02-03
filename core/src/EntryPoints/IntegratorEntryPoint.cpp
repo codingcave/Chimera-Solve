@@ -12,6 +12,7 @@
 #include "ItemContainer.hpp"
 #include "Registry.hpp"
 #include "interfaces/IEventListener.hpp"
+#include "event/EventManager.hpp"
 #include "NotificationManager.hpp"
 #include "EntryPointBase/AbstractIntegrator.hpp"
 #include "EntryPointBase/IntegratorRegistry.hpp"

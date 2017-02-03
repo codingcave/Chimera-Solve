@@ -48,7 +48,7 @@ ParameterTypeSystem::ParameterTypeSystem():
     registerParameter(Naming::Type_EntryPoint, {nullptr, nullptr, nullptr});
     registerParameter(Naming::Type_Registry, {nullptr, nullptr, nullptr});
     registerParameter(Naming::Type_Instance, {nullptr, nullptr, nullptr});
-    registerParameter(Naming::Type_Vector, {nullptr, nullptr, nullptr});
+    registerParameter(Naming::Type_Vector, {luat_vector_init, nullptr, nullptr});
     registerParameter(Naming::Type_Matrix, {luat_matrix_init, nullptr, nullptr});
     registerParameter(Naming::Type_MatrixRow, {luat_matrixrow_init, nullptr, luat_matrixrow_delete});
 }
@@ -92,8 +92,27 @@ int ParameterTypeSystem::registerParameter(const std::string& name, const struct
 
 int ParameterTypeSystem::registerVector(const int& subtype, const struct T_ParameterDef& pdef)
 {
-    //std::string name("matrix")
-    //int id = registerParameter(const std::string& name, const struct T_ParameterDef& pdef)
+    if(subtype >= 0 && (unsigned)subtype < _instance._typeList->size())
+    {
+        std::string name(Naming::Type_Vector);
+        name += "#";
+        name += getParameterName(subtype);
+
+        for(auto it = _instance._typeList->begin(); it != _instance._typeList->end(); it++)
+        {
+            if( (*it)->getName() == name )
+            {
+                return -1;
+            }
+        }
+        ++_instance._lastID;
+        ParameterType* p = new ParameterType(name, _instance._lastID, pdef, (unsigned)getParameterID(Naming::Type_Vector), (unsigned)subtype);
+        _instance._typeList->push_back(p);
+        if(_instance._luaparser != nullptr) {
+            _instance._luaparser->notifyLoad(p);
+        }
+        return _instance._lastID;
+    }
     return -1;
 }
 
@@ -386,7 +405,16 @@ bool ParameterTypeSystem::pushValue(lua_State* const L, const struct T_Parameter
     }
     return false;
 }
-
+void dump_stack2(lua_State* const L)
+{
+    return;
+    for(int i = 1; i <= lua_gettop(L); i ++)
+    {
+        std::cout << i << " " << luaL_typename(L, i) << "[" << lua_type(L, i) << "]:: " << luaL_tolstring(L, i, NULL) << std::endl;
+        lua_pop(L, 1);
+    }
+    std::cout << "**************" << std::endl;
+}
 bool ParameterTypeSystem::pushValue(const struct T_Parameter& value)
 {
     if(_instance._luaparser) {
@@ -404,18 +432,25 @@ bool ParameterTypeSystem::pushValue(const struct T_Parameter& value)
         default:
             {
                 lua_pushstring(L, Naming::Lua_reg_references);
+                dump_stack2(L);
                 lua_rawget(L, LUA_REGISTRYINDEX);
-
+                dump_stack2(L);
                 if(!lua_rawgetp(L, -1, value.value)) {
+                    dump_stack2(L);
+                    lua_pop(L, 1);
                     (*_instance._typeList)[value.type]->pushValue(L, value.value);
                     std::string meta("meta:");
                     meta += getParameterName(value.type);
                     luaL_setmetatable(L, meta.c_str());
                     lua_pushvalue(L, -1);
-                    lua_rawsetp(L, -4, value.value);
+                    dump_stack2(L);
+                    lua_rawsetp(L, -3, value.value);
+                    dump_stack2(L);
                 }
-                lua_insert(L, -3);
-                lua_pop(L, 2);
+                lua_insert(L, -2);
+                dump_stack2(L);
+                lua_pop(L, 1);
+                dump_stack2(L);
                 break;
             }
         }

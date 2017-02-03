@@ -6,8 +6,8 @@ class TemplateOdeSystem:
     public AbstractSystemDynamic
 {
     public:
-        TemplateOdeSystem();
-        virtual ~TemplateOdeSystem();
+        TemplateOdeSystem() {}
+        virtual ~TemplateOdeSystem() {}
         virtual void operator()(const state_type& x, state_type& dxdt, const time_type& t) = 0;
     protected:
     private:

@@ -12,11 +12,13 @@
 #include "EntryPoint.hpp"
 #include "EntryPoints/SystemDynamicEntryPoint.hpp"
 
+/*
 int lua_sysdyn_use(lua_State* L)
 {
-    std::cout << "lua_sysdyn_use " << lua_gettop(L) << std::endl;
+
     return 0;
 }
+*/
 
 SystemDynamicEntryPoint::SystemDynamicEntryPoint()
 {
@@ -48,5 +50,5 @@ bool SystemDynamicEntryPoint::onLoad(Registry const * const reg)
 
 void SystemDynamicEntryPoint::init(lua_State* L)
 {
-    setValue("use", {ParameterTypeSystem::getParameterID(Naming::Type_function), (void*)lua_sysdyn_use});
+    //setValue("use", {ParameterTypeSystem::getParameterID(Naming::Type_function), (void*)lua_sysdyn_use});
 }

@@ -12,24 +12,21 @@
 #include "interfaces/IEventListener.hpp"
 #include "event/EventManager.hpp"
 #include "NotificationManager.hpp"
-#include "EntryPointBase/AbstractSystemDynamic.hpp"
-#include "EntryPointBase/AbstractIntegrator.hpp"
-#include "EntryPointBase/IntegratorRegistry.hpp"
+#include "EntryPointBase/OutputRegistry.hpp"
 
-IntegratorRegistry::IntegratorRegistry()
+
+OutputRegistry::OutputRegistry()
 {
     //ctor
 }
 
-IntegratorRegistry::~IntegratorRegistry()
+OutputRegistry::~OutputRegistry()
 {
     //dtor
-
 }
 
-void* IntegratorRegistry::getInstance(vec_t_LuaItem& parameters) const
+void* OutputRegistry::getInstance(vec_t_LuaItem& parameters) const
 {
-    return (void*)getIntegratorInstance(parameters);
+    return (void*)getOutputInstance(parameters);
 }
-
 

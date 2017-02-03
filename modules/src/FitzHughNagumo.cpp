@@ -1,6 +1,7 @@
 #include <iostream>
 #include <unordered_map>
 #include <vector>
+#include <boost/numeric/ublas/vector.hpp>
 #include "lua.hpp"
 
 //#include "interfaces/EventHandler/IParameterTypeEventHandler.hpp"
@@ -14,6 +15,8 @@
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/TemplateOdeSystem.hpp"
 #include "FitzHughNagumo.hpp"
+
+namespace ublas = boost::numeric::ublas;
 
 extern "C"
 {
@@ -30,16 +33,22 @@ FitzHughNagumo::FitzHughNagumo(double epsilon, double a):
     std::cout << "FHN construct " << _epsilon << " " << _a << std::endl;
 }
 
-void FitzHughNagumo::operator()(const double& x, double& dxdt, const double& t)
+void FitzHughNagumo::operator()(const boost::numeric::ublas::vector<double>& x, boost::numeric::ublas::vector<double>& dxdt, const double& t)
 {
-    dxdt = 0;
+    //static double _1_3 = 1.0/3.0;
+    //dxdt(0) = x(0) - _1_3 * x(0) * x(0) * x(0) - x(1);
+    //dxdt(1) = (x(0) + _a) / _epsilon;
+    dxdt(0) = x(1);
+    dxdt(1) = -x(0) - _epsilon*x(1);
 }
 
 std::unordered_map<std::string, size_t> FitzHughNagumo::getFeatures() const
 {
     std::unordered_map<std::string, size_t> features;
-    features["statetype"] = ParameterTypeSystem::getParameterID(Naming::Type_real);
-    features["timetype"] = ParameterTypeSystem::getParameterID(Naming::Type_real);
+    features[Naming::Feature_time_type] = ParameterTypeSystem::getParameterID(Naming::Type_real);
+    static const std::string vectorRealMetaName = (std::string(Naming::Type_Vector) + "#" + std::string(Naming::Type_real));
+    features[Naming::Feature_state_type] = ParameterTypeSystem::getParameterID(vectorRealMetaName);
+    features[Naming::Feature_size] = 2;
     return features;
 }
 
@@ -84,8 +93,8 @@ void* FitzHughNagumoRegistry::getInstance(vec_t_LuaItem& parameters) const
         a = *((double*)parameters[1].value);
         std::cout << "FHNR: a = " << a << std::endl;
     }
-    for(int i = 0; i < parameters.size(); i++)
-        std::cout << ParameterTypeSystem::getParameterName(parameters[i].type) << std::endl;
+    //for(int i = 0; i < parameters.size(); i++)
+    //    std::cout << ParameterTypeSystem::getParameterName(parameters[i].type) << std::endl;
 
     return new FitzHughNagumo(epsilon, a);
 }

@@ -123,7 +123,12 @@ int lua_Registry_call(lua_State* L)
 
     void* value = reg->getInstance(items);
     //ParameterTypeSystem::releaseValues(items);
-    ParameterTypeSystem::pushValue({type, value});
+    if(value){
+        ParameterTypeSystem::pushValue({type, value});
+    } else {
+        ParameterTypeSystem::pushValue({0, nullptr});
+    }
+
 
     return 1;
 }

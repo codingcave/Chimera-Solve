@@ -2,51 +2,35 @@
 
 --i = #argv
 
-function printMatrix(m)
-    for i = 0, #m-1
-    do
-        for j = 0, #m[i]-1
-        do
-            write(m[i][j], " ")
-        end
-        write("\n")
-    end
-end
+f = dynamics("FitzHughNagumo")
+fi = f(1.0, .7)
 
-fhn = dynamics("FitzHughNagumo")
-print(integrator)
 rk = integrator("RungeKutta")
+rki = rk(fi, 0.1)
 
---fi = fhn(.5, .7)
---fi.test()
+o = output("file.csv")
+print(o)
+oi = o("test.csv")
+print(oi.path())
+--oi.open()
 
---print(fhn.keks)
-print("-------------")
-print("INT: ", rk)
-zki = rk()
-print("-------------")
-sim = simulation(zki)
---sim.schnitzel()
---print(simulation)
---print("Simulation", sim)
+vec1 = vector(2, 0.0);
+vec1[0] = 1.0
+
+sim = simulation(rki, vec1)
+
 function func(i, s)
-    print("func(i)", i, s)
+    print("func(i)", i, s[0], s[1])
+
     if i==3 then
     --sim.stop()
     end
 end
-x = sim.start()
-print(x)
---sim.start()
 
---print(complex)
---k = complex(1, "-.912343")
---k2 = complex.polar(4, 3)
+sim.onstep(oi)
 
---print(k, k.real, k.imag, k2.length, k2.arg)
---print(k2, math.sqrt(k2))
---print(#k2, #math.sqrt(k2))
+x = sim.start(10)
+--print(x)
 
---print(J * J)
+print(#argv, argv[0], argv[1])
 
---print(#argv, argv[0], argv[1])

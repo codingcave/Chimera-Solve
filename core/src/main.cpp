@@ -19,6 +19,7 @@
 #include "ParameterType.hpp"
 #include "EntryPoints/SystemDynamicEntryPoint.hpp"
 #include "EntryPoints/IntegratorEntryPoint.hpp"
+#include "EntryPoints/OutputEntryPoint.hpp"
 
 namespace fs = boost::filesystem;
 
@@ -63,6 +64,7 @@ int main(int argc, char** argv)
 
     EntryPointSystem::addEntryPoint(new SystemDynamicEntryPoint());
     EntryPointSystem::addEntryPoint(new IntegratorEntryPoint());
+    EntryPointSystem::addEntryPoint(new OutputEntryPoint());
 
     lp->processFile();
     delete lp;

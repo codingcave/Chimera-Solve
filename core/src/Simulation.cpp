@@ -6,6 +6,7 @@
 #include "ParameterType.hpp"
 #include "def.hpp"
 #include "interfaces/IEventListener.hpp"
+#include "event/EventManager.hpp"
 #include "NotificationManager.hpp"
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/AbstractIntegrator.hpp"

@@ -13,6 +13,9 @@
 #include "EntryPoint.hpp"
 #include "ModuleLoader.hpp"
 #include "interfaces/IEventListener.hpp"
+#include "event/StepEventListener.hpp"
+#include "event/EventManager.hpp"
+#include "event/StepEventManager.hpp"
 #include "NotificationManager.hpp"
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/AbstractIntegrator.hpp"
@@ -103,6 +106,14 @@ int lua_global_simulation(lua_State* L)
            Naming::EntryPoint_integrator == std::string(lua_tostring(L, -1)))
         {
             instance = *((AbstractIntegrator**)lua_touserdata(L, 1));
+            lua_pop(L, 2);
+            vec_t_LuaItem items;
+            for(int i = 2; i <= lua_gettop(L); i++)
+            {
+                items.push_back(ParameterTypeSystem::getValue(i));
+                lua_pop(L, 1);
+            }
+            instance->initialize(items);
         } else {
             LoggingSystem::Error("Argument `1` to simulation is not supported.");
             return 0;
@@ -114,6 +125,7 @@ int lua_global_simulation(lua_State* L)
 
     Simulation** sim = (Simulation**)lua_newuserdata(L, sizeof(Simulation*));
     *sim = new Simulation(instance);
+    (*sim)->registerEvent("step", new StepEventManager());
     lua_newtable(L);
     lua_State* NL = lua_newthread(L);
     lua_pushlightuserdata(NL, (void*)*sim);

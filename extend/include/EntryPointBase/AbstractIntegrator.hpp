@@ -14,6 +14,7 @@ class AbstractIntegrator
         virtual void * currentState() = 0;
         virtual bool nextStep() = 0;
         virtual void initialize(vec_t_LuaItem args) = 0;
+        virtual void start(vec_t_LuaItem args) = 0;
         const NotificationManager* getNotificationManager();
     protected:
     private:

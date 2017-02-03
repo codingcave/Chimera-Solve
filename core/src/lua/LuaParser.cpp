@@ -1,3 +1,4 @@
+#include <boost/numeric/ublas/vector.hpp>
 #include <iostream>
 #include <vector>
 #include <unordered_map>
@@ -14,6 +15,7 @@
 #include "def.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "interfaces/IEventListener.hpp"
+#include "event/EventManager.hpp"
 #include "NotificationManager.hpp"
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/AbstractInitilizer.hpp"
@@ -22,6 +24,10 @@
 #include "EntryPointBase/AbstractOutput.hpp"
 #include "lua/lua_static.hpp"
 #include "lua/types/lua_complex.hpp"
+#include "lua/types/vector/lua_vector_common.hpp"
+#include "lua/types/vector/lua_vector_vector_real.hpp"
+#include "lua/types/vector/lua_vector_real.hpp"
+#include "lua/types/vector/lua_vector_complex.hpp"
 #include "lua/types/matrix/lua_matrix_common.hpp"
 #include "lua/types/matrix/lua_matrix_real.hpp"
 #include "lua/lua_random.hpp"
@@ -153,7 +159,7 @@ void LuaParser::init()
     push_math_library(_L);
     lua_rawset(_L, -3);
 
-    ParameterTypeSystem::registerParameter(Naming::Type_Complex, {luat_complex_init, luat_UserData_push, luat_complex_delete});
+    size_t idComplex = ParameterTypeSystem::registerParameter(Naming::Type_Complex, {luat_complex_init, luat_UserData_push, luat_complex_delete});
     lua_pushstring(_L, "J");
     std::complex<double>** c = (std::complex<double>**)lua_newuserdata(_L, sizeof(std::complex<double>*));
     *c = new std::complex<double>(0.0, 1.0);
@@ -162,9 +168,21 @@ void LuaParser::init()
     lua_rawset(_L, -3);
 
     ParameterTypeSystem::registerMatrix(ParameterTypeSystem::pid_real, {luat_matrix_real_init, luat_UserData_push, luat_matrix_real_delete});
+
+    size_t vecRealId = ParameterTypeSystem::registerVector(ParameterTypeSystem::pid_real, {luat_vector_real_init, luat_UserData_push, luat_vector_real_delete});
+    size_t vecCompId = ParameterTypeSystem::registerVector(idComplex, {luat_vector_complex_init, luat_UserData_push, luat_vector_complex_delete});
+    ParameterTypeSystem::registerVector(vecRealId, {luat_vector_vector_real_init, luat_UserData_push, luat_vector_vector_real_delete});
+
     lua_pushstring(_L, Naming::Lua_global_matrix);
     push_matrix_library(_L);
     lua_rawset(_L, -3);
+
+    lua_pushstring(_L, Naming::Lua_global_vector);
+    push_vector_library(_L);
+    lua_rawset(_L, -3);
+
+
+
 
     // add argv table, which has all elements as
     // meta table with __index, so elements cannot be changed

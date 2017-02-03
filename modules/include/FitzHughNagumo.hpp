@@ -3,12 +3,12 @@
 
 class FitzHughNagumo:
     //template<typename state_type, typename time_type>
-    public TemplateOdeSystem<double, double>
+    public TemplateOdeSystem<boost::numeric::ublas::vector<double>, double>
 {
     public:
         explicit FitzHughNagumo(double epsilon, double a);
         virtual ~FitzHughNagumo();
-        virtual void operator()(const double& x, double& dxdt, const double& t) override;
+        virtual void operator()(const boost::numeric::ublas::vector<double>& x, boost::numeric::ublas::vector<double>& dxdt, const double& t) override;
         virtual std::unordered_map<std::string, size_t> getFeatures() const override;
         virtual const std::string getSystemName() const override;
 
