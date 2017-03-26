@@ -1,5 +1,6 @@
 #include <iostream>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include <list>
 
@@ -7,22 +8,23 @@
 #include "ParameterType.hpp"
 #include "def.hpp"
 #include "interfaces/IEventListener.hpp"
+#include "interfaces/IEventListenerProvider.hpp"
+#include "event/StateEventListener.hpp"
 #include "event/EventManager.hpp"
 #include "NotificationManager.hpp"
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/AbstractIntegrator.hpp"
 #include "EntryPointBase/TemplateIntegrator.hpp"
 
-
 /*
-template<typename state_type, typename time_type>
-TemplateIntegrator<state_type, time_type>::TemplateIntegrator()
+template<typename time_type, typename state_type>
+TemplateIntegrator<time_type, state_type>::TemplateIntegrator()
 {
     //ctor
 }
 /*
-template<typename state_type, typename time_type>
-TemplateIntegrator<state_type, time_type>::~TemplateIntegrator()
+template<typename time_type, typename state_type>
+TemplateIntegrator<time_type, state_type>::~TemplateIntegrator()
 {
     //dtor
 }

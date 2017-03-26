@@ -9,6 +9,8 @@ void luat_boolean_push(lua_State* const L, void * const value, const int& type);
 void luat_boolean_delete(lua_State* const L, void * const value, const int& type);
 void luat_real_push(lua_State* const L, void * const value, const int& type);
 void luat_real_delete(lua_State* const L, void * const value, const int& type);
+void luat_table_push(lua_State* const L, void * const value, const int& type);
+void luat_table_delete(lua_State* const L, void * const value, const int& type);
 void luat_string_push(lua_State* const L, void * const value, const int& type);
 void luat_string_delete(lua_State* const L, void * const value, const int& type);
 void luat_function_push(lua_State* const L, void * const value, const int& type);

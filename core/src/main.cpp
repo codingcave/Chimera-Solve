@@ -70,6 +70,5 @@ int main(int argc, char** argv)
     delete lp;
     LoggingSystem::ShutDown();
 
-    std::cout << "ende" << std::endl;
     return 0;
 }

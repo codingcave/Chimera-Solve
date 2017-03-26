@@ -66,7 +66,7 @@ const Registry* EntryPoint::getRegistry(const std::string& name) const
 {
     map_t_Registry::const_iterator available = _loadedRegistries->find (name);
 
-    if ( available == _loadedRegistries->end() ) // if not loaded
+    if ( available != _loadedRegistries->end() ) // if not loaded
     {
         return available->second;
     }

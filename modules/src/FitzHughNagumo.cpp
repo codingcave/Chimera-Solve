@@ -30,16 +30,14 @@ FitzHughNagumo::FitzHughNagumo(double epsilon, double a):
     _epsilon(epsilon),
     _a(a)
 {
-    std::cout << "FHN construct " << _epsilon << " " << _a << std::endl;
+
 }
 
 void FitzHughNagumo::operator()(const boost::numeric::ublas::vector<double>& x, boost::numeric::ublas::vector<double>& dxdt, const double& t)
 {
-    //static double _1_3 = 1.0/3.0;
-    //dxdt(0) = x(0) - _1_3 * x(0) * x(0) * x(0) - x(1);
-    //dxdt(1) = (x(0) + _a) / _epsilon;
-    dxdt(0) = x(1);
-    dxdt(1) = -x(0) - _epsilon*x(1);
+    static double _1_3 = 1.0/3.0;
+    dxdt(0) = x(0) - _1_3 * x(0) * x(0) * x(0) - x(1);
+    dxdt(1) = (x(0) + _a) / _epsilon;
 }
 
 std::unordered_map<std::string, size_t> FitzHughNagumo::getFeatures() const
@@ -61,20 +59,18 @@ FitzHughNagumo::~FitzHughNagumo()
 {
 
 }
-
+/*
 int rk_test(lua_State* L)
 {
     FitzHughNagumo* inc = *((FitzHughNagumo**)lua_touserdata(L, lua_upvalueindex(1)));
-    std::cout << "RK epsilon = " << inc->_epsilon << " -- a = " << inc->_a << std::endl;
-
     return 0;
 }
+*/
 
 FitzHughNagumoRegistry::FitzHughNagumoRegistry()
 {
-    setValue("keks", {ParameterTypeSystem::getParameterID(Naming::Type_real), (void*)new double(17.349)});
-
-    registerMethod("test", rk_test);
+    //setValue("keks", {ParameterTypeSystem::getParameterID(Naming::Type_real), (void*)new double(17.349)});
+    //registerMethod("test", rk_test);
 }
 
 void* FitzHughNagumoRegistry::getInstance(vec_t_LuaItem& parameters) const
@@ -82,19 +78,14 @@ void* FitzHughNagumoRegistry::getInstance(vec_t_LuaItem& parameters) const
     double a = 0.0;
     double epsilon = 0.0;
 
-    std::cout << "FitzHughNagumoRegistry" << std::endl;
     if(parameters.size() > 0 && ParameterTypeSystem::isParameterID(Naming::Type_real, parameters[0].type))
     {
         epsilon = *((double*)parameters[0].value);
-        std::cout << "FHNR: eps = " << epsilon << std::endl;
     }
     if(parameters.size() > 1 && ParameterTypeSystem::isParameterID(Naming::Type_real, parameters[0].type))
     {
         a = *((double*)parameters[1].value);
-        std::cout << "FHNR: a = " << a << std::endl;
     }
-    //for(int i = 0; i < parameters.size(); i++)
-    //    std::cout << ParameterTypeSystem::getParameterName(parameters[i].type) << std::endl;
 
     return new FitzHughNagumo(epsilon, a);
 }

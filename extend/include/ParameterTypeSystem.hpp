@@ -26,11 +26,13 @@ struct T_VectorDef {
 typedef int (*lua_CFunction) (lua_State *L);
 
 class IConnectEventHandler;
+class ParameterValue;
 
 class ParameterTypeSystem final
 {
     friend class LuaParser;
     friend class LuaFunctionWrapper;
+    friend class ParameterValue;
     public:
         virtual ~ParameterTypeSystem();
         static int registerParameter(const std::string& name, const struct T_ParameterDef& pdef);
@@ -56,9 +58,10 @@ class ParameterTypeSystem final
         }
 
         static const int pid_nil;
-        static const int pid_boolean;
         static const int pid_real;
+        static const int pid_boolean;
         static const int pid_string;
+        static const int pid_table;
         static const int pid_func;
         static const int pid_library;
         static const int pid_luafunc;
@@ -75,6 +78,7 @@ class ParameterTypeSystem final
         int _lastID;
         std::vector<const ParameterType*>* _typeList;
         IConnectEventHandler* _luaparser;
+        std::unordered_map<void*, ParameterValue>* _references;
 
         ParameterTypeSystem();
         static int registerParameter(const std::string& name, const struct T_ParameterDef& pdef, bool notify);

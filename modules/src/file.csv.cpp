@@ -9,12 +9,14 @@
 #include "ParameterType.hpp"
 #include "def.hpp"
 #include "ParameterTypeSystem.hpp"
+#include "interfaces/IEventListener.hpp"
+#include "interfaces/IEventListenerProvider.hpp"
+#include "event/StateEventListener.hpp"
 #include "ItemContainer.hpp"
 #include "Registry.hpp"
+#include "EntryPointBase/OutputMultiRegistry.hpp"
 //#include "types/LuaFunctionWrapper.hpp"
-#include "interfaces/IEventListener.hpp"
-#include "event/StepEventListener.hpp"
-#include "EntryPointBase/OutputRegistry.hpp"
+//#include "EntryPointBase/OutputRegistry.hpp"
 
 #include "file.csv.hpp"
 
@@ -30,24 +32,24 @@ extern "C"
 
 int file_open(lua_State* L)
 {
-    CsvFileWriter* w = *((CsvFileWriter**)lua_touserdata(L, lua_upvalueindex(1)));
-    w->open();
+    //CsvFileWriter* w = *((CsvFileWriter**)lua_touserdata(L, lua_upvalueindex(1)));
+    //w->open();
 
     return 0;
 }
 
 int file_close(lua_State* L)
 {
-    CsvFileWriter* w = *((CsvFileWriter**)lua_touserdata(L, lua_upvalueindex(1)));
-    w->close();
+    //CsvFileWriter* w = *((CsvFileWriter**)lua_touserdata(L, lua_upvalueindex(1)));
+    //w->close();
 
     return 0;
 }
 
 int file_path(lua_State* L)
 {
-    CsvFileWriter* w = *((CsvFileWriter**)lua_touserdata(L, lua_upvalueindex(1)));
-    lua_pushstring(L, w->getPath().c_str());
+    //CsvFileWriter* w = *((CsvFileWriter**)lua_touserdata(L, lua_upvalueindex(1)));
+    //lua_pushstring(L, w->getPath().c_str());
     return 1;
 }
 
@@ -71,13 +73,13 @@ const std::string CsvFileRegistry::getVersion() const
 
 void CsvFileRegistry::destroyInstance(void * const instance) const
 {
-    delete (CsvFileWriter*)instance;
+    //delete (CsvFileWriter*)instance;
     //delete (TemplateIntegrator
     //        <double, double>
     //        *)instance;
 }
 
-IEventListener* CsvFileRegistry::getOutputInstance(vec_t_LuaItem& parameters) const
+IEventListenerProvider* CsvFileRegistry::getOutputInstance(vec_t_LuaItem& parameters) const
 {
     if(parameters.size() > 0)
     {
@@ -88,7 +90,6 @@ IEventListener* CsvFileRegistry::getOutputInstance(vec_t_LuaItem& parameters) co
         }
     }
     return nullptr;
-
 }
 
 CsvFileWriter::CsvFileWriter(const std::string& path):
@@ -123,6 +124,25 @@ const std::string CsvFileWriter::getPath() const
     return _path;
 }
 
+IEventListener* CsvFileWriter::provideListener(size_t id, void* args)
+{
+    //std::cout << "Provide: " << id << std::endl;
+
+    switch(id){
+    case 1: // StateEventListener
+        {
+            struct StateProviderArgs* spArgs = (struct StateProviderArgs*)args;
+            //std::cout << "Time:  " << spArgs->time_type << " :: " << ParameterTypeSystem::getParameterName(spArgs->time_type) << std::endl;
+            //std::cout << "State: " << spArgs->state_type << " :: " << ParameterTypeSystem::getParameterName(spArgs->state_type) << std::endl;
+            open();
+            return new FileOutput_real_vecReal(_file);
+        }
+    }
+
+    return nullptr;
+}
+
+/*
 void CsvFileWriter::notifyStep(void const * const sender, size_t timeType, void* time, size_t stateType, void* state)
 {
     static const std::string vectorRealMetaName = (std::string(Naming::Type_Vector) + "#" + std::string(Naming::Type_real));
@@ -146,4 +166,30 @@ void CsvFileWriter::notifyStep(void const * const sender, size_t timeType, void*
         }
     }
     (*_file) << std::endl;
+}
+*/
+
+FileOutput_real_vecReal::FileOutput_real_vecReal(std::ofstream* file)
+{
+    _file = file;
+}
+
+FileOutput_real_vecReal::~FileOutput_real_vecReal()
+{
+
+}
+
+void FileOutput_real_vecReal::notify(const double& time, const boost::numeric::ublas::vector<double>& state)
+{
+    (*_file) << time;
+    for(auto item : state)
+    {
+        (*_file) << "," << item;
+    }
+    (*_file) << std::endl;
+}
+
+void FileOutput_real_vecReal::notify(void const * const sender, void* args)
+{
+
 }

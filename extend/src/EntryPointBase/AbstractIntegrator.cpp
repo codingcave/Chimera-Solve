@@ -6,6 +6,7 @@
 #include "ParameterType.hpp"
 #include "def.hpp"
 #include "interfaces/IEventListener.hpp"
+#include "interfaces/IEventListenerProvider.hpp"
 #include "event/EventManager.hpp"
 #include "NotificationManager.hpp"
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
@@ -13,16 +14,10 @@
 
 AbstractIntegrator::AbstractIntegrator()
 {
-    _manager = nullptr;
-}
 
+}
 
 AbstractIntegrator::~AbstractIntegrator()
 {
     //dtor
-}
-
-const NotificationManager* AbstractIntegrator::getNotificationManager()
-{
-    return _manager;
 }

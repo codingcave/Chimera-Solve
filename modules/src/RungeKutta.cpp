@@ -1,5 +1,6 @@
 #include <iostream>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include <list>
 #include <boost/numeric/odeint.hpp>
@@ -13,6 +14,8 @@
 #include "ItemContainer.hpp"
 #include "Registry.hpp"
 #include "interfaces/IEventListener.hpp"
+#include "interfaces/IEventListenerProvider.hpp"
+#include "event/StateEventListener.hpp"
 #include "event/EventManager.hpp"
 #include "NotificationManager.hpp"
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
@@ -58,9 +61,6 @@ const std::string RungeKuttaRegistry::getVersion() const
 void RungeKuttaRegistry::destroyInstance(void * const instance) const
 {
     delete (AbstractIntegrator*)instance;
-    //delete (TemplateIntegrator
-    //        <double, double>
-    //        *)instance;
 }
 
 AbstractIntegrator* RungeKuttaRegistry::getIntegratorInstance(vec_t_LuaItem& parameters) const
@@ -72,14 +72,10 @@ AbstractIntegrator* RungeKuttaRegistry::getIntegratorInstance(vec_t_LuaItem& par
 
     static const size_t basetype = ParameterTypeSystem::getParameterID(Naming::Type_Instance);
     static const size_t tagtype = ParameterTypeSystem::getParameterID(std::string(Naming::Lua_name_EntryPoint) + std::string("/") + std::string(Naming::EntryPoint_dynamics));
-    std::cout << "RK Construct S" << std::endl;
-    for(int i = 0; i < parameters.size(); i++)
-        std::cout << ParameterTypeSystem::getParameterName(parameters[i].type) <<
-        " :: " << ParameterTypeSystem::getParameterName(ParameterTypeSystem::getParameterBase(parameters[i].type)) <<
-        " :: " << ParameterTypeSystem::getParameterName(ParameterTypeSystem::getParameterTag(parameters[i].type))<< std::endl;
+
     if(parameters.size() > 0) {
         double dt = 0.1;
-        if(parameters.size() > 1 && parameters[0].type == ParameterTypeSystem::pid_real)
+        if(parameters.size() > 1 && parameters[1].type == ParameterTypeSystem::pid_real)
         {
             dt = *((double*)parameters[1].value);
             if(dt <= 0.0) dt = .1;
@@ -95,29 +91,22 @@ AbstractIntegrator* RungeKuttaRegistry::getIntegratorInstance(vec_t_LuaItem& par
             if(timeType != features.end() && stateType != features.end()) {
                 if(timeType->second == ParameterTypeSystem::pid_real) {
                     if(stateType->second == vectorRealType) {
-                        TemplateOdeSystem<boost::numeric::ublas::vector<double>, double>* sys = dynamic_cast<TemplateOdeSystem<boost::numeric::ublas::vector<double>, double>*>(dyn);
+                        TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >* sys = dynamic_cast<TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >*>(dyn);
                         if(sys != nullptr) {
                             return new RungeKutta_double_vecDouble(sys, dt);
                         }
                     }
                     if(stateType->second == vectorVectorRealType) {
-                        TemplateOdeSystem<vec_vec_real, double>* sys = dynamic_cast<TemplateOdeSystem<vec_vec_real, double>*>(dyn);
+                        TemplateOdeSystem<double, vec_vec_real>* sys = dynamic_cast<TemplateOdeSystem<double, vec_vec_real>*>(dyn);
                         if(sys != nullptr) {
-                            return new RungeKutta_double_vecvecDouble(sys);
+                            //return new RungeKutta_double_vecvecDouble(sys, dt);
+                            std::cout << "RETURN new RungeKutta_double_vecvecDouble(sys, dt);" << std::endl;
                         }
                     }
                 }
             }
         }
     }
-    std::cout  << "RK error" << std::endl;
-    //TemplateIntegrator
-    //<double, double>
-    //* rk = new TemplateIntegrator
-    //<double, double>
-    //();
-    //std::cout << "RK Construct " << rk << std::endl;
-    //return rk;
     return nullptr;
 }
 
@@ -137,6 +126,7 @@ bool RungeKuttaRegistry::checkFeatures(const map_t_size& features) const
             }
         }
     }
+
     return false;
 }
 
@@ -146,14 +136,15 @@ const std::string RungeKuttaRegistry::getSystemName() const
 }
 
 RungeKutta_double_vecDouble::RungeKutta_double_vecDouble(
-                       TemplateOdeSystem<ublas::vector<double>, double> * system,
+                       TemplateOdeSystem<double, ublas::vector<double> > * system,
                        double dt
                        )
 {
     //ctor
+
     _rk = new odeint::runge_kutta4<ublas::vector<double> >();
     _dt = dt;
-    _system = new RungeKuttaSystem<boost::numeric::ublas::vector<double>, double>(system);
+    _system = new RungeKuttaSystem<double, boost::numeric::ublas::vector<double> >(system);
     _time = 0;
     int length = system->getFeatures()[Naming::Feature_size];
     _state = new ublas::vector<double>(length);
@@ -189,6 +180,16 @@ void * RungeKutta_double_vecDouble::currentState()
     return new struct T_VectorDef({_state->size(), true, false, _state});
 }
 
+const double& RungeKutta_double_vecDouble::getTime() const
+{
+    return _time;
+}
+
+const boost::numeric::ublas::vector<double>& RungeKutta_double_vecDouble::getState() const
+{
+    return *_state;
+}
+
 bool RungeKutta_double_vecDouble::nextStep()
 {
     if(_time >= _endtime)
@@ -201,10 +202,6 @@ bool RungeKutta_double_vecDouble::nextStep()
 
 void RungeKutta_double_vecDouble::initialize(vec_t_LuaItem args)
 {
-    //std::cout << "INIT RK: " << args.size() << std::endl;
-    //for(int i = 0; i < args.size(); i++) {
-    //    std::cout << ParameterTypeSystem::getParameterName(args[i].type) << std::endl;
-    //}
     if(args.size() > 1) {
         if(args[0].type == ParameterTypeSystem::pid_real && args[1].type == getStateType()) {
             _time = *((double*)args[0].value);
@@ -223,10 +220,6 @@ void RungeKutta_double_vecDouble::initialize(vec_t_LuaItem args)
 
 void RungeKutta_double_vecDouble::start(vec_t_LuaItem args)
 {
-    //std::cout << "Start RK: " << args.size() << std::endl;
-    //for(int i = 0; i < args.size(); i++) {
-    //    std::cout << ParameterTypeSystem::getParameterName(args[i].type) << std::endl;
-    //}
     if(args.size() > 0 && args[0].type == ParameterTypeSystem::pid_real) {
         _endtime = _time + *((double*)args[0].value);
     } else {
@@ -235,15 +228,17 @@ void RungeKutta_double_vecDouble::start(vec_t_LuaItem args)
 }
 
 ///////////////////////////////////////////////////////////
-
+/*
 RungeKutta_double_vecvecDouble::RungeKutta_double_vecvecDouble(
-                       TemplateOdeSystem<vec_vec_real, double> * system
+                       TemplateOdeSystem<double, vec_vec_real> * system,
+                       double dt
                        )
 {
     //ctor
     _rk = new odeint::runge_kutta4<vec_vec_real>();
-    _system = system;
+    _dt = dt;
     _time = 0;
+    _system = new RungeKuttaSystem<double, vec_vec_real>(system);
     int length = system->getFeatures()[Naming::Feature_size];
     _state = new vec_vec_real(length);
 }
@@ -296,3 +291,4 @@ void RungeKutta_double_vecvecDouble::start(vec_t_LuaItem args)
 {
 
 }
+*/

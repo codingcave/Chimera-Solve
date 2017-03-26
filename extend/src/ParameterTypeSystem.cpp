@@ -6,6 +6,7 @@
 #include "Naming.hpp"
 #include "interfaces/IConnectEventHandler.hpp"
 #include "types/lua_basetypes.hpp"
+#include "ParameterValue.hpp"
 #include "ParameterType.hpp"
 #include "def.hpp"
 #include "ParameterTypeSystem.hpp"
@@ -17,18 +18,19 @@
 //#include "Registry.hpp"
 
 const int ParameterTypeSystem::pid_nil = 0;
-const int ParameterTypeSystem::pid_boolean = 1;
-const int ParameterTypeSystem::pid_real = 2;
+const int ParameterTypeSystem::pid_real = 1;
+const int ParameterTypeSystem::pid_boolean = 2;
 const int ParameterTypeSystem::pid_string = 3;
-const int ParameterTypeSystem::pid_func = 4;
-const int ParameterTypeSystem::pid_library = 5;
-const int ParameterTypeSystem::pid_luafunc = 6;
-const int ParameterTypeSystem::pid_entrypoint = 7;
-const int ParameterTypeSystem::pid_registry = 8;
-const int ParameterTypeSystem::pid_instance = 9;
-const int ParameterTypeSystem::pid_vector = 10;
-const int ParameterTypeSystem::pid_matrix = 11;
-const int ParameterTypeSystem::pid_matrixrow = 12;
+const int ParameterTypeSystem::pid_table = 4;
+const int ParameterTypeSystem::pid_func = 5;
+const int ParameterTypeSystem::pid_library = 6;
+const int ParameterTypeSystem::pid_luafunc = 7;
+const int ParameterTypeSystem::pid_entrypoint = 8;
+const int ParameterTypeSystem::pid_registry = 9;
+const int ParameterTypeSystem::pid_instance = 10;
+const int ParameterTypeSystem::pid_vector = 11;
+const int ParameterTypeSystem::pid_matrix = 12;
+const int ParameterTypeSystem::pid_matrixrow = 13;
 
 
 ParameterTypeSystem ParameterTypeSystem::_instance;
@@ -36,12 +38,14 @@ ParameterTypeSystem ParameterTypeSystem::_instance;
 ParameterTypeSystem::ParameterTypeSystem():
     _lastID(5),
     _typeList(new std::vector<const ParameterType*>(6)),
-    _luaparser(nullptr)
+    _luaparser(nullptr),
+    _references(new std::unordered_map<void*, ParameterValue>())
 {
     (*_typeList)[pid_nil] = new ParameterType(Naming::Type_null, pid_nil, {nullptr, luat_nil_push, nullptr});
-    (*_typeList)[pid_boolean] = new ParameterType(Naming::Type_boolean, pid_boolean, {nullptr, luat_boolean_push, luat_boolean_delete});
     (*_typeList)[pid_real] = new ParameterType(Naming::Type_real, pid_real, {nullptr, luat_real_push, luat_real_delete});
+    (*_typeList)[pid_boolean] = new ParameterType(Naming::Type_boolean, pid_boolean, {nullptr, luat_boolean_push, luat_boolean_delete});
     (*_typeList)[pid_string] = new ParameterType(Naming::Type_string, pid_string, {nullptr, luat_string_push, luat_string_delete});
+    (*_typeList)[pid_table] = new ParameterType(Naming::Type_table, pid_table, {nullptr, luat_table_push, luat_table_delete});
     (*_typeList)[pid_func] = new ParameterType(Naming::Type_function, pid_func, {nullptr, luat_function_push, nullptr});
     (*_typeList)[pid_library] = new ParameterType(Naming::Type_Library, pid_func, {nullptr, nullptr, nullptr});
     registerParameter(Naming::Type_UserFunction, {luat_luafunction_init, luat_function_push, luat_luafunction_delete});
@@ -188,13 +192,13 @@ const struct T_Parameter ParameterTypeSystem::getValue(const int& index)
             {
                 return {pid_nil, nullptr};
             }
-        case LUA_TBOOLEAN:
-            {
-                return {pid_boolean, new bool(lua_toboolean(L, index))};
-            }
         case LUA_TNUMBER:
             {
                 return {pid_real, new double(lua_tonumber(L, index))};
+            }
+        case LUA_TBOOLEAN:
+            {
+                return {pid_boolean, new bool(lua_toboolean(L, index))};
             }
         case LUA_TSTRING:
             {
@@ -202,7 +206,37 @@ const struct T_Parameter ParameterTypeSystem::getValue(const int& index)
             }
         case LUA_TTABLE:
             {
-                return {pid_nil, nullptr};
+                map_t_LuaItem* table = new map_t_LuaItem();
+                int absIndex = lua_absindex(L, index);
+                lua_pushnil(L);
+                while (lua_next(L, absIndex) != 0) {
+                    switch(lua_type(L, -2))
+                    {
+                    case LUA_TNUMBER:
+                        {
+                            int isnum = 0;
+                            int intKey = lua_tointegerx(L, -2, &isnum);
+                            if(isnum)
+                            {
+                                std::string key = std::to_string(intKey);
+                                table->insert(std::make_pair(key, getValue(-1)));
+                                //(*table)[key] = value;
+                            }
+                            break;
+                        }
+                    case LUA_TSTRING:
+                        {
+                            std::string key(lua_tostring(L, -2));
+                            table->insert(std::make_pair(key, getValue(-1)));
+                            //(*table)[key] = value;
+                            break;
+                        }
+                    }
+
+                    lua_pop(L, 1);
+                }
+
+                return {pid_table, table};
             }
         case LUA_TFUNCTION:
             {
@@ -405,16 +439,7 @@ bool ParameterTypeSystem::pushValue(lua_State* const L, const struct T_Parameter
     }
     return false;
 }
-void dump_stack2(lua_State* const L)
-{
-    return;
-    for(int i = 1; i <= lua_gettop(L); i ++)
-    {
-        std::cout << i << " " << luaL_typename(L, i) << "[" << lua_type(L, i) << "]:: " << luaL_tolstring(L, i, NULL) << std::endl;
-        lua_pop(L, 1);
-    }
-    std::cout << "**************" << std::endl;
-}
+
 bool ParameterTypeSystem::pushValue(const struct T_Parameter& value)
 {
     if(_instance._luaparser) {
@@ -432,25 +457,18 @@ bool ParameterTypeSystem::pushValue(const struct T_Parameter& value)
         default:
             {
                 lua_pushstring(L, Naming::Lua_reg_references);
-                dump_stack2(L);
                 lua_rawget(L, LUA_REGISTRYINDEX);
-                dump_stack2(L);
                 if(!lua_rawgetp(L, -1, value.value)) {
-                    dump_stack2(L);
                     lua_pop(L, 1);
                     (*_instance._typeList)[value.type]->pushValue(L, value.value);
                     std::string meta("meta:");
                     meta += getParameterName(value.type);
                     luaL_setmetatable(L, meta.c_str());
                     lua_pushvalue(L, -1);
-                    dump_stack2(L);
                     lua_rawsetp(L, -3, value.value);
-                    dump_stack2(L);
                 }
                 lua_insert(L, -2);
-                dump_stack2(L);
                 lua_pop(L, 1);
-                dump_stack2(L);
                 break;
             }
         }

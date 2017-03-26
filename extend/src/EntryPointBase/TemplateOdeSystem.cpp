@@ -6,14 +6,14 @@
 #include "EntryPointBase/TemplateOdeSystem.hpp"
 
 /*
-template<typename state_type, typename time_type>
-TemplateOdeSystem<state_type, time_type>::TemplateOdeSystem()
+template<typename time_type, typename state_type>
+TemplateOdeSystem<time_type, state_type>::TemplateOdeSystem()
 {
     //ctor
 }
 
-template<typename state_type, typename time_type>
-TemplateOdeSystem<state_type, time_type>::~TemplateOdeSystem()
+template<typename time_type, typename state_type>
+TemplateOdeSystem<time_type, state_type>::~TemplateOdeSystem()
 {
     //dtor
 }

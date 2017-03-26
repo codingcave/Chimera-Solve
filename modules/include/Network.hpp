@@ -1,7 +1,8 @@
-#ifndef FITZHUGHNAGUMO_H
-#define FITZHUGHNAGUMO_H
+#ifndef NETWORK_H
+#define NETWORK_H
 
-class FitzHughNagumo:
+
+class Network:
     //template<typename time_type, typename state_type>
     public TemplateOdeSystem<double, boost::numeric::ublas::vector<double>>
 {
@@ -21,7 +22,7 @@ class FitzHughNagumo:
 };
 
 
-class FitzHughNagumoRegistry:
+class NetworkRegistry:
     public Registry
 {
     public:
@@ -32,4 +33,4 @@ class FitzHughNagumoRegistry:
         virtual const std::string getVersion() const override;
 };
 
-#endif // FITZHUGHNAGUMO_H
+#endif // NETWORK_H

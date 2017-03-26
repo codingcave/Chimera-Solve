@@ -1,7 +1,7 @@
 #ifndef TEMPLATESYSTEMDYNAMIC_H
 #define TEMPLATESYSTEMDYNAMIC_H
 
-template<typename state_type, typename time_type>
+template<typename time_type, typename state_type>
 class TemplateOdeSystem:
     public AbstractSystemDynamic
 {

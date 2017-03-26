@@ -3,6 +3,7 @@
 #include <list>
 
 #include "interfaces/IEventListener.hpp"
+#include "interfaces/IEventListenerProvider.hpp"
 #include "event/EventManager.hpp"
 #include "NotificationManager.hpp"
 
@@ -31,12 +32,21 @@ void NotificationManager::notifyEvent(const std::string& name, void* sender, voi
     {
         if(available->second->getOwner() == nullptr || available->second->getOwner() == sender)
         {
-            available->second->notifyEvent(sender, args);
+            available->second->trigger(sender, args);
         }
     }
 }
 
 void NotificationManager::addListener(const std::string& name, IEventListener* listener)
+{
+    auto available = _listener->find (name);
+    if(available != _listener->end())
+    {
+        available->second->addListener(listener);
+    }
+}
+
+void NotificationManager::addListener(const std::string& name, IEventListenerProvider* listener)
 {
     auto available = _listener->find (name);
     if(available != _listener->end())

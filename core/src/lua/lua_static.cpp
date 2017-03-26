@@ -13,9 +13,8 @@
 #include "EntryPoint.hpp"
 #include "ModuleLoader.hpp"
 #include "interfaces/IEventListener.hpp"
-#include "event/StepEventListener.hpp"
+#include "event/StateEventListener.hpp"
 #include "event/EventManager.hpp"
-#include "event/StepEventManager.hpp"
 #include "NotificationManager.hpp"
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/AbstractIntegrator.hpp"
@@ -125,7 +124,7 @@ int lua_global_simulation(lua_State* L)
 
     Simulation** sim = (Simulation**)lua_newuserdata(L, sizeof(Simulation*));
     *sim = new Simulation(instance);
-    (*sim)->registerEvent("step", new StepEventManager());
+    (*sim)->registerEvent("step", instance->createStateEventManager());
     lua_newtable(L);
     lua_State* NL = lua_newthread(L);
     lua_pushlightuserdata(NL, (void*)*sim);
@@ -157,7 +156,8 @@ int lua_global_simulation(lua_State* L)
     lua_pushvalue(L, -5);
     lua_pushcclosure(L, lua_Simulation_step, 2);
     lua_setfield(L, -2, "step");
-
+    //lua_pushcclosure(L, lua_Simulation_register, 2);
+    //lua_setfield(L, -2, "register");
     // create lookup for dynamic methods like events
     lua_newtable(L);
     lua_pushstring(L, "__index");

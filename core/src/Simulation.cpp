@@ -15,7 +15,6 @@
 Simulation::Simulation(AbstractIntegrator* integrator)
 {
     _running = false;
-    integrator->_manager = this;
     _integrator = integrator;
 }
 

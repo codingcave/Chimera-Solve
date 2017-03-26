@@ -51,6 +51,24 @@ void luat_real_delete(lua_State* const L, void * const value, const int& type)
     delete ((double*)value);
 }
 
+void luat_table_push(lua_State* const L, void * const value, const int& type)
+{
+    map_t_LuaItem* table = (map_t_LuaItem*)value;
+
+    lua_createtable(L, 0, table->size());
+    for(auto item : *table)
+    {
+        lua_pushstring(L, item.first.c_str());
+        ParameterTypeSystem::pushValue(item.second);
+        lua_rawset(L, -3);
+    }
+}
+
+void luat_table_delete(lua_State* const L, void * const value, const int& type)
+{
+    delete ((map_t_LuaItem*)value);
+}
+
 void luat_string_push(lua_State* const L, void * const value, const int& type)
 {
     std::string* s = (std::string*)value;

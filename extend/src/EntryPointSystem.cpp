@@ -34,7 +34,6 @@ void EntryPointSystem::addEntryPoint(EntryPoint* ep)
 
     if ( available == _instance._hooks->end() )
     {
-        std::cout << "EP: " << ep->getName() << std::endl;
         _instance._hooks->insert(std::make_pair(ep->getName(),ep));
         if(_instance._luaparser)
         {

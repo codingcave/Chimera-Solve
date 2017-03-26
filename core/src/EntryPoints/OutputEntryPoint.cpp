@@ -12,8 +12,11 @@
 #include "ItemContainer.hpp"
 #include "Registry.hpp"
 #include "interfaces/IEventListener.hpp"
+#include "interfaces/IEventListenerProvider.hpp"
 #include "event/EventManager.hpp"
 #include "NotificationManager.hpp"
+
+#include "EntryPointBase/OutputMultiRegistry.hpp"
 #include "EntryPointBase/OutputRegistry.hpp"
 
 //#include "EntryPointBase/AbstractIntegrator.hpp"
@@ -45,7 +48,10 @@ const std::string OutputEntryPoint::getVersion() const
 bool OutputEntryPoint::onLoad(Registry const * const reg)
 {
     const OutputRegistry* ireg = dynamic_cast<const OutputRegistry*>(reg);
-    return ireg != nullptr;
+    if(ireg)
+        return true;
+    const OutputMultiRegistry* mireg = dynamic_cast<const OutputMultiRegistry*>(reg);
+    return mireg != nullptr;
 }
 
 void OutputEntryPoint::init(lua_State* L)

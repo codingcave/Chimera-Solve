@@ -50,6 +50,7 @@ namespace Naming
     const char * const Type_boolean = "boolean";
     const char * const Type_real = "real";
     const char * const Type_string = "string";
+    const char * const Type_table = "table";
     const char * const Type_function = "function";
     const char * const Type_UserFunction = "LuaFunction";
     const char * const Type_Library = "Library";

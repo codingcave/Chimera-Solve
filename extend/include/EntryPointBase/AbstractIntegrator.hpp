@@ -15,10 +15,9 @@ class AbstractIntegrator
         virtual bool nextStep() = 0;
         virtual void initialize(vec_t_LuaItem args) = 0;
         virtual void start(vec_t_LuaItem args) = 0;
-        const NotificationManager* getNotificationManager();
+        virtual EventManager* createStateEventManager() = 0;
     protected:
     private:
-        NotificationManager* _manager;
 };
 
 #endif // ABSTRACTINTEGRATOR_H

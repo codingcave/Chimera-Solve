@@ -343,17 +343,6 @@ bool lua_vector_newempty(lua_State* const L, int n)
     }
     return false;
 }
-/*
-void DUMP_STACK(lua_State* const L)
-{
-    for(int i = 1; i <= lua_gettop(L); i++)
-    {
-        std::cout << i << ": " << luaL_tolstring(L, i, NULL) << std::endl;
-        lua_pop(L, 1);
-    }
-    std::cout << "#######################" << std::endl;
-}
-*/
 
 bool lua_vector_arith1(lua_State* const L, int op)
 {

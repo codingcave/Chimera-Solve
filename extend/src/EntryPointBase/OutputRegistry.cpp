@@ -14,7 +14,6 @@
 #include "NotificationManager.hpp"
 #include "EntryPointBase/OutputRegistry.hpp"
 
-
 OutputRegistry::OutputRegistry()
 {
     //ctor

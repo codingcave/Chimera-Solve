@@ -331,17 +331,7 @@ bool lua_matrix_newempty(lua_State* const L, int m, int n)
     }
     return false;
 }
-/*
-void DUMP_STACK(lua_State* const L)
-{
-    for(int i = 1; i <= lua_gettop(L); i++)
-    {
-        std::cout << i << ": " << luaL_tolstring(L, i, NULL) << std::endl;
-        lua_pop(L, 1);
-    }
-    std::cout << "#######################" << std::endl;
-}
-*/
+
 bool lua_matrix_arith1(lua_State* const L, int op)
 {
     struct T_MatrixDef* m1 = *((struct T_MatrixDef**)lua_touserdata(L, 1));

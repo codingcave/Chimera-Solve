@@ -12,15 +12,6 @@
 #include "lua/types/vector/lua_vector_common.hpp"
 #include "lua/lua_static.hpp"
 
-void dump_stack(lua_State* const L)
-{
-    for(int i = 1; i <= lua_gettop(L); i ++)
-    {
-        std::cout << i << " " << luaL_typename(L, i) << "[" << lua_type(L, i) << "]:: " << luaL_tolstring(L, i, NULL) << std::endl;
-        lua_pop(L, 1);
-    }
-}
-
 void push_vector_library(lua_State* const L)
 {
     void** lib = (void**)lua_newuserdata(L, sizeof(void*));
@@ -65,7 +56,6 @@ int lua_vector_new(lua_State* const L)
     std::string meta("meta:");
     meta += Naming::Type_Vector;
     meta += "#";
-dump_stack(L);
 
     switch(lua_type(L, 3))
     {

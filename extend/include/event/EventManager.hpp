@@ -1,6 +1,8 @@
 #ifndef EVENTMANAGER_H
 #define EVENTMANAGER_H
 
+class IEventListener;
+class IEventListenerProvider;
 
 class EventManager
 {
@@ -8,8 +10,9 @@ class EventManager
         EventManager();
         EventManager(void* owner);
         virtual ~EventManager();
-        virtual void notifyEvent(void* sender, void* args) = 0;
+        virtual void trigger(void* sender, void* args) = 0;
         virtual void addListener(IEventListener* listener) = 0;
+        virtual void addListener(IEventListenerProvider* listener) = 0;
         virtual void removeListener(IEventListener* listener) = 0;
         virtual void const * const getOwner() const;
     protected:

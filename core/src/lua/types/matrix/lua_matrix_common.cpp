@@ -108,16 +108,6 @@ int lua_matrix_new(lua_State* const L)
             lua_pushvalue(L, 2);
             lua_pushvalue(L, 3);
             lua_pushvalue(L, 4);
-            /*
-            std::cout << "CALL: 1 - " << luaL_typename(L, -4) << "  " << luaL_tolstring(L, -4, NULL) << std::endl;
-            lua_pop(L, 1);
-            std::cout << "CALL: 2 - " << luaL_typename(L, -3) << "  " << luaL_tolstring(L, -3, NULL) << std::endl;
-            lua_pop(L, 1);
-            std::cout << "CALL: 3 - " << luaL_typename(L, -2) << "  " << luaL_tolstring(L, -2, NULL) << std::endl;
-            lua_pop(L, 1);
-            std::cout << "CALL: 4 - " << luaL_typename(L, -1) << "  " << luaL_tolstring(L, -1, NULL) << std::endl;
-            lua_pop(L, 1);
-            */
             lua_call(L, 3, 1);
             return 1;
         }
