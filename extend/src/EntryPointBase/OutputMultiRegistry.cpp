@@ -2,6 +2,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "ParameterValue.hpp"
 #include "ParameterType.hpp"
 #include "def.hpp"
 #include "Naming.hpp"

@@ -5,6 +5,7 @@
 
 //#include "interfaces/EventHandler/IParameterTypeEventHandler.hpp"
 #include "Naming.hpp"
+#include "ParameterValue.hpp"
 #include "ParameterType.hpp"
 #include "def.hpp"
 #include "ParameterTypeSystem.hpp"

@@ -6,6 +6,7 @@
 #include "lua.hpp"
 
 #include "Naming.hpp"
+#include "ParameterValue.hpp"
 #include "ParameterType.hpp"
 #include "def.hpp"
 #include "ParameterTypeSystem.hpp"
@@ -83,9 +84,9 @@ IEventListenerProvider* CsvFileRegistry::getOutputInstance(vec_t_LuaItem& parame
 {
     if(parameters.size() > 0)
     {
-        if(parameters[0].type == ParameterTypeSystem::pid_string)
+        if(parameters[0].getType() == ParameterTypeSystem::pid_string)
         {
-            std::string* path = (std::string*)parameters[0].value;
+            std::string* path = (std::string*)parameters[0].getValue();
             return new CsvFileWriter(*path);
         }
     }

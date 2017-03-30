@@ -7,6 +7,7 @@
 #include "lua.hpp"
 
 #include "Naming.hpp"
+#include "ParameterValue.hpp"
 #include "ParameterType.hpp"
 #include "def.hpp"
 #include "ParameterTypeSystem.hpp"
@@ -66,7 +67,7 @@ int lua_vector_complex_get(lua_State* const L)
     int a = lua_tointeger(L, 2);
     ublas::vector<std::complex<double> >* v = (ublas::vector<std::complex<double> >*)vd->value;
     std::complex<double>* val = new std::complex<double>((*v)(a));
-    ParameterTypeSystem::pushValue({ParameterTypeSystem::getParameterID(Naming::Type_Complex), val});
+    ////ParameterTypeSystem::pushValue({ParameterTypeSystem::getParameterID(Naming::Type_Complex), val});
     return 1;
 }
 

@@ -5,6 +5,7 @@
 
 #include "Naming.hpp"
 #include "interfaces/IConnectEventHandler.hpp"
+#include "ParameterValue.hpp"
 #include "ParameterType.hpp"
 #include "def.hpp"
 #include "ParameterTypeSystem.hpp"
@@ -53,7 +54,7 @@ void LuaParser::pushRegistry(const std::string& name, Registry const * const reg
     for(auto it = reg->beginItems(); it != reg->endItems(); it++)
     {
         lua_pushlstring(_L, it->first.c_str(), it->first.size());
-        pushLuaValue(it->second);
+        pushLuaValue(it->second.getType(), it->second.getValue());
         lua_rawset(_L, -3);
     }
 
@@ -122,13 +123,7 @@ int lua_Registry_call(lua_State* L)
     }
 
     void* value = reg->getInstance(items);
-    //ParameterTypeSystem::releaseValues(items);
-    if(value){
-        ParameterTypeSystem::pushValue({type, value});
-    } else {
-        ParameterTypeSystem::pushValue({0, nullptr});
-    }
-
+    ParameterTypeSystem::pushValue({type, value});
 
     return 1;
 }

@@ -5,6 +5,7 @@
 #include <boost/filesystem/path.hpp>
 
 #include "Naming.hpp"
+#include "ParameterValue.hpp"
 #include "ParameterType.hpp"
 #include "def.hpp"
 #include "ParameterTypeSystem.hpp"
@@ -65,8 +66,8 @@ int main(int argc, char** argv)
     EntryPointSystem::addEntryPoint(new SystemDynamicEntryPoint());
     EntryPointSystem::addEntryPoint(new IntegratorEntryPoint());
     EntryPointSystem::addEntryPoint(new OutputEntryPoint());
-
     lp->processFile();
+
     delete lp;
     LoggingSystem::ShutDown();
 

@@ -8,8 +8,8 @@ typedef std::unordered_map<std::string, size_t> map_t_size;
 #ifdef PARAMETERTYPE_H
 #ifndef COMMON_DEFINITIONS_PARAMETERTYPE
 #define COMMON_DEFINITIONS_PARAMETERTYPE
-typedef std::vector<struct T_Parameter> vec_t_LuaItem;
-typedef std::unordered_map<std::string, const struct T_Parameter> map_t_LuaItem;
+typedef std::vector<ParameterValue> vec_t_LuaItem;
+typedef std::unordered_map<std::string, ParameterValue> map_t_LuaItem;
 #endif
 #endif
 

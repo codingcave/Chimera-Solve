@@ -3,6 +3,7 @@
 #include <vector>
 #include <list>
 
+#include "ParameterValue.hpp"
 #include "ParameterType.hpp"
 #include "def.hpp"
 #include "interfaces/IEventListener.hpp"

@@ -6,6 +6,7 @@
 
 #include "Naming.hpp"
 #include "LoggingSystem.hpp"
+#include "ParameterValue.hpp"
 #include "ParameterType.hpp"
 #include "def.hpp"
 #include "ParameterTypeSystem.hpp"
@@ -28,6 +29,13 @@ int lua_global_print(lua_State* L)
     {
         std::cout << luaL_tolstring(L, i, NULL) << " ";
         lua_pop(L, 1);
+        /*
+        if(lua_getmetatable(L, i)) {
+            lua_getfield(L, -1, "__type");
+            std::cout << "[" << lua_tonumber(L, -1) << "]" << " ";
+            lua_pop(L, 2);
+        }
+        */
     }
     std::cout << std::endl;
     lua_settop(L, 0);

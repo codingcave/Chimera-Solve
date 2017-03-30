@@ -16,7 +16,7 @@ struct T_ParameterDef
 
 struct T_Parameter
 {
-    int const type;
+    size_t const type;
     void * const value;
 };
 

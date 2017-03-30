@@ -8,11 +8,11 @@ class ItemContainer
         ItemContainer();
         virtual ~ItemContainer();
 
-        void setValue(const std::string& name, const struct T_Parameter& value);
-        std::unordered_map<std::string, const struct T_Parameter>::const_iterator beginItems() const;
-        std::unordered_map<std::string, const struct T_Parameter>::const_iterator endItems() const;
+        void setValue(const std::string& name, ParameterValue& value);
+        std::unordered_map<std::string, ParameterValue>::const_iterator beginItems() const;
+        std::unordered_map<std::string, ParameterValue>::const_iterator endItems() const;
         //ItemAssigner& operator[](const std::string& name);
-        const struct T_Parameter* const operator[](const std::string& name) const;
+        ParameterValue operator[](const std::string& name) const;
     protected:
         void truncate();
     private:

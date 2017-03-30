@@ -8,6 +8,7 @@
 //#include "lua.hpp"
 
 #include "Naming.hpp"
+#include "ParameterValue.hpp"
 #include "ParameterType.hpp"
 #include "def.hpp"
 #include "ParameterTypeSystem.hpp"
@@ -75,15 +76,15 @@ AbstractIntegrator* RungeKuttaRegistry::getIntegratorInstance(vec_t_LuaItem& par
 
     if(parameters.size() > 0) {
         double dt = 0.1;
-        if(parameters.size() > 1 && parameters[1].type == ParameterTypeSystem::pid_real)
+        if(parameters.size() > 1 && parameters[1].getType() == ParameterTypeSystem::pid_real)
         {
-            dt = *((double*)parameters[1].value);
+            dt = *((double*)parameters[1].getValue());
             if(dt <= 0.0) dt = .1;
         }
 
-        if(ParameterTypeSystem::getParameterBase(parameters[0].type) == basetype && ParameterTypeSystem::getParameterTag(parameters[0].type) == tagtype)
+        if(ParameterTypeSystem::getParameterBase(parameters[0].getType()) == basetype && ParameterTypeSystem::getParameterTag(parameters[0].getType()) == tagtype)
         {
-            AbstractSystemDynamic* dyn = (AbstractSystemDynamic*)parameters[0].value;
+            AbstractSystemDynamic* dyn = (AbstractSystemDynamic*)parameters[0].getValue();
             auto features = dyn->getFeatures();
 
             auto timeType = features.find(Naming::Feature_time_type);
@@ -203,15 +204,15 @@ bool RungeKutta_double_vecDouble::nextStep()
 void RungeKutta_double_vecDouble::initialize(vec_t_LuaItem args)
 {
     if(args.size() > 1) {
-        if(args[0].type == ParameterTypeSystem::pid_real && args[1].type == getStateType()) {
-            _time = *((double*)args[0].value);
-            struct T_VectorDef* vd = (struct T_VectorDef*)args[1].value;
+        if(args[0].getType() == ParameterTypeSystem::pid_real && args[1].getType() == getStateType()) {
+            _time = *((double*)args[0].getValue());
+            struct T_VectorDef* vd = (struct T_VectorDef*)args[1].getValue();
             delete _state;
             _state = new ublas::vector<double>(*((ublas::vector<double>*)vd->value));
         }
     } else {
-        if(args.size() > 0 && args[0].type == getStateType()) {
-            struct T_VectorDef* vd = (struct T_VectorDef*)args[0].value;
+        if(args.size() > 0 && args[0].getType() == getStateType()) {
+            struct T_VectorDef* vd = (struct T_VectorDef*)args[0].getValue();
             delete _state;
             _state = new ublas::vector<double>(*((ublas::vector<double>*)vd->value));
         }
@@ -220,8 +221,8 @@ void RungeKutta_double_vecDouble::initialize(vec_t_LuaItem args)
 
 void RungeKutta_double_vecDouble::start(vec_t_LuaItem args)
 {
-    if(args.size() > 0 && args[0].type == ParameterTypeSystem::pid_real) {
-        _endtime = _time + *((double*)args[0].value);
+    if(args.size() > 0 && args[0].getType() == ParameterTypeSystem::pid_real) {
+        _endtime = _time + *((double*)args[0].getValue());
     } else {
         _endtime = _time + 1.0;
     }

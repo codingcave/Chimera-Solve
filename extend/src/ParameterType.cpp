@@ -4,6 +4,7 @@
 
 #include "ParameterType.hpp"
 
+
 ParameterType::ParameterType():
     _id(-1),
     _name(""),

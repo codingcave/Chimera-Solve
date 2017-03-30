@@ -5,6 +5,7 @@
 #include <list>
 
 //#include "lua.hpp"
+#include "ParameterValue.hpp"
 #include "ParameterType.hpp"
 #include "def.hpp"
 #include "interfaces/IEventListener.hpp"

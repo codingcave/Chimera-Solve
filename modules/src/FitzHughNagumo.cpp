@@ -6,6 +6,7 @@
 
 //#include "interfaces/EventHandler/IParameterTypeEventHandler.hpp"
 #include "Naming.hpp"
+#include "ParameterValue.hpp"
 #include "ParameterType.hpp"
 #include "def.hpp"
 #include "ParameterTypeSystem.hpp"
@@ -78,13 +79,13 @@ void* FitzHughNagumoRegistry::getInstance(vec_t_LuaItem& parameters) const
     double a = 0.0;
     double epsilon = 0.0;
 
-    if(parameters.size() > 0 && ParameterTypeSystem::isParameterID(Naming::Type_real, parameters[0].type))
+    if(parameters.size() > 0 && ParameterTypeSystem::isParameterID(Naming::Type_real, parameters[0].getType()))
     {
-        epsilon = *((double*)parameters[0].value);
+        epsilon = *((double*)parameters[0].getValue());
     }
-    if(parameters.size() > 1 && ParameterTypeSystem::isParameterID(Naming::Type_real, parameters[0].type))
+    if(parameters.size() > 1 && ParameterTypeSystem::isParameterID(Naming::Type_real, parameters[0].getType()))
     {
-        a = *((double*)parameters[1].value);
+        a = *((double*)parameters[1].getValue());
     }
 
     return new FitzHughNagumo(epsilon, a);

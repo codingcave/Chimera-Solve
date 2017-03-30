@@ -4,6 +4,7 @@
 #include "lua.hpp"
 
 #include "Naming.hpp"
+#include "ParameterValue.hpp"
 #include "ParameterType.hpp"
 #include "def.hpp"
 #include "ParameterTypeSystem.hpp"
@@ -15,7 +16,20 @@ int lua_UserData_gc(lua_State* L)
     if(luaL_getmetafield(L, 1, "__type")) {
         int type = lua_tointeger(L, 2);
         void* value = *((void**)lua_touserdata(L, 1));
-        ParameterTypeSystem::deleteValue({type, value});
+
+        if(value)
+        {
+            if(ParameterTypeSystem::isReferenced(value))
+            {
+                ParameterValue pv(type, value);
+                *(pv._luaref) = false;
+                pv.dispose();
+            }
+            else
+            {
+                //ParameterTypeSystem::deleteValue({type, value})
+            }
+        }
     }
     return 0;
 }
@@ -59,7 +73,7 @@ void luat_table_push(lua_State* const L, void * const value, const int& type)
     for(auto item : *table)
     {
         lua_pushstring(L, item.first.c_str());
-        ParameterTypeSystem::pushValue(item.second);
+        ParameterTypeSystem::pushValue({item.second.getType(), item.second.getValue()});
         lua_rawset(L, -3);
     }
 }
@@ -94,8 +108,9 @@ int luat_luafunction_call(lua_State* L)
         items.push_back(ParameterTypeSystem::getValue(i));
     }
 
-    const struct T_Parameter p = (*obj)(items);
-    ParameterTypeSystem::pushValue(p);
+    ParameterValue p = (*obj)(items);
+    ParameterTypeSystem::pushValue({p.getType(), p.getValue()});
+    p.dispose();
 
     return 1;
 }

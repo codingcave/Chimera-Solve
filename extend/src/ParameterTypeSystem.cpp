@@ -17,20 +17,20 @@
 #include "types/lua_matrixrow.hpp"
 //#include "Registry.hpp"
 
-const int ParameterTypeSystem::pid_nil = 0;
-const int ParameterTypeSystem::pid_real = 1;
-const int ParameterTypeSystem::pid_boolean = 2;
-const int ParameterTypeSystem::pid_string = 3;
-const int ParameterTypeSystem::pid_table = 4;
-const int ParameterTypeSystem::pid_func = 5;
-const int ParameterTypeSystem::pid_library = 6;
-const int ParameterTypeSystem::pid_luafunc = 7;
-const int ParameterTypeSystem::pid_entrypoint = 8;
-const int ParameterTypeSystem::pid_registry = 9;
-const int ParameterTypeSystem::pid_instance = 10;
-const int ParameterTypeSystem::pid_vector = 11;
-const int ParameterTypeSystem::pid_matrix = 12;
-const int ParameterTypeSystem::pid_matrixrow = 13;
+const size_t ParameterTypeSystem::pid_nil = 0;
+const size_t ParameterTypeSystem::pid_real = 1;
+const size_t ParameterTypeSystem::pid_boolean = 2;
+const size_t ParameterTypeSystem::pid_string = 3;
+const size_t ParameterTypeSystem::pid_table = 4;
+const size_t ParameterTypeSystem::pid_func = 5;
+const size_t ParameterTypeSystem::pid_library = 6;
+const size_t ParameterTypeSystem::pid_luafunc = 7;
+const size_t ParameterTypeSystem::pid_entrypoint = 8;
+const size_t ParameterTypeSystem::pid_registry = 9;
+const size_t ParameterTypeSystem::pid_instance = 10;
+const size_t ParameterTypeSystem::pid_vector = 11;
+const size_t ParameterTypeSystem::pid_matrix = 12;
+const size_t ParameterTypeSystem::pid_matrixrow = 13;
 
 
 ParameterTypeSystem ParameterTypeSystem::_instance;
@@ -64,25 +64,27 @@ ParameterTypeSystem::~ParameterTypeSystem()
         delete *it;
     }
     delete _typeList;
+    _references->clear();
+    delete _references;
 }
 
-int ParameterTypeSystem::registerParameter(const std::string& name, const struct T_ParameterDef& pdef)
+size_t ParameterTypeSystem::registerParameter(const std::string& name, const struct T_ParameterDef& pdef)
 {
     return registerParameter(name, pdef, 0, 0, true);
 }
 
-int ParameterTypeSystem::registerParameter(const std::string& name, const struct T_ParameterDef& pdef, bool notify)
+size_t ParameterTypeSystem::registerParameter(const std::string& name, const struct T_ParameterDef& pdef, bool notify)
 {
     return registerParameter(name, pdef, 0, 0, notify);
 }
 
-int ParameterTypeSystem::registerParameter(const std::string& name, const struct T_ParameterDef& pdef, size_t base, size_t tag, bool notify)
+size_t ParameterTypeSystem::registerParameter(const std::string& name, const struct T_ParameterDef& pdef, size_t base, size_t tag, bool notify)
 {
     for(auto it = _instance._typeList->begin(); it != _instance._typeList->end(); it++)
     {
         if( (*it)->getName() == name )
         {
-            return -1;
+            return 0;
         }
     }
     ++_instance._lastID;
@@ -94,9 +96,9 @@ int ParameterTypeSystem::registerParameter(const std::string& name, const struct
     return _instance._lastID;
 }
 
-int ParameterTypeSystem::registerVector(const int& subtype, const struct T_ParameterDef& pdef)
+size_t ParameterTypeSystem::registerVector(const size_t& subtype, const struct T_ParameterDef& pdef)
 {
-    if(subtype >= 0 && (unsigned)subtype < _instance._typeList->size())
+    if(subtype >= 0 && subtype < _instance._typeList->size())
     {
         std::string name(Naming::Type_Vector);
         name += "#";
@@ -106,23 +108,23 @@ int ParameterTypeSystem::registerVector(const int& subtype, const struct T_Param
         {
             if( (*it)->getName() == name )
             {
-                return -1;
+                return 0;
             }
         }
         ++_instance._lastID;
-        ParameterType* p = new ParameterType(name, _instance._lastID, pdef, (unsigned)getParameterID(Naming::Type_Vector), (unsigned)subtype);
+        ParameterType* p = new ParameterType(name, _instance._lastID, pdef, getParameterID(Naming::Type_Vector), subtype);
         _instance._typeList->push_back(p);
         if(_instance._luaparser != nullptr) {
             _instance._luaparser->notifyLoad(p);
         }
         return _instance._lastID;
     }
-    return -1;
+    return 0;
 }
 
-int ParameterTypeSystem::registerMatrix(const int& subtype, const struct T_ParameterDef& pdef)
+size_t ParameterTypeSystem::registerMatrix(const size_t& subtype, const struct T_ParameterDef& pdef)
 {
-    if(subtype >= 0 && (unsigned)subtype < _instance._typeList->size())
+    if(subtype >= 0 && subtype < _instance._typeList->size())
     {
         std::string name(Naming::Type_Matrix);
         name += "#";
@@ -132,11 +134,11 @@ int ParameterTypeSystem::registerMatrix(const int& subtype, const struct T_Param
         {
             if( (*it)->getName() == name )
             {
-                return -1;
+                return 0;
             }
         }
         ++_instance._lastID;
-        ParameterType* p = new ParameterType(name, _instance._lastID, pdef, (unsigned)getParameterID(Naming::Type_Matrix), (unsigned)subtype);
+        ParameterType* p = new ParameterType(name, _instance._lastID, pdef, getParameterID(Naming::Type_Matrix), subtype);
         _instance._typeList->push_back(p);
         if(_instance._luaparser != nullptr) {
             _instance._luaparser->notifyLoad(p);
@@ -146,17 +148,17 @@ int ParameterTypeSystem::registerMatrix(const int& subtype, const struct T_Param
         namer += "#";
         namer += getParameterName(subtype);
         ++_instance._lastID;
-        p = new ParameterType(namer, _instance._lastID, {nullptr, nullptr, luat_matrixrow_delete}, (unsigned)getParameterID(Naming::Type_MatrixRow), (unsigned)subtype);
+        p = new ParameterType(namer, _instance._lastID, {nullptr, nullptr, luat_matrixrow_delete}, getParameterID(Naming::Type_MatrixRow), subtype);
         _instance._typeList->push_back(p);
         if(_instance._luaparser != nullptr) {
             _instance._luaparser->notifyLoad(p);
         }
         return _instance._lastID - 1;
     }
-    return -1;
+    return 0;
 }
 
-int ParameterTypeSystem::getParameterID(const std::string& name)
+size_t ParameterTypeSystem::getParameterID(const std::string& name)
 {
     for(auto it = _instance._typeList->begin(); it != _instance._typeList->end(); it++)
     {
@@ -165,10 +167,10 @@ int ParameterTypeSystem::getParameterID(const std::string& name)
             return (*it)->getID();
         }
     }
-    return -1;
+    return 0;
 }
 
-int ParameterTypeSystem::getParameterID(const size_t& base, const size_t& tag)
+size_t ParameterTypeSystem::getParameterID(const size_t& base, const size_t& tag)
 {
     for(auto it = _instance._typeList->begin(); it != _instance._typeList->end(); it++)
     {
@@ -177,10 +179,10 @@ int ParameterTypeSystem::getParameterID(const size_t& base, const size_t& tag)
             return (*it)->getID();
         }
     }
-    return -1;
+    return 0;
 }
 
-const struct T_Parameter ParameterTypeSystem::getValue(const int& index)
+ParameterValue ParameterTypeSystem::getValue(const int& index)
 {
     if(_instance._luaparser)
     {
@@ -190,19 +192,19 @@ const struct T_Parameter ParameterTypeSystem::getValue(const int& index)
         case LUA_TNONE:
         case LUA_TNIL:
             {
-                return {pid_nil, nullptr};
+                return ParameterValue(pid_nil, nullptr);
             }
         case LUA_TNUMBER:
             {
-                return {pid_real, new double(lua_tonumber(L, index))};
+                return ParameterValue(pid_real, new double(lua_tonumber(L, index)));
             }
         case LUA_TBOOLEAN:
             {
-                return {pid_boolean, new bool(lua_toboolean(L, index))};
+                return ParameterValue(pid_boolean, new bool(lua_toboolean(L, index)));
             }
         case LUA_TSTRING:
             {
-                return {pid_string, new std::string(lua_tostring(L, index))};
+                return ParameterValue(pid_string, new std::string(lua_tostring(L, index)));
             }
         case LUA_TTABLE:
             {
@@ -236,7 +238,7 @@ const struct T_Parameter ParameterTypeSystem::getValue(const int& index)
                     lua_pop(L, 1);
                 }
 
-                return {pid_table, table};
+                return ParameterValue(pid_table, table);
             }
         case LUA_TFUNCTION:
             {
@@ -248,7 +250,7 @@ const struct T_Parameter ParameterTypeSystem::getValue(const int& index)
                 lua_rawsetp(L, -2, w);
                 lua_pop(L, 1);
 
-                return {pid_luafunc, w};
+                return ParameterValue(pid_luafunc, w);
             }
         case LUA_TUSERDATA:
             {
@@ -263,16 +265,21 @@ const struct T_Parameter ParameterTypeSystem::getValue(const int& index)
                         if(type > pid_library)
                         {
                             void* value = *((void**)lua_touserdata(L, f_ind));
+                            /*
                             lua_pushstring(L, Naming::Lua_reg_references);
                             lua_rawget(L, LUA_REGISTRYINDEX);
                             lua_pushvalue(L, f_ind);
                             lua_rawsetp(L, -2, value);
                             lua_pop(L, 1);
                             return {type, value};
+                            */
+                            ParameterValue pv(type, value);
+                            *(pv._luaref) = true;
+                            return pv;
                         }
                         else
                         {
-                            return {type, nullptr};
+                            return ParameterValue(type, nullptr);
                         }
                     }
                 }
@@ -280,10 +287,10 @@ const struct T_Parameter ParameterTypeSystem::getValue(const int& index)
         }
     }
 
-    return {pid_nil, nullptr};
+    return ParameterValue(pid_nil, nullptr);
 }
 
-int ParameterTypeSystem::getParameterType(const int& index)
+size_t ParameterTypeSystem::getParameterType(const int& index)
 {
     if(_instance._luaparser)
     {
@@ -309,7 +316,7 @@ int ParameterTypeSystem::getParameterType(const int& index)
             }
         case LUA_TTABLE:
             {
-                return pid_nil;
+                return pid_table;
             }
         case LUA_TFUNCTION:
             {
@@ -334,9 +341,9 @@ int ParameterTypeSystem::getParameterType(const int& index)
     return pid_nil;
 }
 
-const std::string ParameterTypeSystem::getParameterName(const int& id)
+const std::string ParameterTypeSystem::getParameterName(const size_t& id)
 {
-    if(id >= 0 && (unsigned)id < _instance._typeList->size())
+    if(id >= 0 && id < _instance._typeList->size())
     {
         if((*_instance._typeList)[id] != nullptr)
         {
@@ -346,9 +353,9 @@ const std::string ParameterTypeSystem::getParameterName(const int& id)
     return "";
 }
 
-size_t ParameterTypeSystem::getParameterBase(const int& id)
+size_t ParameterTypeSystem::getParameterBase(const size_t& id)
 {
-    if(id >= 0 && (unsigned)id < _instance._typeList->size())
+    if(id >= 0 && id < _instance._typeList->size())
     {
         if((*_instance._typeList)[id] != nullptr)
         {
@@ -358,9 +365,9 @@ size_t ParameterTypeSystem::getParameterBase(const int& id)
     return 0;
 }
 
-size_t ParameterTypeSystem::getParameterTag(const int& id)
+size_t ParameterTypeSystem::getParameterTag(const size_t& id)
 {
-    if(id >= 0 && (unsigned)id < _instance._typeList->size())
+    if(id >= 0 && id < _instance._typeList->size())
     {
         if((*_instance._typeList)[id] != nullptr)
         {
@@ -370,11 +377,24 @@ size_t ParameterTypeSystem::getParameterTag(const int& id)
     return 0;
 }
 
-void ParameterTypeSystem::deleteSingle(lua_State* const L, const struct T_Parameter& value)
+void ParameterTypeSystem::deleteValue(ParameterValue& value)
 {
-    // this function needs "simulation:com:references"
-    // to be on top of the stack
-    switch(value.type)
+    if(_instance._luaparser)
+    {
+        lua_State* L = _instance._luaparser->getLuaState();
+        if(value._type >= 0 && value._type < _instance._typeList->size())
+        {
+            (*_instance._typeList)[value._type]->deleteValue(L, value._value);
+        }
+    }
+    /*
+    if(_instance._luaparser) {
+        lua_State* L = _instance._luaparser->getLuaState();
+        lua_pushstring(L, Naming::Lua_reg_references);
+        lua_rawget(L, LUA_REGISTRYINDEX);
+
+
+        switch(value.type)
     {
     case pid_nil:
     case pid_func:
@@ -402,45 +422,23 @@ void ParameterTypeSystem::deleteSingle(lua_State* const L, const struct T_Parame
             break;
         }
     }
-}
 
-void ParameterTypeSystem::deleteValues(vec_t_LuaItem& items)
-{
-    if(_instance._luaparser) {
-        lua_State* L = _instance._luaparser->getLuaState();
-        lua_pushstring(L, Naming::Lua_reg_references);
-        lua_rawget(L, LUA_REGISTRYINDEX);
-        for(auto it = items.begin(); it != items.end(); it++)
-        {
-            deleteSingle(L, *it);
-        }
-        lua_pop(L, 1);
-        items.clear();
-    }
-}
-
-void ParameterTypeSystem::deleteValue(const struct T_Parameter& value)
-{
-    if(_instance._luaparser) {
-        lua_State* L = _instance._luaparser->getLuaState();
-        lua_pushstring(L, Naming::Lua_reg_references);
-        lua_rawget(L, LUA_REGISTRYINDEX);
-        deleteSingle(L, value);
         lua_pop(L, 1);
     }
+    */
 }
 
-bool ParameterTypeSystem::pushValue(lua_State* const L, const struct T_Parameter& value)
+bool ParameterTypeSystem::pushValue(lua_State* const L, ParameterValue& value)
 {
-    if(value.type >= 0 && (unsigned)value.type < _instance._typeList->size())
+    if(value._type >= 0 && value._type < _instance._typeList->size())
     {
-        (*_instance._typeList)[value.type]->pushValue(L, value.value);
+        (*_instance._typeList)[value._type]->pushValue(L, value._value);
         return true;
     }
     return false;
 }
 
-bool ParameterTypeSystem::pushValue(const struct T_Parameter& value)
+bool ParameterTypeSystem::pushValue(struct T_Parameter value)
 {
     if(_instance._luaparser) {
         lua_State* L = _instance._luaparser->getLuaState();
@@ -449,6 +447,7 @@ bool ParameterTypeSystem::pushValue(const struct T_Parameter& value)
         case pid_real:
         case pid_boolean:
         case pid_string:
+        case pid_table:
         case pid_func:
             {
                 (*_instance._typeList)[value.type]->pushValue(L, value.value);
@@ -456,19 +455,18 @@ bool ParameterTypeSystem::pushValue(const struct T_Parameter& value)
             }
         default:
             {
-                lua_pushstring(L, Naming::Lua_reg_references);
-                lua_rawget(L, LUA_REGISTRYINDEX);
-                if(!lua_rawgetp(L, -1, value.value)) {
-                    lua_pop(L, 1);
+                if(value.type >= 0 && value.type < _instance._typeList->size())
+                {
                     (*_instance._typeList)[value.type]->pushValue(L, value.value);
                     std::string meta("meta:");
                     meta += getParameterName(value.type);
                     luaL_setmetatable(L, meta.c_str());
-                    lua_pushvalue(L, -1);
-                    lua_rawsetp(L, -3, value.value);
+                    auto it = _instance._references->find(value.value);
+                    if(it != _instance._references->end())
+                    {
+                        *(it->second._luaref) = true;
+                    }
                 }
-                lua_insert(L, -2);
-                lua_pop(L, 1);
                 break;
             }
         }
@@ -494,9 +492,9 @@ void ParameterTypeSystem::connect(IConnectEventHandler* const c)
     }
 }
 
-ParameterType const * const ParameterTypeSystem::getParameter(const int& id)
+ParameterType const * const ParameterTypeSystem::getParameter(const size_t& id)
 {
-    if(id >= 0 && (unsigned)id < _instance._typeList->size())
+    if(id >= 0 && id < _instance._typeList->size())
     {
         if((*_instance._typeList)[id] != nullptr)
         {
@@ -509,4 +507,9 @@ ParameterType const * const ParameterTypeSystem::getParameter(const int& id)
 void ParameterTypeSystem::disconnect()
 {
 
+}
+
+bool ParameterTypeSystem::isReferenced(void* ptr)
+{
+    return _instance._references->count(ptr);
 }

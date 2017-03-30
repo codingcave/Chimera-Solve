@@ -15,7 +15,7 @@ class LuaParser: public IConnectEventHandler
         void notifyLoad(ParameterType const * const p) override;
         void notifyUnload(ParameterType const * const p) override;
 
-        void pushLuaValue(const struct T_Parameter param);
+        void pushLuaValue(ParameterValue& param);
         void pushLuaValue(int type, void* value);
         void pushLuaValue(const std::string& type, void* value);
 

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <unordered_map>
 #include <vector>
+#include "ParameterValue.hpp"
 #include "ParameterType.hpp"
 #include "def.hpp"
 #include "ParameterTypeSystem.hpp"
@@ -26,25 +27,25 @@ void ItemContainer::truncate()
     _items->clear();
 }
 
-void ItemContainer::setValue(const std::string& name, const struct T_Parameter& value)
+void ItemContainer::setValue(const std::string& name, ParameterValue& value)
 {
-    const struct T_Parameter* const old = (*this)[name];
-    if(old != nullptr)
+    auto it = _items->find(name);
+    if(it != _items->end())
     {
-        ParameterTypeSystem::deleteValue(*old);
+        it->second.dispose();
     }
     _items->insert (std::make_pair(name,value));
 }
 
-struct T_Parameter const * const ItemContainer::operator[](const std::string& name) const
+ParameterValue ItemContainer::operator[](const std::string& name) const
 {
     map_t_LuaItem::const_iterator available = _items->find (name);
 
     if ( available != _items->end() )
     {
-        return &(available->second);
+        return available->second;
     }
-    return nullptr;
+    return ParameterValue(0, nullptr);
 }
 
 /*

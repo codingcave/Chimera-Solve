@@ -6,6 +6,7 @@
 #include "Naming.hpp"
 //#include "interfaces/EventHandler/IEntryPointEventHandler.hpp"
 #include "interfaces/IConnectEventHandler.hpp"
+#include "ParameterValue.hpp"
 #include "ParameterType.hpp"
 #include "def.hpp"
 #include "ParameterTypeSystem.hpp"
@@ -67,7 +68,7 @@ void LuaParser::pushEntryPoint(EntryPoint* ep)
         for(auto it = ep->beginItems(); it != ep->endItems(); it++)
         {
             lua_pushlstring(_L, it->first.c_str(), it->first.size());
-            pushLuaValue(it->second);
+            pushLuaValue(it->second.getType(), it->second.getValue());
             lua_rawset(_L, -3);
         }
         lua_rawset(_L, -3);

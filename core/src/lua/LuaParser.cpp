@@ -11,6 +11,7 @@
 
 #include "Naming.hpp"
 #include "interfaces/IConnectEventHandler.hpp"
+#include "ParameterValue.hpp"
 #include "ParameterType.hpp"
 #include "def.hpp"
 #include "ParameterTypeSystem.hpp"
@@ -60,9 +61,11 @@ LuaParser::LuaParser(const std::string& filename, std::vector<char*>& argv, Modu
     lua_pushlightuserdata(_L, (void *)_loader);
     lua_settable(_L, LUA_REGISTRYINDEX);
 
+    /*
     lua_pushstring(_L, Naming::Lua_reg_references);
     lua_newtable(_L);
     lua_settable(_L, LUA_REGISTRYINDEX);
+    */
 
     //lua_pushstring(_L, Naming::Lua_reg_functions);
     //lua_newtable(_L);
@@ -86,7 +89,7 @@ LuaParser::LuaParser(const std::string& filename, std::vector<char*>& argv, Modu
     ParameterTypeSystem::connect(this);
     for(auto it = ParameterTypeSystem::_instance._typeList->begin(); it != ParameterTypeSystem::_instance._typeList->end(); it++)
     {
-        if((*it)->getID() > 4)
+        if((*it)->getID() > ParameterTypeSystem::pid_func)
             notifyLoad(*it);
     }
 
@@ -222,9 +225,9 @@ void LuaParser::init()
     lua_settop(_L, 0);
 }
 
-void LuaParser::pushLuaValue(T_Parameter param)
+void LuaParser::pushLuaValue(ParameterValue& param)
 {
-    if(!ParameterTypeSystem::pushValue(_L, param))
+    if(!ParameterTypeSystem::pushValue({param.getType(), param.getValue()}))
     {
         lua_pushnil(_L);
     }
@@ -232,7 +235,7 @@ void LuaParser::pushLuaValue(T_Parameter param)
 
 void LuaParser::pushLuaValue(int type, void* value)
 {
-    if(!ParameterTypeSystem::pushValue(_L, {type, value}))
+    if(!ParameterTypeSystem::pushValue({type, value}))
     {
         lua_pushnil(_L);
     }
@@ -240,7 +243,7 @@ void LuaParser::pushLuaValue(int type, void* value)
 
 void LuaParser::pushLuaValue(const std::string& type, void* value)
 {
-    if(!ParameterTypeSystem::pushValue(_L, {ParameterTypeSystem::getParameterID(type), value}))
+    if(!ParameterTypeSystem::pushValue({ParameterTypeSystem::getParameterID(type), value}))
     {
         lua_pushnil(_L);
     }
