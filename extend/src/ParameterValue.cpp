@@ -3,6 +3,7 @@
 #include <vector>
 #include "lua.hpp"
 
+#include "interfaces/IConnectEventHandler.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
 #include "def.hpp"
@@ -117,3 +118,478 @@ void ParameterValue::dispose()
         }
     }
 }
+
+ParameterValue ParameterValue::operator+(const ParameterValue& p)
+{
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+        ParameterTypeSystem::pushValue({this->getType(), this->getValue()});
+        ParameterTypeSystem::pushValue({p.getType(), p.getValue()});
+        lua_arith(L, LUA_OPADD);
+        ParameterValue v(ParameterTypeSystem::getValue(-1));
+        lua_pop(L, 1);
+        return v;
+    }
+    return ParameterValue(0, nullptr);
+}
+
+ParameterValue ParameterValue::operator-(const ParameterValue& p)
+{
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+        ParameterTypeSystem::pushValue({this->getType(), this->getValue()});
+        ParameterTypeSystem::pushValue({p.getType(), p.getValue()});
+        lua_arith(L, LUA_OPSUB);
+        ParameterValue v(ParameterTypeSystem::getValue(-1));
+        lua_pop(L, 1);
+        return v;
+    }
+    return ParameterValue(0, nullptr);
+}
+
+ParameterValue ParameterValue::operator*(const ParameterValue& p)
+{
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+        ParameterTypeSystem::pushValue({this->getType(), this->getValue()});
+        ParameterTypeSystem::pushValue({p.getType(), p.getValue()});
+        lua_arith(L, LUA_OPMUL);
+        ParameterValue v(ParameterTypeSystem::getValue(-1));
+        lua_pop(L, 1);
+        return v;
+    }
+    return ParameterValue(0, nullptr);
+}
+
+ParameterValue ParameterValue::operator/(const ParameterValue& p)
+{
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+        ParameterTypeSystem::pushValue({this->getType(), this->getValue()});
+        ParameterTypeSystem::pushValue({p.getType(), p.getValue()});
+        lua_arith(L, LUA_OPDIV);
+        ParameterValue v(ParameterTypeSystem::getValue(-1));
+        lua_pop(L, 1);
+        return v;
+    }
+    return ParameterValue(0, nullptr);
+}
+
+ParameterValue ParameterValue::operator%(const ParameterValue& p)
+{
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+        ParameterTypeSystem::pushValue({this->getType(), this->getValue()});
+        ParameterTypeSystem::pushValue({p.getType(), p.getValue()});
+        lua_arith(L, LUA_OPMOD);
+        ParameterValue v(ParameterTypeSystem::getValue(-1));
+        lua_pop(L, 1);
+        return v;
+    }
+    return ParameterValue(0, nullptr);
+}
+
+ParameterValue ParameterValue::operator^(const ParameterValue& p)
+{
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+        ParameterTypeSystem::pushValue({this->getType(), this->getValue()});
+        ParameterTypeSystem::pushValue({p.getType(), p.getValue()});
+        lua_arith(L, LUA_OPPOW);
+        ParameterValue v(ParameterTypeSystem::getValue(-1));
+        lua_pop(L, 1);
+        return v;
+    }
+    return ParameterValue(0, nullptr);
+}
+
+ParameterValue ParameterValue::operator-()
+{
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+        ParameterTypeSystem::pushValue({this->getType(), this->getValue()});
+        lua_arith(L, LUA_OPUNM);
+        ParameterValue v(ParameterTypeSystem::getValue(-1));
+        lua_pop(L, 1);
+        return v;
+    }
+    return ParameterValue(0, nullptr);
+}
+
+ParameterValue ParameterValue::operator&(const ParameterValue& p)
+{
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+        ParameterTypeSystem::pushValue({this->getType(), this->getValue()});
+        ParameterTypeSystem::pushValue({p.getType(), p.getValue()});
+        lua_arith(L, LUA_OPBAND);
+        ParameterValue v(ParameterTypeSystem::getValue(-1));
+        lua_pop(L, 1);
+        return v;
+    }
+    return ParameterValue(0, nullptr);
+}
+
+ParameterValue ParameterValue::operator|(const ParameterValue& p)
+{
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+        ParameterTypeSystem::pushValue({this->getType(), this->getValue()});
+        ParameterTypeSystem::pushValue({p.getType(), p.getValue()});
+        lua_arith(L, LUA_OPBOR);
+        ParameterValue v(ParameterTypeSystem::getValue(-1));
+        lua_pop(L, 1);
+        return v;
+    }
+    return ParameterValue(0, nullptr);
+}
+
+ParameterValue ParameterValue::XOR(const ParameterValue& p)
+{
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+        ParameterTypeSystem::pushValue({this->getType(), this->getValue()});
+        ParameterTypeSystem::pushValue({p.getType(), p.getValue()});
+        lua_arith(L, LUA_OPBXOR);
+        ParameterValue v(ParameterTypeSystem::getValue(-1));
+        lua_pop(L, 1);
+        return v;
+    }
+    return ParameterValue(0, nullptr);
+}
+
+ParameterValue ParameterValue::operator~()
+{
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+        ParameterTypeSystem::pushValue({this->getType(), this->getValue()});
+        lua_arith(L, LUA_OPBNOT);
+        ParameterValue v(ParameterTypeSystem::getValue(-1));
+        lua_pop(L, 1);
+        return v;
+    }
+    return ParameterValue(0, nullptr);
+}
+
+ParameterValue ParameterValue::operator<<(const ParameterValue& p)
+{
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+        ParameterTypeSystem::pushValue({this->getType(), this->getValue()});
+        ParameterTypeSystem::pushValue({p.getType(), p.getValue()});
+        lua_arith(L, LUA_OPSHL);
+        ParameterValue v(ParameterTypeSystem::getValue(-1));
+        lua_pop(L, 1);
+        return v;
+    }
+    return ParameterValue(0, nullptr);
+}
+
+ParameterValue ParameterValue::operator<<(const int& i)
+{
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+        ParameterTypeSystem::pushValue({this->getType(), this->getValue()});
+        lua_pushnumber(L, i);
+        lua_arith(L, LUA_OPSHL);
+        ParameterValue v(ParameterTypeSystem::getValue(-1));
+        lua_pop(L, 1);
+        return v;
+    }
+    return ParameterValue(0, nullptr);
+}
+
+ParameterValue ParameterValue::operator>>(const ParameterValue& p)
+{
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+        ParameterTypeSystem::pushValue({this->getType(), this->getValue()});
+        ParameterTypeSystem::pushValue({p.getType(), p.getValue()});
+        lua_arith(L, LUA_OPSHR);
+        ParameterValue v(ParameterTypeSystem::getValue(-1));
+        lua_pop(L, 1);
+        return v;
+    }
+    return ParameterValue(0, nullptr);
+}
+
+ParameterValue ParameterValue::operator>>(const int& i)
+{
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+        ParameterTypeSystem::pushValue({this->getType(), this->getValue()});
+        lua_pushnumber(L, i);
+        lua_arith(L, LUA_OPSHR);
+        ParameterValue v(ParameterTypeSystem::getValue(-1));
+        lua_pop(L, 1);
+        return v;
+    }
+    return ParameterValue(0, nullptr);
+}
+
+ParameterValue ParameterValue::concat(const ParameterValue& p)
+{
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+        ParameterTypeSystem::pushValue({this->getType(), this->getValue()});
+        ParameterTypeSystem::pushValue({p.getType(), p.getValue()});
+        lua_concat(L, 2);
+        ParameterValue v(ParameterTypeSystem::getValue(-1));
+        lua_pop(L, 1);
+        return v;
+    }
+    return ParameterValue(0, nullptr);
+}
+
+ParameterValue ParameterValue::length()
+{
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+        ParameterTypeSystem::pushValue({this->getType(), this->getValue()});
+        lua_len(L, -1);
+        ParameterValue v(ParameterTypeSystem::getValue(-1));
+        lua_pop(L, 2);
+        return v;
+    }
+    return ParameterValue(0, nullptr);
+}
+
+bool ParameterValue::operator==(const ParameterValue& p)
+{
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+        ParameterTypeSystem::pushValue({this->getType(), this->getValue()});
+        ParameterTypeSystem::pushValue({p.getType(), p.getValue()});
+        bool result = lua_compare(L, -2, -1, LUA_OPEQ);
+        lua_pop(L, 2);
+        return result;
+    }
+    return false;
+}
+
+bool ParameterValue::operator!=(const ParameterValue& p)
+{
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+        ParameterTypeSystem::pushValue({this->getType(), this->getValue()});
+        ParameterTypeSystem::pushValue({p.getType(), p.getValue()});
+        bool result = lua_compare(L, -2, -1, LUA_OPEQ);
+        lua_pop(L, 2);
+        return !result;
+    }
+    return false;
+}
+
+bool ParameterValue::operator<(const ParameterValue& p)
+{
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+        ParameterTypeSystem::pushValue({this->getType(), this->getValue()});
+        ParameterTypeSystem::pushValue({p.getType(), p.getValue()});
+        bool result = lua_compare(L, -2, -1, LUA_OPLT);
+        lua_pop(L, 2);
+        return result;
+    }
+    return false;
+}
+
+bool ParameterValue::operator>(const ParameterValue& p)
+{
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+        ParameterTypeSystem::pushValue({this->getType(), this->getValue()});
+        ParameterTypeSystem::pushValue({p.getType(), p.getValue()});
+        bool result = lua_compare(L, -1, -2, LUA_OPLT);
+        lua_pop(L, 2);
+        return result;
+    }
+    return false;
+}
+
+bool ParameterValue::operator<=(const ParameterValue& p)
+{
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+        ParameterTypeSystem::pushValue({this->getType(), this->getValue()});
+        ParameterTypeSystem::pushValue({p.getType(), p.getValue()});
+        bool result = lua_compare(L, -2, -1, LUA_OPLE);
+        lua_pop(L, 2);
+        return result;
+    }
+    return false;
+}
+
+bool ParameterValue::operator>=(const ParameterValue& p)
+{
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+        ParameterTypeSystem::pushValue({this->getType(), this->getValue()});
+        ParameterTypeSystem::pushValue({p.getType(), p.getValue()});
+        bool result = lua_compare(L, -1, -2, LUA_OPLE);
+        lua_pop(L, 2);
+        return result;
+    }
+    return false;
+}
+
+// __index
+
+// __newindex
+
+vec_t_LuaItem ParameterValue::operator()(vec_t_LuaItem params)
+{
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+
+        int pos1 = lua_gettop(L);
+
+        ParameterTypeSystem::pushValue({this->getType(), this->getValue()});
+        for(auto it : params)
+        {
+            ParameterTypeSystem::pushValue({it.getType(), it.getValue()});
+        }
+        lua_call(L, params.size(), LUA_MULTRET);
+        int pos2 = lua_gettop(L);
+        vec_t_LuaItem result;
+        for(int i = pos1 + 1; i <= pos2; ++i)
+        {
+            result.push_back(ParameterTypeSystem::getValue(i));
+        }
+        if(pos2 > pos1)
+        {
+            lua_pop(L, pos2 - pos1);
+        }
+        return result;
+    }
+    return vec_t_LuaItem();
+}
+
+ParameterValue::operator int() const
+{
+    /*
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+        ParameterTypeSystem::pushValue({this->getType(), this->getValue()});
+        int isnum = 0;
+        int result = lua_tonumberx(L, -1, &isnum);
+        lua_pop(L, 1);
+        if(isnum)
+        {
+            return result;
+        }
+    }
+    return 0;
+    */
+    int result = 0;
+    if(_type == ParameterTypeSystem::pid_real)
+    {
+        result = (int)(*((double*)_value));
+    }
+    return result;
+}
+
+ParameterValue::operator double() const
+{
+    /*
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+        ParameterTypeSystem::pushValue({this->getType(), this->getValue()});
+        int result = lua_tonumber(L, -1);
+        lua_pop(L, 1);
+        return result;
+    }
+    return 0;
+    */
+    double result = 0;
+    if(_type == ParameterTypeSystem::pid_real)
+    {
+        result = *((double*)_value);
+    }
+    return result;
+}
+
+ParameterValue::operator bool() const
+{
+    /*
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+        ParameterTypeSystem::pushValue({this->getType(), this->getValue()});
+        bool result = lua_toboolean(L, -1);
+        lua_pop(L, 1);
+        return result;
+    }
+    return 0;
+    */
+    bool result = 0;
+    if(_type == ParameterTypeSystem::pid_boolean)
+    {
+        result = *((bool*)_value);
+    }
+    return result;
+}
+
+ParameterValue::operator std::string() const
+{
+    std::string result;
+    if(_type == ParameterTypeSystem::pid_string)
+    {
+        result = *((std::string*)_value);
+    }
+    return result;
+}
+
+ParameterValue::operator map_t_LuaItem() const
+{
+    map_t_LuaItem result;
+    if(_type == ParameterTypeSystem::pid_table)
+    {
+        result = *((map_t_LuaItem*)_value);
+    }
+    return result;
+}
+
+ParameterValue::operator void*() const
+{
+    return _value;
+}
+
+std::ostream& operator<<(std::ostream& os, const ParameterValue& obj)
+{
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+        ParameterTypeSystem::pushValue({obj.getType(), obj.getValue()});
+        os << luaL_tolstring(L, -1, NULL);
+        lua_pop(L, 2);
+    }
+    return os;
+}
+
+

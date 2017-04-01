@@ -29,7 +29,13 @@ extern "C"
     {
         return new CsvFileRegistry();
     }
+
+    void UnloadModule(Registry* reg)
+    {
+        delete (CsvFileRegistry*)reg;
+    }
 }
+
 
 int file_open(lua_State* L)
 {

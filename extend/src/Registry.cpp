@@ -29,3 +29,13 @@ std::unordered_map<std::string, lua_CFunction> const * const Registry::methods()
 {
     return _instanceMethods;
 }
+
+void Registry::load()
+{
+
+}
+
+void Registry::unload()
+{
+
+}

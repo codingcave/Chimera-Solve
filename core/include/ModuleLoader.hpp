@@ -7,10 +7,17 @@ class Registry;
 
 typedef std::vector<std::string> vec_t_pathList;
 
-typedef Registry* (*fn_factory_ptr) ();
+typedef Registry* (*fn_create_mod) ();
+typedef void (*fn_delete_mod) (Registry*);
+
+struct T_ModuleSymbols {
+    void* lib;
+    const fn_create_mod load;
+    const fn_delete_mod unload;
+};
 
 typedef std::unordered_map<std::string, Registry*> map_t_ModuleRegistry;
-typedef std::unordered_map<std::string, void*> map_t_ModuleItem;
+typedef std::unordered_map<std::string, T_ModuleSymbols> map_t_ModuleItem;
 //typedef std::unordered_map<EntryPoint, map_t_ModuleEntry*, std::hash<int> > map_t_ModuleCategory;
 
 //typedef std::unordered_map<std::string,system_factory_ptr> map_t_SystemDynamics;

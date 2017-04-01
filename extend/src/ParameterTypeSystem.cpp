@@ -36,8 +36,8 @@ const size_t ParameterTypeSystem::pid_matrixrow = 13;
 ParameterTypeSystem ParameterTypeSystem::_instance;
 
 ParameterTypeSystem::ParameterTypeSystem():
-    _lastID(5),
-    _typeList(new std::vector<const ParameterType*>(6)),
+    _lastID(6),
+    _typeList(new std::vector<const ParameterType*>(7)),
     _luaparser(nullptr),
     _references(new std::unordered_map<void*, ParameterValue>())
 {
@@ -451,6 +451,31 @@ bool ParameterTypeSystem::pushValue(struct T_Parameter value)
         case pid_func:
             {
                 (*_instance._typeList)[value.type]->pushValue(L, value.value);
+                break;
+            }
+        case pid_luafunc:
+            {
+                LuaFunctionWrapper* fw = (LuaFunctionWrapper*)value.value;
+                if(fw->intern())
+                {
+                    (*_instance._typeList)[value.type]->pushValue(L, value.value);
+                    std::string meta("meta:");
+                    meta += getParameterName(value.type);
+                    luaL_setmetatable(L, meta.c_str());
+                    auto it = _instance._references->find(value.value);
+                    if(it != _instance._references->end())
+                    {
+                        *(it->second._luaref) = true;
+                    }
+                }
+                else
+                {
+                    lua_pushstring(L, Naming::Lua_reg_functions);
+                    lua_rawget(L, LUA_REGISTRYINDEX);
+                    lua_pushlightuserdata(L, value.value);
+                    lua_rawget(L, -2);
+                    lua_remove(L, -2);
+                }
                 break;
             }
         default:

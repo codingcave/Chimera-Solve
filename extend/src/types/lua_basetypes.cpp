@@ -108,11 +108,12 @@ int luat_luafunction_call(lua_State* L)
         items.push_back(ParameterTypeSystem::getValue(i));
     }
 
-    ParameterValue p = (*obj)(items);
-    ParameterTypeSystem::pushValue({p.getType(), p.getValue()});
-    p.dispose();
-
-    return 1;
+    vec_t_LuaItem result = (*obj)(items);
+    for(auto it : result)
+    {
+        ParameterTypeSystem::pushValue({it.getType(), it.getValue()});
+    }
+    return result.size();
 }
 
 void luat_luafunction_init(lua_State* const L, const int& type)

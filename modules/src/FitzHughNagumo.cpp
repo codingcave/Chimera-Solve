@@ -25,7 +25,13 @@ extern "C"
     {
         return new FitzHughNagumoRegistry();
     }
+
+    void UnloadModule(Registry* reg)
+    {
+        delete (FitzHughNagumoRegistry*)reg;
+    }
 }
+
 
 FitzHughNagumo::FitzHughNagumo(double epsilon, double a):
     _epsilon(epsilon),
@@ -81,11 +87,11 @@ void* FitzHughNagumoRegistry::getInstance(vec_t_LuaItem& parameters) const
 
     if(parameters.size() > 0 && ParameterTypeSystem::isParameterID(Naming::Type_real, parameters[0].getType()))
     {
-        epsilon = *((double*)parameters[0].getValue());
+        epsilon = parameters[0];
     }
     if(parameters.size() > 1 && ParameterTypeSystem::isParameterID(Naming::Type_real, parameters[0].getType()))
     {
-        a = *((double*)parameters[1].getValue());
+        a = parameters[1];
     }
 
     return new FitzHughNagumo(epsilon, a);

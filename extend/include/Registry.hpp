@@ -11,6 +11,8 @@ class Registry:public ItemContainer
         virtual const std::string getVersion() const = 0;
         virtual void* getInstance(vec_t_LuaItem& parameters) const = 0;
         virtual void destroyInstance(void * const instance) const = 0;
+        virtual void load();
+        virtual void unload();
         void registerMethod(const std::string& name, lua_CFunction method);
         std::unordered_map<std::string, lua_CFunction> const * const methods() const;
     protected:

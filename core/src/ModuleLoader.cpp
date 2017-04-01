@@ -53,7 +53,6 @@ Registry * const ModuleLoader::Load(const std::string& name)
                     // add to open libraries
                     if (lib_handle)
                     {
-                        (*_modulePtr)[name] = lib_handle;
                         break;
                     }
                 }
@@ -73,19 +72,27 @@ Registry * const ModuleLoader::Load(const std::string& name)
         return nullptr;
     }
 
-    fn_factory_ptr fn;
+    fn_create_mod fn_load;
+    fn_delete_mod fn_unload;
     // load function symbol `LoadModule` which has to return
     // a Registry pointer
-    fn = (fn_factory_ptr)dlsym(lib_handle, Naming::Module_createFunction);
-    if ((error = dlerror()) != NULL && fn)
+    fn_load = (fn_create_mod)dlsym(lib_handle, Naming::Module_createFunction);
+    fn_unload = (fn_delete_mod)dlsym(lib_handle, Naming::Module_deleteFunction);
+
+    if ((error = dlerror()) != NULL || !fn_load || !fn_unload)
     {
         // on error remove library again and return nothing
-        _modulePtr->erase(name);
+        //_modulePtr->erase(name);
         return nullptr;
     }
 
+    struct T_ModuleSymbols symbols = { .lib=lib_handle, .load=fn_load, .unload=fn_unload };
+
+    //(*_modulePtr)[name] = symbols;
+    _modulePtr->insert(std::make_pair(name, symbols));
     // set the registry for the loaded module
-    Registry* mReg = (*fn)();
+    Registry* mReg = (*fn_load)();
+    mReg->load();
     (*_moduleReg)[name] = mReg;
     return mReg;
 }
@@ -101,10 +108,14 @@ void ModuleLoader::Unload(const std::string& name)
     if ( available != _modulePtr->end() )
     {
         map_t_ModuleRegistry::const_iterator it2 = _moduleReg->find (name);
+        auto item = _modulePtr->find(name)->second;
         // free Registry space
-        delete ((*_moduleReg)[name]);
+        //delete ((*_moduleReg)[name]);
+        (*_moduleReg)[name]->unload();
+        item.unload((*_moduleReg)[name]);
         // close library file
-        lib_handle = (*_modulePtr)[name];
+        //lib_handle = ((*_modulePtr)[name]).lib;
+        lib_handle = item.lib;
         dlclose(lib_handle);
         // remove pointers
         _modulePtr->erase(available);

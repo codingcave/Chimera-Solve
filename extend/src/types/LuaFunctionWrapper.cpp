@@ -30,10 +30,10 @@ LuaFunctionWrapper::~LuaFunctionWrapper()
 
 bool LuaFunctionWrapper::intern() const
 {
-    return _fn == nullptr;
+    return _fn != nullptr;
 }
 
-ParameterValue LuaFunctionWrapper::operator()(vec_t_LuaItem& params) const
+vec_t_LuaItem LuaFunctionWrapper::operator()(vec_t_LuaItem& params) const
 {
     if(intern())
     {
@@ -44,6 +44,7 @@ ParameterValue LuaFunctionWrapper::operator()(vec_t_LuaItem& params) const
         if(ParameterTypeSystem::_instance._luaparser) {
             lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
             if(lua_checkstack(L, params.size() + 1)) {
+                int pos1 = lua_gettop(L);
                 lua_pushstring(L, Naming::Lua_reg_functions);
                 lua_rawget(L, LUA_REGISTRYINDEX);
                 lua_pushlightuserdata(L, (void*)this);
@@ -51,18 +52,26 @@ ParameterValue LuaFunctionWrapper::operator()(vec_t_LuaItem& params) const
                 lua_remove(L, -2);
                 for(auto it = params.begin(); it != params.end(); it++)
                     ParameterTypeSystem::pushValue({it->getType(), it->getValue()});
-                lua_call(L, params.size(), 1);
+                lua_call(L, params.size(), LUA_MULTRET);
+                int pos2 = lua_gettop(L);
+                vec_t_LuaItem result;
+                for(int i = pos1 + 1; i <= pos2; i++)
+                {
+                    result.push_back(ParameterTypeSystem::getValue(i));
+                }
 
-                ParameterValue p = ParameterTypeSystem::getValue(-1);
-                lua_pop(L, 1);
-                return p;
+                if(pos2 > pos1)
+                {
+                    lua_pop(L, pos2 - pos1);
+                }
+                return result;
             } else {
                 LoggingSystem::Error("cannot allocate enough memory for that many parameters.");
-                return ParameterValue( 0, nullptr );
+                return vec_t_LuaItem();
             }
         } else {
             LoggingSystem::Error("ParameterSystem is not associated with a Lua instance");
-            return ParameterValue( 0, nullptr );
+            return vec_t_LuaItem();
         }
     }
 }

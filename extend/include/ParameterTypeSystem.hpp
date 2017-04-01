@@ -44,7 +44,7 @@ class ParameterTypeSystem final
         static size_t getParameterBase(const size_t& id);
         static size_t getParameterTag(const size_t& id);
         //static bool pushValue(ParameterValue& value);
-	static bool pushValue(struct T_Parameter value);
+        static bool pushValue(struct T_Parameter value);
         static bool pushReal(const double& value);
         static bool pushString(const std::string& value);
         static bool pushBoolean(const bool& value);
@@ -73,6 +73,8 @@ class ParameterTypeSystem final
         static const size_t pid_vector;
         static const size_t pid_matrix;
         static const size_t pid_matrixrow;
+
+        friend std::ostream& operator<<(std::ostream& os, const ParameterValue& obj);
     protected:
     private:
         static ParameterTypeSystem _instance;

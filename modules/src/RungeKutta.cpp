@@ -34,8 +34,13 @@ extern "C"
     Registry* LoadModule()
     {
         return new RungeKuttaRegistry();
-
     }
+
+    void UnloadModule(Registry* reg)
+    {
+        delete (RungeKuttaRegistry*)reg;
+    }
+
 }
 
 RungeKuttaRegistry::RungeKuttaRegistry()
@@ -57,7 +62,6 @@ const std::string RungeKuttaRegistry::getVersion() const
 {
     return "1.0.0";
 }
-
 
 void RungeKuttaRegistry::destroyInstance(void * const instance) const
 {

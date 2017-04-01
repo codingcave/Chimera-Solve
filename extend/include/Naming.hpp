@@ -8,6 +8,7 @@ namespace Naming
     const char * const Module_prefix = "";
     const char * const Module_extension = ".mod";
     const char * const Module_createFunction = "LoadModule";
+    const char * const Module_deleteFunction = "UnloadModule";
 
     const char * const EntryPoint_dynamics = "dynamics";
     const char * const EntryPoint_integrator = "integrator";

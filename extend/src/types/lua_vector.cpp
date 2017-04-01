@@ -81,8 +81,13 @@ int lua_vector_iterator(lua_State* const L)
         int i = 0;
         if(lua_isnil(L, 3)) {
             i = 0;
-        } else if(lua_isinteger(L, 3)) {
-            i = lua_tointeger(L, 3) + 1;
+        } else if(lua_isnumber(L, 3)) {
+            int isnum = 0;
+            i = lua_tointegerx(L, 3, &isnum) + 1;
+            if(!isnum)
+            {
+                return 0;
+            }
         } else {
             return 0;
         }

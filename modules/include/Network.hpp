@@ -2,12 +2,11 @@
 #define NETWORK_H
 
 
-class Network//:
+class Network:
     //template<typename time_type, typename state_type>
-//    public TemplateOdeSystem<double, boost::numeric::ublas::vector<double>>
+    public TemplateOdeSystem<double, boost::numeric::ublas::vector<double>>
 {
     public:
-
         explicit Network();
         virtual ~Network();
 //        virtual void operator()(const boost::numeric::ublas::vector<double>& x, boost::numeric::ublas::vector<double>& dxdt, const double& t) override;
@@ -23,7 +22,7 @@ class Network//:
 
 };
 
-/*
+
 class NetworkRegistry:
     public Registry
 {
@@ -34,5 +33,5 @@ class NetworkRegistry:
         virtual void destroyInstance(void * const instance) const override;
         virtual const std::string getVersion() const override;
 };
-*/
+
 #endif // NETWORK_H
