@@ -71,6 +71,42 @@ ParameterValue::ParameterValue(const ParameterValue& p)
     }
 }
 
+ParameterValue::ParameterValue(const double& value)
+    :ParameterValue(ParameterTypeSystem::pid_real, new double(value))
+{
+
+}
+
+ParameterValue::ParameterValue(const int& value)
+    :ParameterValue(ParameterTypeSystem::pid_real, new double((double)value))
+{
+
+}
+
+ParameterValue::ParameterValue(const bool& value)
+    :ParameterValue(ParameterTypeSystem::pid_boolean, new bool(value))
+{
+
+}
+
+ParameterValue::ParameterValue(const std::string& value)
+    :ParameterValue(ParameterTypeSystem::pid_string, new std::string(value))
+{
+
+}
+
+ParameterValue::ParameterValue(const char value[])
+    :ParameterValue(ParameterTypeSystem::pid_string, new std::string(value))
+{
+
+}
+
+ParameterValue::ParameterValue(const std::unordered_map<std::string, ParameterValue>& value)
+    :ParameterValue(ParameterTypeSystem::pid_table, new std::unordered_map<std::string, ParameterValue>(value))
+{
+
+}
+
 ParameterValue::~ParameterValue()
 {
     dispose();
@@ -459,7 +495,7 @@ bool ParameterValue::operator>=(const ParameterValue& p)
 
 // __newindex
 
-vec_t_LuaItem ParameterValue::operator()(vec_t_LuaItem params)
+vec_t_LuaItem ParameterValue::operator()(vec_t_LuaItem& params)
 {
     if(ParameterTypeSystem::_instance._luaparser)
     {
@@ -486,6 +522,59 @@ vec_t_LuaItem ParameterValue::operator()(vec_t_LuaItem params)
         return result;
     }
     return vec_t_LuaItem();
+}
+
+ParameterValue ParameterValue::call_single(std::vector<ParameterValue>& params)
+{
+    if(ParameterTypeSystem::_instance._luaparser)
+    {
+        lua_State* L = ParameterTypeSystem::_instance._luaparser->getLuaState();
+
+        ParameterTypeSystem::pushValue({this->getType(), this->getValue()});
+        for(auto it : params)
+        {
+            ParameterTypeSystem::pushValue({it.getType(), it.getValue()});
+        }
+        lua_call(L, params.size(), 1);
+        ParameterValue result = ParameterTypeSystem::getValue(-1);
+        lua_pop(L, 1);
+        return result;
+    }
+    return ParameterValue(0, nullptr);
+}
+
+ParameterValue ParameterValue::operator()(ParameterValue p1)
+{
+    vec_t_LuaItem params;
+    params.push_back(p1);
+    return call_single(params);
+}
+
+ParameterValue ParameterValue::operator()(ParameterValue p1, ParameterValue p2)
+{
+    vec_t_LuaItem params;
+    params.push_back(p1);
+    params.push_back(p2);
+    return call_single(params);
+}
+
+ParameterValue ParameterValue::operator()(ParameterValue p1, ParameterValue p2, ParameterValue p3)
+{
+    vec_t_LuaItem params;
+    params.push_back(p1);
+    params.push_back(p2);
+    params.push_back(p3);
+    return call_single(params);
+}
+
+ParameterValue ParameterValue::operator()(ParameterValue p1, ParameterValue p2, ParameterValue p3, ParameterValue p4)
+{
+    vec_t_LuaItem params;
+    params.push_back(p1);
+    params.push_back(p2);
+    params.push_back(p3);
+    params.push_back(p4);
+    return call_single(params);
 }
 
 ParameterValue::operator int() const

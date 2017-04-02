@@ -10,6 +10,13 @@ class ParameterValue
     public:
         ParameterValue(size_t type, void* value);
         ParameterValue(const ParameterValue& p);
+        ParameterValue(const double& value);
+        ParameterValue(const int& value);
+        ParameterValue(const bool& value);
+        ParameterValue(const std::string& value);
+        ParameterValue(const char value[]);
+        ParameterValue(const std::unordered_map<std::string, ParameterValue>& value);
+
         virtual ~ParameterValue();
         size_t getType() const;
         void* getValue() const;
@@ -43,7 +50,11 @@ class ParameterValue
         bool operator>=(const ParameterValue& p);           // __le
         // __index
         // __newindex
-        std::vector<ParameterValue> operator()(std::vector<ParameterValue> params);
+        std::vector<ParameterValue> operator()(std::vector<ParameterValue>& params);
+        ParameterValue operator()(ParameterValue p1);
+        ParameterValue operator()(ParameterValue p1, ParameterValue p2);
+        ParameterValue operator()(ParameterValue p1, ParameterValue p2, ParameterValue p3);
+        ParameterValue operator()(ParameterValue p1, ParameterValue p2, ParameterValue p3, ParameterValue p4);
 
         operator int() const;
         operator double() const;
@@ -54,6 +65,7 @@ class ParameterValue
 
         friend std::ostream& operator<<(std::ostream& os, const ParameterValue& obj);
     private:
+        ParameterValue call_single(std::vector<ParameterValue>& params);
         size_t _type;
         bool _disposed;
         void * _value;
