@@ -1,36 +1,25 @@
 #!/home/kekstoaster/Programming/C++/NetworkSimulation/bin/Debug/run.sh
 
---i = #argv
+print(#argv, "::", argv[0], argv[1])
 
-f = dynamics("FitzHughNagumo")
-fi = f(1.0, .7)
+-- load all modules and create them with parameters
+FitzHughNagumo = dynamics("FitzHughNagumo")(1.0, .7)
+rk = integrator("RungeKutta")(FitzHughNagumo, 0.01)
+file = output("file.csv")("test.csv")
 
-rk = integrator("RungeKutta")
-rki = rk(fi, 0.1)
-
-o = output("file.csv")
-print(o)
-oi = o("test.csv")
-print(oi.path())
---oi.open()
-
-vec1 = vector(2, 0.0);
+-- initial condition
+vec1 = vector(2, 0.0)
 vec1[0] = 1.0
 
-sim = simulation(rki, vec1)
+-- new simulation
+sim = simulation(rk, vec1)
 
-function func(i, s)
-    print("func(i)", i, s[0], s[1])
+-- register output on every step
+sim.onstep(file)
 
-    if i==3 then
-    --sim.stop()
-    end
-end
+-- start the simulation
+x = sim.start()
 
-sim.onstep(oi)
-
-x = sim.start(10)
---print(x)
-
-print(#argv, argv[0], argv[1])
+-- last step
+print(x)
 
