@@ -1,11 +1,11 @@
 #include "simulation/Integrator.hpp"
 
-Integrator::Integrator()
+chimera::simulation::Integrator::Integrator()
 {
     //ctor
 }
 
-Integrator::~Integrator()
+chimera::simulation::Integrator::~Integrator()
 {
     //dtor
 }

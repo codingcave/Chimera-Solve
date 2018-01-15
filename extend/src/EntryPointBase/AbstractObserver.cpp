@@ -1,11 +1,11 @@
 #include "EntryPointBase/AbstractObserver.hpp"
 
-AbstractObserver::AbstractObserver()
+chimera::simulation::AbstractObserver::AbstractObserver()
 {
     //ctor
 }
 
-AbstractObserver::~AbstractObserver()
+chimera::simulation::AbstractObserver::~AbstractObserver()
 {
     //dtor
 }

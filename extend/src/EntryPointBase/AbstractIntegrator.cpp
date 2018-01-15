@@ -13,12 +13,12 @@
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/AbstractIntegrator.hpp"
 
-AbstractIntegrator::AbstractIntegrator()
+chimera::simulation::AbstractIntegrator::AbstractIntegrator()
 {
 
 }
 
-AbstractIntegrator::~AbstractIntegrator()
+chimera::simulation::AbstractIntegrator::~AbstractIntegrator()
 {
     //dtor
 }

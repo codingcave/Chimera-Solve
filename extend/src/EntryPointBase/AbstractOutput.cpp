@@ -1,11 +1,11 @@
 #include "EntryPointBase/AbstractOutput.hpp"
 
-AbstractOutput::AbstractOutput()
+chimera::simulation::AbstractOutput::AbstractOutput()
 {
     //ctor
 }
 
-AbstractOutput::~AbstractOutput()
+chimera::simulation::AbstractOutput::~AbstractOutput()
 {
     //dtor
 }

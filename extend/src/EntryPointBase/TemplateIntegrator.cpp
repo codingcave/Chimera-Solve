@@ -23,7 +23,7 @@ TemplateIntegrator<time_type, state_type>::TemplateIntegrator()
 {
     //ctor
 }
-/*
+
 template<typename time_type, typename state_type>
 TemplateIntegrator<time_type, state_type>::~TemplateIntegrator()
 {

@@ -1,24 +1,28 @@
 #ifndef NOTIFICATIONMANAGER_H
 #define NOTIFICATIONMANAGER_H
 
-class IEventListener;
-class IEventListenerProvider;
+namespace chimera {
+    namespace simulation {
+        class IEventListener;
+        class IEventListenerProvider;
 
-class NotificationManager
-{
-    public:
-        NotificationManager();
-        virtual ~NotificationManager();
-        void registerEvent(const std::string& name, EventManager* evList);
-        void notifyEvent(const std::string& name, void* sender, void* args);
-        void addListener(const std::string& name, IEventListener* listener);
-        void addListener(const std::string& name, IEventListenerProvider* listener);
-        void removeListener(const std::string& name, IEventListener* listener);
-        bool hasEvent(const std::string& name) const;
-        EventManager* getEventManager(const std::string& name);
-    protected:
-    private:
-        std::unordered_map<std::string, EventManager*>* _listener;
-};
+        class NotificationManager
+        {
+            public:
+                NotificationManager();
+                virtual ~NotificationManager();
+                void registerEvent(const std::string& name, EventManager* evList);
+                void notifyEvent(const std::string& name, void* sender, void* args);
+                void addListener(const std::string& name, IEventListener* listener);
+                void addListener(const std::string& name, IEventListenerProvider* listener);
+                void removeListener(const std::string& name, IEventListener* listener);
+                bool hasEvent(const std::string& name) const;
+                EventManager* getEventManager(const std::string& name);
+            protected:
+            private:
+                std::unordered_map<std::string, EventManager*>* _listener;
+        };
+    }
+}
 
 #endif // NOTIFICATIONMANAGER_H

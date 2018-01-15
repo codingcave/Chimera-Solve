@@ -3,12 +3,12 @@
 #include <vector>
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 
-AbstractSystemDynamic::AbstractSystemDynamic()
+chimera::simulation::AbstractSystemDynamic::AbstractSystemDynamic()
 {
     //ctor
 }
 
-AbstractSystemDynamic::~AbstractSystemDynamic()
+chimera::simulation::AbstractSystemDynamic::~AbstractSystemDynamic()
 {
     //dtor
 }
