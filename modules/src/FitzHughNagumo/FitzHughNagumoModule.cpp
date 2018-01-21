@@ -55,16 +55,45 @@ FitzHughNagumoModule::FitzHughNagumoModule()
 
 void* FitzHughNagumoModule::getInstance(chimera::vec_t_LuaItem& parameters) const
 {
+    bool inA = false;
+    bool inEpsilon = false;
     double a = 0.0;
     double epsilon = 0.0;
 
-    if(parameters.size() > 0 && chimera::systemtypes::PID_NUMBER == parameters[0].getType())
+    if(parameters.size() == 1 && parameters[0].getType() == chimera::systemtypes::PID_TABLE)
     {
-        epsilon = parameters[0];
+        chimera::map_t_LuaItem* paramMap = (chimera::map_t_LuaItem*)parameters[0].getValue();
+        for(auto p : *paramMap)
+        {
+            if(p.first == "a" && p.second.getType() == chimera::systemtypes::PID_NUMBER)
+            {
+                inA = true;
+                a = p.second;
+            }
+            if(p.first == "epsilon" && p.second.getType() == chimera::systemtypes::PID_NUMBER)
+            {
+                inEpsilon = true;
+                epsilon = p.second;
+            }
+        }
     }
-    if(parameters.size() > 1 && chimera::systemtypes::PID_NUMBER == parameters[1].getType())
+    else
     {
-        a = parameters[1];
+        if(parameters.size() > 0 && chimera::systemtypes::PID_NUMBER == parameters[0].getType())
+        {
+            inEpsilon = true;
+            epsilon = parameters[0];
+        }
+        if(parameters.size() > 1 && chimera::systemtypes::PID_NUMBER == parameters[1].getType())
+        {
+            inA = true;
+            a = parameters[1];
+        }
+    }
+
+    if(!(inA && inEpsilon))
+    {
+        return nullptr;
     }
 
     return new FitzHughNagumo(getChimeraSystem()->getTypeSystem(), epsilon, a);

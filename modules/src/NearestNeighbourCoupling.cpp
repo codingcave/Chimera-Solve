@@ -67,12 +67,40 @@ const std::string NearestNeighbourCouplingModule::getGUID() const
 
 AbstractCoupling* NearestNeighbourCouplingModule::getCoupling(chimera::vec_t_LuaItem& parameters) const
 {
-    if(parameters.size() >= 2 && parameters[0].getType() == chimera::systemtypes::PID_NUMBER && parameters[1].getType() == chimera::systemtypes::PID_NUMBER)
+    double sigma;
+    int count;
+
+    if(parameters.size() == 1 && parameters[0].getType() == chimera::systemtypes::PID_TABLE)
     {
-        double sigma = parameters[0];
-        int count = parameters[1];
+        bool inSigma = false;
+        bool inR = false;
+        chimera::map_t_LuaItem* paramMap = (chimera::map_t_LuaItem*)parameters[0].getValue();
+        for(auto p : *paramMap)
+        {
+            if(p.first == "sigma" && p.second.getType() == chimera::systemtypes::PID_NUMBER)
+            {
+                inSigma = true;
+                sigma = p.second;
+            }
+            if(p.first == "R" && p.second.getType() == chimera::systemtypes::PID_NUMBER)
+            {
+                inR = true;
+                count = p.second;
+            }
+        }
+        if(!(inSigma && inR))
+        {
+            return nullptr;
+        }
         return new NearestNeighbourCoupling(sigma, count);
     }
+    else if(parameters.size() >= 2 && parameters[0].getType() == chimera::systemtypes::PID_NUMBER && parameters[1].getType() == chimera::systemtypes::PID_NUMBER)
+    {
+        sigma = parameters[0];
+        count = parameters[1];
+        return new NearestNeighbourCoupling(sigma, count);
+    }
+
     return nullptr;
 }
 

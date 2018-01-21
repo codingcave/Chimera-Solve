@@ -19,6 +19,8 @@ class RungeKuttaModule:
     protected:
     private:
         chimera::EntryPoint* _init;
+        static constexpr double DEFAULT_DT = 0.1;
+        chimera::simulation::AbstractIntegrator* getSystem(const chimera::ParameterValue& param, const double& dt) const;
 };
 
 #endif // RUNGEKUTTAMODULE_H

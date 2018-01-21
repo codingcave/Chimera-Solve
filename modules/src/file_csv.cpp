@@ -99,7 +99,17 @@ chimera::simulation::IEventListenerProvider* CsvFileModule::getOutputInstance(ch
 {
     if(parameters.size() > 0)
     {
-        if(parameters[0].getType() == chimera::systemtypes::PID_STRING)
+        if(parameters.size() == 1 && parameters[0].getType() == chimera::systemtypes::PID_TABLE)
+        {
+            chimera::map_t_LuaItem* paramMap = (chimera::map_t_LuaItem*)parameters[0].getValue();
+            auto pathItem = paramMap->find("path");
+            if(pathItem != paramMap->end())
+            {
+                std::string* path = (std::string*)pathItem->second.getValue();
+                return new CsvFileWriter(getChimeraSystem()->getTypeSystem(), *path);
+            }
+        }
+        else if(parameters[0].getType() == chimera::systemtypes::PID_STRING)
         {
             std::string* path = (std::string*)parameters[0].getValue();
             return new CsvFileWriter(getChimeraSystem()->getTypeSystem(), *path);

@@ -24,6 +24,7 @@ namespace chimera {
         friend class ParameterReferenceString;
 
         public:
+            ParameterValue();
             ParameterValue(const ParameterValue& p);
             ParameterValue(const double& value);
             ParameterValue(const int& value);

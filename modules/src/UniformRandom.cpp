@@ -70,19 +70,60 @@ const size_t UniformRandomModule::getType() const
 
 chimera::simulation::AbstractRandom* UniformRandomModule::getRandomInstance(chimera::simulation::AbstractRandomGenerator* generator, chimera::vec_t_LuaItem& parameters) const
 {
-    if(parameters.size() != 2 ||
-        chimera::systemtypes::PID_NUMBER != parameters[0].getType() ||
-        chimera::systemtypes::PID_NUMBER != parameters[1].getType())
+    double min = 0.0;
+    double max;
+
+    if(parameters.size() == 1 && parameters[0].getType() == chimera::systemtypes::PID_TABLE)
     {
-        return nullptr;
+        bool inMax;
+        chimera::map_t_LuaItem* paramMap = (chimera::map_t_LuaItem*)parameters[0].getValue();
+        for(auto p : *paramMap)
+        {
+            if(p.first == "min" && p.second.getType() == chimera::systemtypes::PID_NUMBER)
+            {
+                min = p.second;
+            }
+            if(p.first == "max" && p.second.getType() == chimera::systemtypes::PID_NUMBER)
+            {
+                inMax = true;
+                max = p.second;
+            }
+        }
+        if(inMax && min < max)
+        {
+            return new UniformDistribution(generator, getChimeraSystem()->getTypeSystem(), min, max);
+        }
     }
-
-    double a = parameters[0];
-    double b = parameters[1];
-
-    if(a < b)
+    else
     {
-        return new UniformDistribution(generator, getChimeraSystem()->getTypeSystem(), a, b);
+        if((parameters.size() == 1 || parameters.size() == 2) && chimera::systemtypes::PID_NUMBER == parameters[0].getType())
+        {
+            if(parameters.size() == 2)
+            {
+                if(chimera::systemtypes::PID_NUMBER == parameters[1].getType())
+                {
+                    min = parameters[0];
+                    max = parameters[1];
+                }
+                else
+                {
+                    return nullptr;
+                }
+            }
+            else
+            {
+                max = parameters[0];
+                if(max < 0)
+                {
+                    min = max;
+                    max = 0;
+                }
+            }
+            if(min < max)
+            {
+                return new UniformDistribution(generator, getChimeraSystem()->getTypeSystem(), min, max);
+            }
+        }
     }
     return nullptr;
 }

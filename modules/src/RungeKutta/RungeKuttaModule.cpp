@@ -80,7 +80,7 @@ void RungeKuttaModule::load(chimera::EntryPoint const * const entryPoint, void c
     _init = (chimera::EntryPoint*)params;
 }
 
-chimera::simulation::AbstractIntegrator* RungeKuttaModule::getIntegratorInstance(chimera::vec_t_LuaItem& parameters) const
+chimera::simulation::AbstractIntegrator* RungeKuttaModule::getSystem(const chimera::ParameterValue& param, const double& dt) const
 {
     static const std::string vectorRealMetaName = (std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
     static const std::string vectorVectorRealMetaName = (std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
@@ -90,39 +90,76 @@ chimera::simulation::AbstractIntegrator* RungeKuttaModule::getIntegratorInstance
     static const size_t basetype = chimera::systemtypes::PID_INSTANCE;
     static const size_t tagtype = (size_t)(getChimeraSystem()->getEntryPointSystem()->getEntryPoint(chimera::simulation::Naming::EntryPoint_dynamics));
 
-    if(parameters.size() > 0) {
-        double dt = 0.1;
-        if(parameters.size() > 1 && parameters[1].getType() == chimera::systemtypes::PID_NUMBER)
-        {
-            dt = *((double*)parameters[1].getValue());
-            if(dt <= 0.0) dt = .1;
-        }
+    if(getChimeraSystem()->getTypeSystem()->getParameterBase(param.getType()) == basetype &&
+       getChimeraSystem()->getTypeSystem()->getParameterTag(param.getType()) == tagtype)
+    {
+        chimera::simulation::AbstractSystemDynamic* dyn = (chimera::simulation::AbstractSystemDynamic*)param.getValue();
+        auto features = dyn->getFeatures();
 
-        if(getChimeraSystem()->getTypeSystem()->getParameterBase(parameters[0].getType()) == basetype &&
-           getChimeraSystem()->getTypeSystem()->getParameterTag(parameters[0].getType()) == tagtype)
-        {
-            chimera::simulation::AbstractSystemDynamic* dyn = (chimera::simulation::AbstractSystemDynamic*)parameters[0].getValue();
-            auto features = dyn->getFeatures();
-
-            auto timeType = features.find(chimera::simulation::Naming::Feature_time_type);
-            auto stateType = features.find(chimera::simulation::Naming::Feature_state_type);
-            if(timeType != features.end() && stateType != features.end()) {
-                if(timeType->second == chimera::systemtypes::PID_NUMBER) {
-                    if(stateType->second == vectorRealType) {
-                        chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >* sys = dynamic_cast<chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >*>(dyn);
-                        if(sys != nullptr) {
-                            return new RungeKutta_double_vecDouble(getChimeraSystem()->getTypeSystem(), _init, sys, dt);
-                        }
+        auto timeType = features.find(chimera::simulation::Naming::Feature_time_type);
+        auto stateType = features.find(chimera::simulation::Naming::Feature_state_type);
+        if(timeType != features.end() && stateType != features.end()) {
+            if(timeType->second == chimera::systemtypes::PID_NUMBER) {
+                if(stateType->second == vectorRealType) {
+                    chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >* sys;
+                    sys = dynamic_cast<chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >*>(dyn);
+                    if(sys != nullptr) {
+                        return (chimera::simulation::AbstractIntegrator*)new RungeKutta_double_vecDouble(getChimeraSystem()->getTypeSystem(), _init, sys, dt);
                     }
-                    if(stateType->second == vectorVectorRealType) {
-                        chimera::simulation::TemplateOdeSystem<double, vec_vec_real>* sys = dynamic_cast<chimera::simulation::TemplateOdeSystem<double, vec_vec_real>*>(dyn);
-                        if(sys != nullptr) {
-                            return new RungeKutta_double_vecvecDouble(getChimeraSystem()->getTypeSystem(), _init, sys, dt);
-                            //std::cout << "RETURN new RungeKutta_double_vecvecDouble(sys, dt);" << std::endl;
-                        }
+                }
+                if(stateType->second == vectorVectorRealType) {
+                    chimera::simulation::TemplateOdeSystem<double, vec_vec_real>* sys;
+                    sys = dynamic_cast<chimera::simulation::TemplateOdeSystem<double, vec_vec_real>*>(dyn);
+                    if(sys != nullptr) {
+                        return (chimera::simulation::AbstractIntegrator*)new RungeKutta_double_vecvecDouble(getChimeraSystem()->getTypeSystem(), _init, sys, dt);
+                        //std::cout << "RETURN new RungeKutta_double_vecvecDouble(sys, dt);" << std::endl;
                     }
                 }
             }
+        }
+        return nullptr;
+    }
+}
+
+chimera::simulation::AbstractIntegrator* RungeKuttaModule::getIntegratorInstance(chimera::vec_t_LuaItem& parameters) const
+{
+    double dt = RungeKuttaModule::DEFAULT_DT;
+
+    if(parameters.size() == 1 && parameters[0].getType() == chimera::systemtypes::PID_TABLE)
+    {
+        chimera::ParameterValue pvSystem;
+        bool inSystem = false;
+        chimera::map_t_LuaItem* paramMap = (chimera::map_t_LuaItem*)parameters[0].getValue();
+        for(auto p : *paramMap)
+        {
+            if(p.first == "system")
+            {
+                inSystem = true;
+                pvSystem = p.second;
+            }
+            if(p.first == "h" && p.second.getType() == chimera::systemtypes::PID_NUMBER)
+            {
+                dt = p.second;
+                if(dt <= 0.0) dt = RungeKuttaModule::DEFAULT_DT;
+            }
+        }
+
+        if(!inSystem)
+        {
+            return nullptr;
+        }
+        return getSystem(pvSystem, dt);
+    }
+    else
+    {
+        if(parameters.size() > 0) {
+            if(parameters.size() > 1 && parameters[1].getType() == chimera::systemtypes::PID_NUMBER)
+            {
+                dt = *((double*)parameters[1].getValue());
+                if(dt <= 0.0) dt = RungeKuttaModule::DEFAULT_DT;
+            }
+
+            return getSystem(parameters[0], dt);
         }
     }
     return nullptr;

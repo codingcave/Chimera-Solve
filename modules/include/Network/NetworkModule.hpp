@@ -14,6 +14,8 @@ class NetworkModule:
         virtual void load(chimera::EntryPoint const * const entryPoint, void const * const params) override;
         virtual void unload() override;
     private:
+        chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >* getSystem(const chimera::ParameterValue& param) const;
+        TemplateCoupling<boost::numeric::ublas::vector<double> >* getCoupling(const chimera::ParameterValue& param) const;
         CouplingEntryPoint* _ep;
         const chimera::EntryPoint* _callingEP;
 };

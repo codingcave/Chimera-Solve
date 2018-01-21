@@ -178,6 +178,12 @@ chimera::ParameterValue chimera::ParameterReferenceString::getValue() const
     return ParameterValue(0, nullptr);
 }
 
+chimera::ParameterValue::ParameterValue()
+    :chimera::ParameterValue::ParameterValue(0, nullptr)
+{
+
+}
+
 chimera::ParameterValue::ParameterValue(chimera::ChimeraSystem* cmSys, size_t type, void* value)
 {
     if(type == 0 || value == nullptr)

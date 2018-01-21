@@ -47,16 +47,45 @@ HarmonicOscillatorModule::HarmonicOscillatorModule()
 
 void* HarmonicOscillatorModule::getInstance(chimera::vec_t_LuaItem& parameters) const
 {
+    bool inA = false;
+    bool inB = false;
     double a = 0.0;
     double b = 0.0;
 
-    if(parameters.size() > 0 && chimera::systemtypes::PID_NUMBER == parameters[0].getType())
+    if(parameters.size() == 1 && parameters[0].getType() == chimera::systemtypes::PID_TABLE)
     {
-        a = parameters[0];
+        chimera::map_t_LuaItem* paramMap = (chimera::map_t_LuaItem*)parameters[0].getValue();
+        for(auto p : *paramMap)
+        {
+            if(p.first == "a" && p.second.getType() == chimera::systemtypes::PID_NUMBER)
+            {
+                inA = true;
+                a = p.second;
+            }
+            if(p.first == "b" && p.second.getType() == chimera::systemtypes::PID_NUMBER)
+            {
+                inB = true;
+                b = p.second;
+            }
+        }
     }
-    if(parameters.size() > 1 && chimera::systemtypes::PID_NUMBER == parameters[1].getType())
+    else
     {
-        b = parameters[1];
+        if(parameters.size() > 0 && chimera::systemtypes::PID_NUMBER == parameters[0].getType())
+        {
+            inA = true;
+            a = parameters[0];
+        }
+        if(parameters.size() > 1 && chimera::systemtypes::PID_NUMBER == parameters[1].getType())
+        {
+            inB = true;
+            b = parameters[1];
+        }
+    }
+
+    if(!(inA && inB))
+    {
+        return nullptr;
     }
 
     return new HarmonicOscillator(getChimeraSystem()->getTypeSystem(), a, b);
