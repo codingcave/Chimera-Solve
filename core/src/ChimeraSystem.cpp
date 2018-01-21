@@ -1,4 +1,5 @@
 #include <iostream>
+#include <map>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -216,4 +217,9 @@ void chimera::ChimeraSystem::notifyItemUnloaded(StateSynchrony* sender, void con
 const std::string chimera::ChimeraSystem::getGUID() const
 {
     return "Chimerasystem";
+}
+
+void chimera::ChimeraSystem::setLogLevel(const unsigned int& loglevel)
+{
+    _loggingSys->setLogLevel(loglevel);
 }

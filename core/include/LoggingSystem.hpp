@@ -2,20 +2,22 @@
 #define LOGGINGSYSTEM_H
 
 namespace chimera {
-    typedef std::vector<ILogger*> vec_t_logList;
+    typedef std::map<unsigned int, std::vector<chimera::ILogger*> > vec_t_logList;
 
     class LoggingSystem
     {
+        friend class ChimeraSystem;
         public:
             LoggingSystem();
             virtual ~LoggingSystem();
-            void Log(const std::string& message);
-            void Warning(const std::string& message);
-            void Error(const std::string& message);
-            void AddLogger(ILogger* logger);
-            bool RemoveLogger(ILogger* logger);
+            void log(const unsigned int& level, const std::string& message);
+            void debug(const std::string& message);
+            void addLogger(const unsigned int& level, chimera::ILogger* logger);
+            bool removeLogger(chimera::ILogger* logger);
         private:
-            vec_t_logList *_logList;
+            vec_t_logList* _logList;
+            unsigned int _loglevel;
+            void setLogLevel(const unsigned int& loglevel);
     };
 }
 

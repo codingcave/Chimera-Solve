@@ -51,6 +51,7 @@ namespace chimera {
             void pushLibrary(const std::string& name, lua_CFunction createMetaTable);
             size_t registerParameter(const std::string& name, const struct T_ParameterDef& pdef, size_t base, size_t tag);
             size_t registerParameter(const std::string& name, const struct T_ParameterDef& pdef);
+            void setLogLevel(const unsigned int& loglevel);
         private:
 
             lua_State* _L;

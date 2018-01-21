@@ -1,5 +1,5 @@
-/*
 #include <iostream>
+#include <map>
 #include <vector>
 
 #include "Naming.hpp"
@@ -17,18 +17,12 @@ StandardLogger::~StandardLogger()
 
 }
 
-void StandardLogger::CreateLog(const std::string& message)
+void StandardLogger::LogMessage(const std::string& message)
 {
-    std::cout << Naming::Logging_log << message << std::endl;
+    std::cerr << message << std::endl;
 }
 
-void StandardLogger::CreateWarning(const std::string& message)
+bool StandardLogger::bouble() const
 {
-    std::cout << Naming::Logging_warning << message << std::endl;
+    return true;
 }
-
-void StandardLogger::CreateError(const std::string& message)
-{
-    std::cout << Naming::Logging_error << message << std::endl;
-}
-*/

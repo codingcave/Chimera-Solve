@@ -1,18 +1,17 @@
 #ifndef STANDARDLOGGER_H
 #define STANDARDLOGGER_H
 
-/*
-class StandardLogger:public LoggingSystem
+
+class StandardLogger:public chimera::ILogger
 {
     public:
         StandardLogger();
         virtual ~StandardLogger();
+        virtual void LogMessage(const std::string& message) override;
+        virtual bool bouble() const override;
     protected:
-        void CreateLog(const std::string& message) override;
-        void CreateWarning(const std::string& message) override;
-        void CreateError(const std::string& message) override;
     private:
 };
-*/
+
 
 #endif // STANDARDLOGGER_H

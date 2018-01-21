@@ -1,4 +1,5 @@
 #include <iostream>
+#include <map>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -54,6 +55,7 @@ void chimera::Module::loadModule(EntryPoint const * const entryPoint, const std:
 {
     if(!isLoaded())
     {
+        if(_cmSys) _cmSys->getLoggingSystem()->debug("Loading Module `" + name + "`");
         _cmSys = entryPoint->getChimeraSystem();
         load(entryPoint, params);
         stateLoaded(&name);

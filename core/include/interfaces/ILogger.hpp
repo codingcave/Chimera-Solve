@@ -7,9 +7,8 @@ namespace chimera {
         public:
             ILogger() {}
             virtual ~ILogger() {}
-            virtual void CreateLog(const std::string& message) = 0;
-            virtual void CreateWarning(const std::string& message) = 0;
-            virtual void CreateError(const std::string& message) = 0;
+            virtual void LogMessage(const std::string& message) = 0;
+            virtual bool bouble() const = 0;
         protected:
         private:
     };

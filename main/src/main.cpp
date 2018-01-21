@@ -1,6 +1,8 @@
 #include <iostream>
 #include <unordered_map>
 #include <unordered_set>
+#include <map>
+#include <set>
 #include <vector>
 #include <utility>
 #include <complex>
@@ -35,7 +37,7 @@
 #include "ModuleLoader.hpp"
 #include "ChimeraRuntime.hpp"
 
-//#include "StandardLogger.hpp"
+#include "StandardLogger.hpp"
 #include "EntryPoints/SystemDynamicEntryPoint.hpp"
 #include "EntryPoints/IntegratorEntryPoint.hpp"
 #include "EntryPoints/OutputEntryPoint.hpp"
@@ -65,7 +67,6 @@ int main(int argc, char** argv)
     full_path /= chimera::runtime::Naming::Path_modules;
 
     chimera::runtime::vec_t_pathList lookup;
-
     lookup.push_back(full_path.string());
     // add all paths of env NETWORK_INCLUDE_PATH
 
@@ -79,8 +80,12 @@ int main(int argc, char** argv)
         vargv.push_back(argv[i]);
     }
 
+    StandardLogger* stdLog = new StandardLogger();
+
     std::string filename(argv[1]);
     chimera::runtime::ChimeraRuntime* runtime = new chimera::runtime::ChimeraRuntime(filename, vargv, &loader);
+
+    runtime->getLoggingSystem()->addLogger(0, stdLog);
 
     //if(luaL_dofile(runtime->getLuaState(), filename.c_str()))
     //{
