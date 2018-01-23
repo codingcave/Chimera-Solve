@@ -6,12 +6,14 @@
 #include <complex>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
+#include <pwd.h>
 #include "lua.hpp"
 
 #include "Naming.hpp"
 #include "RuntimeNames.hpp"
 #include "StateSynchrony.hpp"
 #include "interfaces/ILogger.hpp"
+#include "interfaces/IModulePathProvider.hpp"
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
@@ -34,6 +36,8 @@
 #include "types/lua_basetypes.hpp"
 #include "ModuleLoader.hpp"
 #include "ChimeraRuntime.hpp"
+#include "Configuration.hpp"
+#include "ModuleLoader/FilesystemLoader.hpp"
 
 //#include "StandardLogger.hpp"
 #include "EntryPoints/SystemDynamicEntryPoint.hpp"
@@ -47,29 +51,42 @@ const std::string version("1.0.0");
 
 int main(int argc, char** argv)
 {
-    // --help
-    // --help module
-    // --help module str1 str2 ...
-    // --version print version
+    Configuration conf;
 
-    // -L load module, that does not belong to a EntryPoint, containing Types and EntryPoints
-    // --load=path to module
+    const std::string etcPath = "/etc/chimera/solver.ini";
+    conf.load(etcPath);
 
-    // -I include in path lookup
-    // --lookup=path to lookup
+    passwd* pw = getpwuid(getuid());
+    if(pw != nullptr)
+    {
+        fs::path userConf1 = fs::system_complete( fs::path( pw->pw_dir ) );
+        userConf1 /= ".config/chimera/solver.ini";
+        conf.load(userConf1.string());
+
+        fs::path userConf2 = fs::system_complete( fs::path( pw->pw_dir ) );
+        userConf2 /= ".local/share/chimera/solver.ini";
+        conf.load(userConf2.string());
+    }
+
 
     fs::path data_dir(fs::current_path());
-    fs::path full_path( fs::initial_path<fs::path>() );
+    FilesystemLoader* currentPath = nullptr;
+    FilesystemLoader* scriptPath = nullptr;
+    currentPath = new FilesystemLoader(data_dir.string());
+    conf.addLoader("current_path", currentPath);
 
-    full_path = fs::system_complete( fs::path( argv[0] ).parent_path() );
-    full_path /= chimera::runtime::Naming::Path_modules;
+    if(argc > 1 && fs::exists(fs::path( argv[1] )))
+    {
+        fs::path full_path( fs::initial_path<fs::path>() );
+        full_path = fs::system_complete( fs::path( argv[1] ).parent_path() );
+        //full_path /= chimera::runtime::Naming::Path_modules;
+        scriptPath = new FilesystemLoader(full_path.string());
+    }
 
-    chimera::runtime::vec_t_pathList lookup;
-
-    lookup.push_back(full_path.string());
+    //lookup.push_back(full_path.string());
     // add all paths of env NETWORK_INCLUDE_PATH
 
-    chimera::runtime::ModuleLoader loader(lookup);
+    chimera::runtime::ModuleLoader loader(*conf.getLoaders());
 
     //StandardLogger stdLog;
     //LoggingSystem::AddLogger(&stdLog);

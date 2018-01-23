@@ -9,6 +9,7 @@
 #include "RuntimeNames.hpp"
 #include "StateSynchrony.hpp"
 #include "interfaces/ILogger.hpp"
+#include "interfaces/IModulePathProvider.hpp"
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
@@ -50,33 +51,26 @@ chimera::Module* const chimera::runtime::ModuleLoader::load(const std::string& n
     if ( available == _modulePtr->end() ) // if not loaded
     {
         // check all lookup directories for module
-        for (std::vector<std::string>::iterator it = _importLookup->begin() ; it != _importLookup->end(); ++it) {
-            fs::path loadDir(*it);
-            if(fs::exists(loadDir) && fs::is_directory(loadDir))
+        for (auto it = _importLookup->begin() ; it != _importLookup->end(); ++it) {
+            std::string pathName = it->second->getFileName(name);
+            if(pathName.empty())
             {
-                fs::path modulePath(loadDir);
-                std::string modName(chimera::runtime::Naming::Module_prefix);
-                modName += name;
-                modName += chimera::runtime::Naming::Module_extension;
-                modulePath /= modName;
-
-                if(fs::exists(modulePath) && !fs::is_directory(modulePath))
-                {
-                    // if matching module file name was found, try opening
-                    // the library
-                    //lib_handle = dlopen(modulePath.string().c_str(), RTLD_LAZY);
-                    lib_handle = dlopen(modulePath.string().c_str(), RTLD_LAZY|RTLD_GLOBAL);
-                    // library was opened successfully:
-                    // add to open libraries
-                    if (lib_handle)
-                    {
-                        break;
-                    }
-                }
+                continue;
             }
-            else
+
+            fs::path modulePath(pathName);
+            if(fs::exists(modulePath) && !fs::is_directory(modulePath))
             {
-                // warning: directory cannot be searched
+                // if matching module file name was found, try opening
+                // the library
+                //lib_handle = dlopen(modulePath.string().c_str(), RTLD_LAZY);
+                lib_handle = dlopen(modulePath.string().c_str(), RTLD_LAZY|RTLD_GLOBAL);
+                // library was opened successfully:
+                // add to open libraries
+                if (lib_handle)
+                {
+                    break;
+                }
             }
         }
     } else {

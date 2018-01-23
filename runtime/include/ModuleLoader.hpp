@@ -8,8 +8,9 @@ namespace chimera {
     class Module;
 
     namespace runtime {
+        class IModulePathProvider;
 
-        typedef std::vector<std::string> vec_t_pathList;
+        typedef std::vector<std::pair<std::string, IModulePathProvider*> > vec_t_pathList;
 
         typedef chimera::Module* (*fn_create_mod) ();
         typedef void (*fn_delete_mod) (chimera::Module*);
@@ -37,9 +38,9 @@ namespace chimera {
                 void unloadAll();
             protected:
             private:
-                std::vector<std::string> *_importLookup;
-                map_t_ModuleItem *_modulePtr;
-                map_t_ModuleRegistry *_moduleReg;
+                vec_t_pathList* _importLookup;
+                map_t_ModuleItem* _modulePtr;
+                map_t_ModuleRegistry* _moduleReg;
         };
     }
 }

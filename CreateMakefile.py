@@ -106,7 +106,7 @@ dependencies = {
 }
 
 phony = {
-	'unique': ['clean'],
+	'unique': ['clean', 'install', 'uninstall'],
 	'target': ['before', 'after', 'clean']
 }
 
@@ -333,6 +333,34 @@ with open(makefile, 'w') as f:
 	for t in targets:
 		f.write(' clean_' + t)
 	f.write('\n\n')
+
+	f.write('install:\n')
+	f.write('\ttest -d bin/Release || exit 1\n')
+	f.write('\ttest -d /usr/local/bin || mkdir -p /usr/local/bin\n')
+	f.write('\tcp bin/Release/$(EXE_NAME) /usr/local/bin/chimera\n')
+	f.write('\tchmod +x /usr/local/bin/chimera\n')
+	f.write('\ttest -d /usr/local/lib || mkdir -p /usr/local/lib\n')
+	f.write('\tcp bin/Release/*.so /usr/local/lib/\n')
+	f.write('\tldconfig\n')
+	f.write('\tcp -R bin/Release/modules /usr/local/lib/chimera-modules\n')
+	f.write('\ttest -d /etc/chimera || mkdir -p /etc/chimera\n')
+	f.write('\techo "LogLevel=Error" > /etc/chimera/solver.ini\n')
+	f.write('\techo "" >> /etc/chimera/solver.ini\n')
+	f.write('\techo "[Filesystem]" >> /etc/chimera/solver.ini\n')
+	f.write('\techo "type=filesystem" >> /etc/chimera/solver.ini\n')
+	f.write('\techo "path=/usr/local/lib/chimera-modules" >> /etc/chimera/solver.ini\n')
+	f.write('\n')
+	
+	f.write('uninstall:\n')
+	f.write('\trm -rf /usr/local/bin/chimera\n')
+	f.write('\trm -rf /usr/local/lib/chimera-modules\n')
+	f.write('\trm -rf /usr/local/lib/libchimera.so\n')
+	f.write('\trm -rf /usr/local/lib/liblua.so\n')
+	f.write('\trm -rf /usr/local/lib/libmodule.so\n')
+	f.write('\trm -rf /usr/local/lib/libruntime.so\n')
+	f.write('\tldconfig\n')
+	f.write('\n')
+
 
 	f.write('.PHONY:')
 	for pt in phony['unique']:
