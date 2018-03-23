@@ -44,7 +44,7 @@ kuramoto = dynamics("Kuramoto")
 -- output module: CSV file
 -- first item time
 -- each following 2 columns correspond to the i-th node
-file = output("file_csv")("nour_1.csv")
+file = output("file_csv")("data.csv")
 
 -- load network, load coupling EntryPoint
 network = dynamics("Network")
