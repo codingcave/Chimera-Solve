@@ -12,7 +12,9 @@
 #include "StateSynchrony.hpp"
 #include "Module.hpp"
 #include "interfaces/IEventListener.hpp"
-#include "event/EventManager.hpp"
+#include "event/Observer.hpp"
+#include "EntryPointBase/AbstractEventProvider.hpp"
+#include "event/DefaultEventProvider.hpp"
 #include "NotificationManager.hpp"
 #include "EntryPointBase/OutputModule.hpp"
 

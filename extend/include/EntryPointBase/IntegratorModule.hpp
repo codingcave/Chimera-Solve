@@ -3,6 +3,8 @@
 
 namespace chimera {
     namespace simulation {
+        class AbstractIntegrator;
+
         class IntegratorModule:
             public chimera::Module
         {

@@ -24,9 +24,9 @@
 #include "ChimeraSystem.hpp"
 #include "interfaces/IEventListener.hpp"
 #include "interfaces/IEventListenerProvider.hpp"
-#include "event/EventManager.hpp"
-#include "event/StateEventListener.hpp"
-#include "NotificationManager.hpp"
+//#include "event/Observer.hpp"
+//#include "event/StateEventListener.hpp"
+//#include "NotificationManager.hpp"
 #include "Network/AbstractCoupling.hpp"
 #include "Network/TemplateCoupling.hpp"
 #include "Network/CouplingModule.hpp"
@@ -116,8 +116,16 @@ NearestNeighbourCoupling::~NearestNeighbourCoupling()
 
 }
 
-void NearestNeighbourCoupling::operator()(const boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >& system, int i, int j, boost::numeric::ublas::vector<double>& out)
+void NearestNeighbourCoupling::operator()(const boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >& system, const double& t, const int& i, boost::numeric::ublas::vector<double>& out)
 {
+    int j;
+    int N = system.size();
+    int k = out.size();
+    for(j = 0; j < k; j++)
+    {
+        out[k] = 0;
+    }
+    /*
     if(abs(i - j) <= _count && i != j)
     {
         for(unsigned int n = 0; n < out.size(); n++)
@@ -129,5 +137,5 @@ void NearestNeighbourCoupling::operator()(const boost::numeric::ublas::vector<bo
         {
             out[n] = 0;
         }
-    }
+    }*/
 }

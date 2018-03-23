@@ -54,8 +54,14 @@ int main(int argc, char** argv)
     Configuration conf;
 
     const std::string etcPath = "/etc/chimera/solver.ini";
+#define DEBUG
+#ifdef DEBUG
+    fs::path modPath = fs::system_complete( fs::path( "./modules" ) );
+    FilesystemLoader* dbgPath = nullptr;
+    dbgPath = new FilesystemLoader(modPath.string());
+    conf.addLoader("current_path", dbgPath);
+#else
     conf.load(etcPath);
-
     passwd* pw = getpwuid(getuid());
     if(pw != nullptr)
     {
@@ -67,6 +73,7 @@ int main(int argc, char** argv)
         userConf2 /= ".local/share/chimera/solver.ini";
         conf.load(userConf2.string());
     }
+#endif // DEBUG
 
 
     fs::path data_dir(fs::current_path());

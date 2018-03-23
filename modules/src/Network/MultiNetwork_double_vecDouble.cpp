@@ -31,42 +31,48 @@
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/TemplateOdeSystem.hpp"
 #include "EntryPointBase/SystemDynamicModule.hpp"
-#include "Network/Network_double_vecDouble.hpp"
+#include "Network/MultiNetwork_double_vecDouble.hpp"
 
-Network_double_vecDouble::Network_double_vecDouble(chimera::ParameterTypeSystem* ps, chimera::ParameterValue& unit, const int& number, chimera::ParameterValue& coupling):
-    _ps(ps)
+MultiNetwork_double_vecDouble::MultiNetwork_double_vecDouble(
+    chimera::ParameterTypeSystem* ps,
+    chimera::Module* unitModule,
+    std::vector<chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >*>& units,
+    chimera::ParameterValue& coupling):
+        _ps(ps)
 {
-    _unitSys = (chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >*)unit.getValue();
-    _unitValue = new chimera::ParameterValue(unit);
-    _number = number;
+    _unitSystems = new std::vector<chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >*>(units);
+    _unitModule = unitModule;
+    _number = units.size();
     _coupling = (TemplateCoupling<double, boost::numeric::ublas::vector<double> >*)coupling.getValue();
     _couplingValue = new chimera::ParameterValue(coupling);
-    auto unitFeatures = _unitSys->getFeatures();
+    auto unitFeatures = ((*_unitSystems)[0])->getFeatures();
     auto unitSize = unitFeatures.find(chimera::simulation::Naming::Feature_size);
     _tmp = nullptr;
     if(unitSize != unitFeatures.end())
     {
         _tmp = new boost::numeric::ublas::vector<double>(unitSize->second);
     }
-
 }
 
-Network_double_vecDouble::~Network_double_vecDouble()
+MultiNetwork_double_vecDouble::~MultiNetwork_double_vecDouble()
 {
-    delete _unitValue;
+    for(auto ptr : *_unitSystems)
+    {
+        delete ptr;
+    }
+    delete _unitSystems;
     delete _couplingValue;
     if(_tmp) delete _tmp;
 }
 
-void Network_double_vecDouble::operator()(const boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >& x, boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >& dxdt, const double& t)
+void MultiNetwork_double_vecDouble::operator()(const boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >& x, boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >& dxdt, const double& t)
 {
-    //boost::numeric::ublas::vector<double> tmp(x[0].size());
     unsigned int vSize = dxdt.size();
     //std::cout << " >>step: " << t << std::endl;
     for(unsigned int i = 0; i < vSize; i++)
     {
         dxdt[i].resize(x[i].size());
-        (*_unitSys)(x[i], dxdt[i], t);
+        (*(*_unitSystems)[i])(x[i], dxdt[i], t);
 
         (*_coupling)(x, t, i, *_tmp);
         for(unsigned int inner = 0; inner < x[i].size(); inner++)
@@ -76,7 +82,7 @@ void Network_double_vecDouble::operator()(const boost::numeric::ublas::vector<bo
     }
 }
 
-std::unordered_map<std::string, size_t> Network_double_vecDouble::getFeatures() const
+std::unordered_map<std::string, size_t> MultiNetwork_double_vecDouble::getFeatures() const
 {
     std::unordered_map<std::string, size_t> features;
     static const std::string vectorRealMetaName = (std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
@@ -84,7 +90,7 @@ std::unordered_map<std::string, size_t> Network_double_vecDouble::getFeatures() 
     features[chimera::simulation::Naming::Feature_state_type] = _ps->getParameterID(vectorRealMetaName);
     features[chimera::simulation::Naming::Feature_size] = _number;
 
-    auto unitFeatures = _unitSys->getFeatures();
+    auto unitFeatures = ((*_unitSystems)[0])->getFeatures();
     auto unitSize = unitFeatures.find(chimera::simulation::Naming::Feature_size);
     if(unitSize != unitFeatures.end())
     {
@@ -93,7 +99,7 @@ std::unordered_map<std::string, size_t> Network_double_vecDouble::getFeatures() 
     return features;
 }
 
-const std::string Network_double_vecDouble::getSystemName() const
+const std::string MultiNetwork_double_vecDouble::getSystemName() const
 {
     return "ode";
 }

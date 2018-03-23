@@ -3,7 +3,6 @@
 #include <unordered_set>
 #include <vector>
 #include <list>
-#include "lua.hpp"
 
 #include "ExtensionNaming.hpp"
 #include "StateSynchrony.hpp"
@@ -20,33 +19,33 @@
 #include "event/DefaultEventProvider.hpp"
 #include "event/NotificationManager.hpp"
 #include "EntryPoint.hpp"
-#include "EntryPointBase/AbstractSystemDynamic.hpp"
-#include "EntryPointBase/AbstractInitializer.hpp"
-#include "EntryPointBase/InitializerModule.hpp"
-#include "EntryPoints/InitializerEntryPoint.hpp"
+//#include "EntryPointBase/AbstractSystemDynamic.hpp"
+//#include "EntryPointBase/AbstractInitializer.hpp"
+#include "EntryPointBase/ObserverModule.hpp"
+#include "EntryPoints/ObserverEntryPoint.hpp"
 
-chimera::runtime::InitializerEntryPoint::InitializerEntryPoint()
+chimera::runtime::ObserverEntryPoint::ObserverEntryPoint()
 {
     //ctor
 }
 
-chimera::runtime::InitializerEntryPoint::~InitializerEntryPoint()
+chimera::runtime::ObserverEntryPoint::~ObserverEntryPoint()
 {
     //dtor
 }
 
-const std::string chimera::runtime::InitializerEntryPoint::getGUID() const
+const std::string chimera::runtime::ObserverEntryPoint::getGUID() const
 {
     return chimera::simulation::Naming::EntryPoint_initilizer;
 }
 
-const std::string chimera::runtime::InitializerEntryPoint::getVersion() const
+const std::string chimera::runtime::ObserverEntryPoint::getVersion() const
 {
     return "1.0.0";
 }
 
-bool chimera::runtime::InitializerEntryPoint::checkModule(chimera::Module const * const module) const
+bool chimera::runtime::ObserverEntryPoint::checkModule(chimera::Module const * const module) const
 {
-    const chimera::simulation::InitializerModule* modcast = dynamic_cast<const chimera::simulation::InitializerModule*>(module);
+    const chimera::simulation::ObserverModule* modcast = dynamic_cast<const chimera::simulation::ObserverModule*>(module);
     return modcast != nullptr;
 }

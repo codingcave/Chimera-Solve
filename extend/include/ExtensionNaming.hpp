@@ -10,6 +10,7 @@ namespace chimera {
             const char * const EntryPoint_integrator = "integrator";
             const char * const EntryPoint_output = "output";
             const char * const EntryPoint_random = "random";
+            const char * const EntryPoint_observer = "observer";
 
             const char * const Feature_state_type = "state_type";
             const char * const Feature_time_type = "time_type";

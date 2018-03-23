@@ -1,45 +1,80 @@
 #!/home/kekstoaster/Programming/C++/NetworkSimulation/bin/Debug/run.sh
---print(#argv, "::", argv[0], argv[1])
 
--- Random Module to generate uniform numbers frm -5 to 5
-rnd = random("UniformRandom"){min=-5, max=5}
+PI = 3.141592654
+delta_w = 0.09
+N = 50
+sigma = 1
+alpha = 0.3 * PI
+beta = -0.53 * PI
+epsilon = 1e-2
 
--- Initializer, using the random instace, for initilizing start conditions
---rndInit = init("RandomInitializer")(rnd)
-rndInit = init("RandomInitializer"){engine=rnd}
+print("Start new simulation")
+print("Delta:", delta_w)
+print("N:", N)
+print("Sigma:", sigma)
+print("Alpha:", alpha / PI, "π")
+print("Beta:", beta / PI, "π")
+print("Epsilon:", epsilon)
 
--- load all modules and create them with parameters
---oscillator = dynamics("FitzHughNagumo"){a = 1.0, epsilon=0.7}
---oscillator = dynamics("HarmonicOscillator")(4.0, .7)
-oscillator = dynamics("HarmonicOscillator"){a=4.0, b=.7}
--- integrator for the system
---rk = integrator("RungeKutta")(oscillator, 0.01)
+-- uniform random distribution for initialization
+rndX1 = random("UniformRandom"){min=-1, max=1}
+rnd2Pi = random("UniformRandom"){min=0, max=2*PI}
+rndDelta = random("UniformRandom"){min=-delta_w, max=delta_w}
+
+-- function for initialization
+-- i - number or oszillator
+-- j - element of sozillator
+function sysInit(i, j)
+    local nx
+    if j == 0 then
+        nx = rnd2Pi.next()
+    else
+        nx = rndX1.next()
+    end
+    return nx
+end
+
+-- Initializer, using the random distributions, for initilizing start conditions
+-- first element omega has different distibution than other elements
+funcInit = init("FunctionInitializer")(sysInit)
+
+-- Module for Kuramoto oszillators
+kuramoto = dynamics("Kuramoto")
+
 -- output module: CSV file
 -- first item time
 -- each following 2 columns correspond to the i-th node
-file = output("file_csv")("test.csv")
+file = output("file_csv")("nour_1.csv")
 
 -- load network, load coupling EntryPoint
 network = dynamics("Network")
 
--- use nearest neighbour coupling, strength 1, 3 nodes left and right
--- no self coupling
-nnc = coupling("NearestNeighbourCoupling"){sigma=1, R=2}
+-- use Kuramoto coupling, for Kuramoto oszillators
+kc = coupling("KuramotoCoupling"){sigma=sigma, alpha=alpha, beta=beta, epsilon=epsilon}
 
---netw = network(oscillator, 50, nnc)
-netw = network{N=50, coupling=nnc, oscillator=oscillator}
+-- create a new network of N elements, with Kuramoto coupling
+-- initialize all N osizllators with random omega from rndDelta
+netw = network{N=N, coupling=kc, oscillator=kuramoto, init={omega = rndDelta, N=N}}
 
---rk = integrator("RungeKutta")(netw, 0.01)
-rk = integrator("RungeKutta"){system=netw, h=0.01}
+-- new Runge Kutta integrator
+rk = integrator("RungeKutta"){system=netw, h=0.05}
 
--- new simulation
-sim = simulation(rk, rndInit)
+-- new simulation, initialized with sysInit function above
+sim = simulation(rk, funcInit)
 
--- register output on every step
-sim.onstep(file)
+-- create an observer starting at 49000 time units, record every full unit that is calculated
+evt1 = observer("TimedObserver"){start=49000, step=1}
+-- observe this event on this simulation
+sim.observe(evt1)
 
--- start the simulation
-x = sim.start(20)
+-- register CSV output on every step, consumes a lot of resources
+--sim.onstep(file)
 
--- last step
+-- register CSV output for every full unit after starting time units have passed
+sim.onelapsed(file)
+
+-- start the simulation, for 51000 time units
+x = sim.start(50001)
+
+-- print last step
 print(x)

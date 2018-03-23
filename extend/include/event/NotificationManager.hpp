@@ -3,6 +3,7 @@
 
 namespace chimera {
     namespace simulation {
+        class AbstractEventProvider;
         class IEventListener;
         class IEventListenerProvider;
 
@@ -11,7 +12,7 @@ namespace chimera {
             public:
                 NotificationManager();
                 virtual ~NotificationManager();
-                void registerEvent(const std::string& name, Observer* evList);
+                void registerEvent(const std::string& name, chimera::simulation::Observer* evList);
                 void registerEvent(AbstractEventProvider* eventProvider);
                 void notifyEvent(const std::string& name);
                 void notifyAll();
@@ -19,12 +20,12 @@ namespace chimera {
                 void addListener(const std::string& name, IEventListenerProvider* listener);
                 void removeListener(const std::string& name, IEventListener* listener);
                 bool hasEvent(const std::string& name) const;
-                Observer* getObserver(const std::string& name);
+                chimera::simulation::Observer* getObserver(const std::string& name);
             protected:
             private:
-                std::unordered_map<std::string, size_t>* _listenerMap;
+                std::unordered_map<std::string, size_t>* _observerMap;
                 std::vector<DefaultEventProvider*>* _defaultProvider;
-                std::vector<AbstractEventProvider*>* _listener;
+                std::vector<AbstractEventProvider*>* _provider;
                 std::vector<Observer*>* _observer;
         };
     }

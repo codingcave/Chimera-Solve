@@ -17,7 +17,7 @@ class RungeKutta_double_vecvecDouble:
         RungeKutta_double_vecvecDouble(chimera::ParameterTypeSystem* ps, chimera::EntryPoint* init, chimera::simulation::TemplateOdeSystem<double, vec_vec_real>* system, double dt);
         //RungeKutta_double_vecvecDouble();
         virtual ~RungeKutta_double_vecvecDouble();
-        virtual bool nextStep() override;
+        virtual void nextStep() override;
         virtual size_t getTimeType() const override;
         virtual size_t getStateType() const override;
         virtual const double& getTime() const override;
@@ -27,6 +27,7 @@ class RungeKutta_double_vecvecDouble:
         virtual void * currentState() override;
         virtual void initialize(chimera::vec_t_LuaItem args) override;
         virtual void start(chimera::vec_t_LuaItem args) override;
+        virtual bool finished() const override;
     protected:
     private:
         chimera::ParameterTypeSystem* _ps;

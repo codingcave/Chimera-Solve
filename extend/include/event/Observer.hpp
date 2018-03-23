@@ -5,20 +5,19 @@ namespace chimera {
     namespace simulation {
         class IEventListener;
         class IEventListenerProvider;
+        class NotificationManager;
 
-        class EventManager
+        class Observer
         {
             public:
-                EventManager();
-                EventManager(void* owner);
-                virtual ~EventManager();
-                virtual void trigger(void* sender, void* args) = 0;
+                Observer();
+                virtual ~Observer();
+                virtual void trigger(NotificationManager* sender, void* args) = 0;
                 virtual void addListener(chimera::simulation::IEventListener* listener) = 0;
                 virtual void addListener(chimera::simulation::IEventListenerProvider* listener) = 0;
                 virtual void removeListener(chimera::simulation::IEventListener* listener) = 0;
-                virtual void const * const getOwner() const;
+                virtual bool empty() const = 0;
             protected:
-                void* _owner;
             private:
         };
     }

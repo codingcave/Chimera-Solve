@@ -1,14 +1,14 @@
-#ifndef NETWORK_H
-#define NETWORK_H
+#ifndef MULTINETWORK_DOUBLE_VECDOUBLE_H
+#define MULTINETWORK_DOUBLE_VECDOUBLE_H
 
-class Network_double_vecDouble:
+class MultiNetwork_double_vecDouble:
     //template<typename time_type, typename state_type>
     public chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> > >
 {
     public:
-        Network_double_vecDouble(chimera::ParameterTypeSystem* ps, chimera::ParameterValue& unit, const int& number, chimera::ParameterValue& coupling);
+        MultiNetwork_double_vecDouble(chimera::ParameterTypeSystem* ps, chimera::Module* unitModule, std::vector<chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >*>& units, chimera::ParameterValue& coupling);
 
-        virtual ~Network_double_vecDouble();
+        virtual ~MultiNetwork_double_vecDouble();
 
         virtual void operator()(const boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >& x, boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >& dxdt, const double& t) override;
 
@@ -17,12 +17,12 @@ class Network_double_vecDouble:
     protected:
     private:
         chimera::ParameterTypeSystem* _ps;
-        chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >* _unitSys;
-        chimera::ParameterValue* _unitValue;
+        chimera::Module* _unitModule;
+        std::vector<chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >*>* _unitSystems;
         int _number;
         TemplateCoupling<double, boost::numeric::ublas::vector<double> >* _coupling;
         chimera::ParameterValue* _couplingValue;
         boost::numeric::ublas::vector<double>* _tmp;
 };
 
-#endif // NETWORK_H
+#endif // MULTINETWORK_DOUBLE_VECDOUBLE_H

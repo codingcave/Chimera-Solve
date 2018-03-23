@@ -59,7 +59,7 @@ namespace chimera {
         private:
             friend int chimera::lua_UserData_gc(lua_State* L);
             friend int chimera::luat_luafunction_call(lua_State* L);
-            friend void chimera::luat_table_push(lua_State* const L, void * const value, const int& type);
+            friend int chimera::luat_table_push(lua_State* const L);
             friend int chimera::lua_Module_call(lua_State* L);
             friend int chimera::lua_Instance_forwardMethod(lua_State* L);
             ChimeraSystem* _chimeraSystem;

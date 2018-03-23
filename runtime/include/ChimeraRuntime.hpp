@@ -9,6 +9,7 @@ namespace chimera {
         class IntegratorEntryPoint;
         class OutputEntryPoint;
         class RandomEntryPoint;
+        class ObserverEntryPoint;
 
         class ModuleLoader;
 
@@ -17,6 +18,8 @@ namespace chimera {
         {
             friend int lua_Simulation_start(lua_State*);
             friend int chimera::runtime::lua_Simulation_run(lua_State*);
+            friend int lua_Simulation_step(lua_State*);
+            friend int lua_Simulation_current(lua_State*);
 
             public:
                 ChimeraRuntime(const std::string& filename, std::vector<char*>& argv, ModuleLoader* loader);
@@ -38,6 +41,7 @@ namespace chimera {
                 chimera::runtime::IntegratorEntryPoint* _integrator;
                 chimera::runtime::OutputEntryPoint* _output;
                 chimera::runtime::RandomEntryPoint* _random;
+                chimera::runtime::ObserverEntryPoint* _observer;
 
                 std::string* _filename;
                 ModuleLoader* _loader;
@@ -45,7 +49,6 @@ namespace chimera {
                 size_t registerVector(const size_t& subtype, const struct T_ParameterDef& pdef);
                 size_t registerMatrix(const size_t& subtype, const struct T_ParameterDef& pdef);
 
-                friend int lua_Simulation_start(lua_State* L);
         };
     }
 }

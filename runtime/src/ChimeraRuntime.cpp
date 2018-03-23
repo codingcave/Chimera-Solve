@@ -46,6 +46,7 @@
 #include "EntryPoints/IntegratorEntryPoint.hpp"
 #include "EntryPoints/OutputEntryPoint.hpp"
 #include "EntryPoints/RandomEntryPoint.hpp"
+#include "EntryPoints/ObserverEntryPoint.hpp"
 
 int lua_show_global(lua_State* L)
 {
@@ -88,6 +89,9 @@ void DUMP_TABLE(lua_State* L, int index)
             case LUA_TNUMBER:
                 std::cout << "[" << lua_tonumber(L, -2) << "]"; //  (" << luaL_typename(L, -1) << ")  " << luaL_tolstring(L, -1, NULL) << std::endl;
                 break;
+            case LUA_TLIGHTUSERDATA:
+                std::cout << "[" << lua_touserdata(L, -2) << "]";
+                break;
             default:
                 std::cout << "[" << lua_tostring(L, -2) << "]"; //  (" << luaL_typename(L, -1) << ")  " << luaL_tolstring(L, -1, NULL) << std::endl;
                 break;
@@ -110,12 +114,14 @@ chimera::runtime::ChimeraRuntime::ChimeraRuntime(const std::string& filename, st
     _integrator = new chimera::runtime::IntegratorEntryPoint(_initializer);
     _output = new chimera::runtime::OutputEntryPoint();
     _random = new chimera::runtime::RandomEntryPoint();
+    _observer = new chimera::runtime::ObserverEntryPoint();
 
     getEntryPointSystem()->addEntryPoint(chimera::simulation::Naming::EntryPoint_dynamics, _systemDynamic);
     getEntryPointSystem()->addEntryPoint(chimera::simulation::Naming::EntryPoint_initilizer, _initializer);
     getEntryPointSystem()->addEntryPoint(chimera::simulation::Naming::EntryPoint_integrator, _integrator);
     getEntryPointSystem()->addEntryPoint(chimera::simulation::Naming::EntryPoint_output, _output);
     getEntryPointSystem()->addEntryPoint(chimera::simulation::Naming::EntryPoint_random, _random);
+    getEntryPointSystem()->addEntryPoint(chimera::simulation::Naming::EntryPoint_observer, _observer);
 
     // TODO (kekstoaster#1#): replace string with const
     _pid_vector = registerParameter(chimera::simulation::Naming::Type_Vector, {types::luat_vector_init, nullptr, nullptr, nullptr});
@@ -253,8 +259,8 @@ chimera::runtime::ChimeraRuntime::~ChimeraRuntime()
     delete _integrator;
     delete _output;
     delete _random;
-
-    //dtor
+    delete _initializer;
+    delete _observer;
 }
 
 chimera::runtime::TypeLookup const * const chimera::runtime::ChimeraRuntime::getTypeLookup() const
