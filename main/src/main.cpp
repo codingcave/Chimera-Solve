@@ -54,7 +54,7 @@ int main(int argc, char** argv)
     Configuration conf;
 
     const std::string etcPath = "/etc/chimera/solver.ini";
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
     fs::path modPath = fs::system_complete( fs::path( "./modules" ) );
     FilesystemLoader* dbgPath = nullptr;
