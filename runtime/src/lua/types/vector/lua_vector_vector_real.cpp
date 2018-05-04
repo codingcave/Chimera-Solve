@@ -49,7 +49,7 @@ int chimera::runtime::types::luat_vector_vector_real_init(lua_State* const L)
 
     lua_pushcfunction (L, lua_vector_vector_real_get);
     lua_setfield(L, -2, "__get");
-    lua_pop(L, 1);
+    //lua_pop(L, 1);
 
     return 1;
 }

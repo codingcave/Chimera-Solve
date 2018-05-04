@@ -14,9 +14,14 @@ namespace chimera {
             void debug(const std::string& message);
             void addLogger(const unsigned int& level, chimera::ILogger* logger);
             bool removeLogger(chimera::ILogger* logger);
+            unsigned int getLogLevel() const;
+            bool checkLogLevel(const unsigned int& loglevel) const;
         private:
             vec_t_logList* _logList;
             unsigned int _loglevel;
+            unsigned int _maxlevel;
+            // TODO Add loglevel decription
+            // TODO format log
             void setLogLevel(const unsigned int& loglevel);
     };
 }

@@ -38,8 +38,8 @@ FitzHughNagumo::FitzHughNagumo(chimera::ParameterTypeSystem* ps, double epsilon,
 void FitzHughNagumo::operator()(const boost::numeric::ublas::vector<double>& x, boost::numeric::ublas::vector<double>& dxdt, const double& t)
 {
     static double _1_3 = 1.0/3.0;
-    dxdt(0) = x(0) - _1_3 * x(0) * x(0) * x(0) - x(1);
-    dxdt(1) = (x(0) + _a) / _epsilon;
+    dxdt(0) = (x(0) - _1_3 * x(0) * x(0) * x(0) - x(1)) / _epsilon;
+    dxdt(1) = (x(0) + _a);
 }
 
 std::unordered_map<std::string, size_t> FitzHughNagumo::getFeatures() const

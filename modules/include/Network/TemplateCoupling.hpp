@@ -1,14 +1,15 @@
 #ifndef TEMPLATECOUPLING_H
 #define TEMPLATECOUPLING_H
 
-template<typename inner_state_type>
+template<typename time_type, typename inner_state_type>
 class TemplateCoupling:
     public AbstractCoupling
 {
     public:
         TemplateCoupling() {}
         virtual ~TemplateCoupling() {}
-        virtual void operator()(const boost::numeric::ublas::vector<inner_state_type>& system, int i, int j, inner_state_type& out) = 0;
+        virtual void operator()(const boost::numeric::ublas::vector<inner_state_type>& system, const time_type& t, const int& i, inner_state_type& out) = 0;
+        //virtual bool checkCoupling(const boost::numeric::ublas::vector<inner_state_type>& system) = 0;
     protected:
     private:
 };

@@ -1,12 +1,11 @@
 #ifndef SIMULATION_H
 #define SIMULATION_H
 
-
 namespace chimera {
     namespace runtime {
 
         class Simulation:
-            public NotificationManager
+            public chimera::simulation::NotificationManager, public chimera::simulation::ISimulation
         {
             public:
                 Simulation(chimera::simulation::AbstractIntegrator* integrator);
@@ -14,8 +13,8 @@ namespace chimera {
                 bool getYield() const;
                 void setYield(bool value);
                 bool nextStep();
-                bool isRunning() const;
-                chimera::simulation::AbstractIntegrator* getIntegrator();
+                virtual bool isRunning() const override;
+                virtual chimera::simulation::AbstractIntegrator* getIntegrator() override;
             protected:
             private:
                 chimera::simulation::AbstractIntegrator* _integrator;

@@ -9,6 +9,7 @@ chimera::LoggingSystem::LoggingSystem()
 {
     _logList = new vec_t_logList();
     _loglevel = 0;
+    _maxlevel = 0;
 }
 
 chimera::LoggingSystem::~LoggingSystem()
@@ -74,4 +75,14 @@ bool chimera::LoggingSystem::removeLogger(chimera::ILogger *logger)
 void chimera::LoggingSystem::setLogLevel(const unsigned int& loglevel)
 {
     _loglevel = loglevel;
+}
+
+unsigned int chimera::LoggingSystem::getLogLevel() const
+{
+    return _loglevel;
+}
+
+bool chimera::LoggingSystem::checkLogLevel(const unsigned int& loglevel) const
+{
+    return _loglevel <= loglevel;
 }

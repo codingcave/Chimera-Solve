@@ -5,6 +5,7 @@
 #include <vector>
 #include "lua.hpp"
 
+#include "Naming.hpp"
 //#include "interfaces/IConnectEventHandler.hpp"
 #include "StateSynchrony.hpp"
 #include "interfaces/ILogger.hpp"
@@ -742,7 +743,6 @@ chimera::ParameterValue chimera::ParameterValue::call_single(std::vector<chimera
     if(c)
     {
         lua_State* L = c->getLuaState();
-
         c->getTypeSystem()->pushValue(L, {getType(), getValue()});
         for(auto it : params)
         {
@@ -768,7 +768,8 @@ chimera::ParameterValue chimera::ParameterValue::operator()(chimera::ParameterVa
     vec_t_LuaItem params;
     params.push_back(p1);
     params.push_back(p2);
-    return call_single(params);
+    ParameterValue pr = ParameterValue(call_single(params));
+    return pr;
 }
 
 chimera::ParameterValue chimera::ParameterValue::operator()(chimera::ParameterValue p1, chimera::ParameterValue p2, chimera::ParameterValue p3)

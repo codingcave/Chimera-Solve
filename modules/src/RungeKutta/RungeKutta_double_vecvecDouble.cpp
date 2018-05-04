@@ -26,8 +26,11 @@
 #include "ChimeraSystem.hpp"
 #include "interfaces/IEventListener.hpp"
 #include "interfaces/IEventListenerProvider.hpp"
-#include "event/EventManager.hpp"
+#include "event/Observer.hpp"
+#include "EntryPointBase/AbstractEventProvider.hpp"
 #include "event/StateEventListener.hpp"
+#include "event/DefaultEventProvider.hpp"
+#include "event/NotificationManager.hpp"
 #include "NotificationManager.hpp"
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/TemplateOdeSystem.hpp"
@@ -103,15 +106,10 @@ const vec_vec_real& RungeKutta_double_vecvecDouble::getState() const
     return *_state;
 }
 
-
-bool RungeKutta_double_vecvecDouble::nextStep()
+void RungeKutta_double_vecvecDouble::nextStep()
 {
-    if(_time >= _endtime)
-        return false;
     _rk->do_step( *_system , *_state , _time , _dt );
     _time += _dt;
-
-    return true;
 }
 
 void RungeKutta_double_vecvecDouble::initialize(chimera::vec_t_LuaItem args)
@@ -169,6 +167,11 @@ void RungeKutta_double_vecvecDouble::start(chimera::vec_t_LuaItem args)
     } else {
         _endtime = _time + 1.0;
     }
+}
+
+bool RungeKutta_double_vecvecDouble::finished() const
+{
+    return _time >= _endtime;
 }
 
 /*

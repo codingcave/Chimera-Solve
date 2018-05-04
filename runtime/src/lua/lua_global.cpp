@@ -26,10 +26,13 @@
 #include "ModuleLoader.hpp"
 #include "interfaces/IEventListener.hpp"
 #include "event/StateEventListener.hpp"
-#include "event/EventManager.hpp"
-#include "NotificationManager.hpp"
+#include "event/Observer.hpp"
+#include "EntryPointBase/AbstractEventProvider.hpp"
+#include "event/DefaultEventProvider.hpp"
+#include "event/NotificationManager.hpp"
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/AbstractIntegrator.hpp"
+#include "interfaces/ISimulation.hpp"
 #include "Simulation.hpp"
 #include "lua/types/lua_Simulation.hpp"
 #include "ChimeraSystem.hpp"
@@ -145,7 +148,11 @@ int chimera::runtime::lua_global_simulation(lua_State* L)
 
     Simulation** sim = (Simulation**)lua_newuserdata(L, sizeof(Simulation*));
     *sim = new Simulation(instance);
-    (*sim)->registerEvent("step", instance->createStateEventManager());
+    chimera::simulation::AbstractEventProvider* eventProvider = instance->createStateEvent();
+    if(eventProvider)
+    {
+        (*sim)->registerEvent(eventProvider);
+    }
     lua_newtable(L);
     lua_State* NL = lua_newthread(L);
     lua_pushlightuserdata(NL, (void*)*sim);
@@ -177,6 +184,12 @@ int chimera::runtime::lua_global_simulation(lua_State* L)
     lua_pushvalue(L, -5);
     lua_pushcclosure(L, lua_Simulation_step, 2);
     lua_setfield(L, -2, "step");
+    lua_pushvalue(L, -4);
+    lua_pushcclosure(L, lua_Simulation_current, 1);
+    lua_setfield(L, -2, "state");
+    lua_pushvalue(L, -4);
+    lua_pushcclosure(L, lua_Simulation_add_event, 1);
+    lua_setfield(L, -2, "observe");
     //lua_pushcclosure(L, lua_Simulation_register, 2);
     //lua_setfield(L, -2, "register");
     // create lookup for dynamic methods like events

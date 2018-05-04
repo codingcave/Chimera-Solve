@@ -20,8 +20,9 @@ class Network_double_vecDouble:
         chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >* _unitSys;
         chimera::ParameterValue* _unitValue;
         int _number;
-        TemplateCoupling<boost::numeric::ublas::vector<double> >* _coupling;
+        TemplateCoupling<double, boost::numeric::ublas::vector<double> >* _coupling;
         chimera::ParameterValue* _couplingValue;
+        boost::numeric::ublas::vector<double>* _tmp;
 };
 
 #endif // NETWORK_H

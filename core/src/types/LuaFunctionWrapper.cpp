@@ -23,24 +23,25 @@
 
 chimera::LuaFunctionWrapper::LuaFunctionWrapper(const LuaFunctionWrapper& wrapper):
     _chSys(wrapper._chSys),
-    _fn(wrapper._fn)
+    _fn(wrapper._fn),
+    _origin(wrapper._origin)
 {
-    _origin = wrapper._origin;
     //ctor
 }
 
 chimera::LuaFunctionWrapper::LuaFunctionWrapper(ChimeraSystem* sys):
-    _chSys(sys)
+    _chSys(sys),
+    _fn(nullptr),
+    _origin(this)
 {
-    _origin = this;
     // ctor
 }
 
 chimera::LuaFunctionWrapper::LuaFunctionWrapper(ChimeraSystem* sys, fn_luafnwrapper fn):
     _chSys(sys),
-    _fn(fn)
+    _fn(fn),
+    _origin((void*)fn)
 {
-    _origin = (void*)fn;
     //ctor
 }
 

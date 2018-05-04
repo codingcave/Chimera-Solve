@@ -7,10 +7,13 @@
 #include "ParameterType.hpp"
 #include "def.hpp"
 #include "interfaces/IEventListener.hpp"
-#include "event/EventManager.hpp"
-#include "NotificationManager.hpp"
+#include "event/Observer.hpp"
+#include "EntryPointBase/AbstractEventProvider.hpp"
+#include "event/DefaultEventProvider.hpp"
+#include "event/NotificationManager.hpp"
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/AbstractIntegrator.hpp"
+#include "interfaces/ISimulation.hpp"
 #include "Simulation.hpp"
 
 chimera::runtime::Simulation::Simulation(chimera::simulation::AbstractIntegrator* integrator)
@@ -44,8 +47,9 @@ void chimera::runtime::Simulation::setYield(bool value)
 bool chimera::runtime::Simulation::nextStep()
 {
     _running = true;
-    if(_integrator->nextStep())
+    if(!_integrator->finished())
     {
+        _integrator->nextStep();
         return true;
     }
     else

@@ -40,32 +40,39 @@ Network_double_vecDouble::Network_double_vecDouble(chimera::ParameterTypeSystem*
     _unitSys = (chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >*)unit.getValue();
     _unitValue = new chimera::ParameterValue(unit);
     _number = number;
-    _coupling = (TemplateCoupling<boost::numeric::ublas::vector<double> >*)coupling.getValue();
+    _coupling = (TemplateCoupling<double, boost::numeric::ublas::vector<double> >*)coupling.getValue();
     _couplingValue = new chimera::ParameterValue(coupling);
+    auto unitFeatures = _unitSys->getFeatures();
+    auto unitSize = unitFeatures.find(chimera::simulation::Naming::Feature_size);
+    _tmp = nullptr;
+    if(unitSize != unitFeatures.end())
+    {
+        _tmp = new boost::numeric::ublas::vector<double>(unitSize->second);
+    }
+
 }
 
 Network_double_vecDouble::~Network_double_vecDouble()
 {
     delete _unitValue;
     delete _couplingValue;
+    if(_tmp) delete _tmp;
 }
 
 void Network_double_vecDouble::operator()(const boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >& x, boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >& dxdt, const double& t)
 {
-    boost::numeric::ublas::vector<double> tmp(x[0].size());
+    //boost::numeric::ublas::vector<double> tmp(x[0].size());
     unsigned int vSize = dxdt.size();
     //std::cout << " >>step: " << t << std::endl;
     for(unsigned int i = 0; i < vSize; i++)
     {
         dxdt[i].resize(x[i].size());
         (*_unitSys)(x[i], dxdt[i], t);
-        for(unsigned int j = 0; j < vSize; j++)
+
+        (*_coupling)(x, t, i, *_tmp);
+        for(unsigned int inner = 0; inner < x[i].size(); inner++)
         {
-            (*_coupling)(x, i, j, tmp);
-            for(unsigned int inner = 0; inner < x[i].size(); inner++)
-            {
-                dxdt[i][inner] = dxdt[i][inner] + tmp[inner];
-            }
+            dxdt[i][inner] = dxdt[i][inner] + _tmp->operator[](inner);
         }
     }
 }

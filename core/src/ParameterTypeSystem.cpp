@@ -244,7 +244,7 @@ chimera::ParameterValue chimera::ParameterTypeSystem::getValue(lua_State* const 
                 lua_pop(L, 1);
                 if(isnum)
                 {
-                    if(type > 0 && (unsigned)type > chimera::systemtypes::PID_INSTANCE && (*_typeList)[type] != nullptr)
+                    if(type > 0 && (unsigned)type >= chimera::systemtypes::PID_MODULE && (*_typeList)[type] != nullptr)
                     {
                         void* value = *((void**)lua_touserdata(L, f_ind));
                         /*
@@ -417,7 +417,6 @@ bool chimera::ParameterTypeSystem::pushValue(lua_State* const L, size_t type, vo
                     p._data->luaref = _chimeraSystem->getLuaState();
                     p.dispose();
                 }
-
                 (*_typeList)[type]->pushValue(L, value);
                 lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_METATABLES);
                 lua_rawget(L, LUA_REGISTRYINDEX);

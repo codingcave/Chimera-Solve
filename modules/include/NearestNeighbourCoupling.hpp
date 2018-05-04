@@ -17,12 +17,12 @@ class NearestNeighbourCouplingModule:
 
 class NearestNeighbourCoupling
     :public TemplateCoupling
-    <boost::numeric::ublas::vector<double> >
+    <double, boost::numeric::ublas::vector<double> >
 {
     public:
         NearestNeighbourCoupling(double sigma, int count);
         virtual ~NearestNeighbourCoupling();
-        virtual void operator()(const boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >& system, int i, int j, boost::numeric::ublas::vector<double>& out) override;
+        virtual void operator()(const boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >& system, const double& t, const int& i, boost::numeric::ublas::vector<double>& out) override;
     protected:
     private:
         double _sigma;
