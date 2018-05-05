@@ -221,10 +221,11 @@ int chimera::runtime::types::lua_matrix_index(lua_State* const L)
         }
     case LUA_TNUMBER:
         {
-            if(lua_isinteger(L, 2))
+            int isNum = 0;
+            int i = lua_tointegerx(L, 2, &isNum);
+            if(isNum)
             {
                 struct chimera::simulation::T_MatrixDef* m = *((struct chimera::simulation::T_MatrixDef **)lua_touserdata(L, 1));
-                int i = lua_tointeger(L, 2);
                 if(i >= 0 && i < m->rows)
                 {
                     if(luaL_getmetafield(L, 1, "__type"))
