@@ -6,7 +6,7 @@ import os
 # Variable definition
 makefile = 'Makefile'
 
-executable = 'NetworkSimulation'
+executable = 'chimera'
 extend_library = 'module'
 extend_library_name = 'lib' + extend_library + '.so'
 core_library = 'chimera'
@@ -157,7 +157,6 @@ def luaTarget(f, target):
 	f.write('\n')
 
 def libTarget(f, target, part_name):
-	print part_name, built_names[part_name]
 	str_dep = ''
 	str_inc = ''
 	for dep_n in dependencies[part_name]:
@@ -337,8 +336,8 @@ with open(makefile, 'w') as f:
 	f.write('install:\n')
 	f.write('\ttest -d bin/Release || exit 1\n')
 	f.write('\ttest -d /usr/local/bin || mkdir -p /usr/local/bin\n')
-	f.write('\tcp bin/Release/$(EXE_NAME) /usr/local/bin/chimera\n')
-	f.write('\tchmod +x /usr/local/bin/chimera\n')
+	f.write('\tcp bin/Release/$(EXE_NAME) /usr/local/bin/$(EXE_NAME)\n')
+	f.write('\tchmod +x /usr/local/bin/$(EXE_NAME)\n')
 	f.write('\ttest -d /usr/local/lib || mkdir -p /usr/local/lib\n')
 	f.write('\tcp bin/Release/*.so /usr/local/lib/\n')
 	f.write('\tldconfig\n')
