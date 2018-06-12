@@ -34,6 +34,8 @@ NetworkSimulation.cscope_file_list
 NetworkSimulation.depend
 NetworkSimulation.layout
 lua-5.3.3/src/liblua.so.5.3.3
+lua-5.3.3/src/lua
+lua-5.3.3/src/luac
 
 # other
 bin/
