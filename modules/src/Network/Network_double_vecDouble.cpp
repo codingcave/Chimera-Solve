@@ -91,6 +91,11 @@ std::unordered_map<std::string, size_t> Network_double_vecDouble::getFeatures() 
     {
         features[chimera::simulation::Naming::Feature_unit_size] = unitSize->second;
     }
+    auto unitRecursive = unitFeatures.find("recursive");
+    if(unitSize != unitFeatures.end())
+    {
+        features["recursive"] = unitRecursive->second;
+    }
     return features;
 }
 
