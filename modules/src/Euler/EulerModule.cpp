@@ -112,12 +112,10 @@ chimera::simulation::AbstractIntegrator* EulerModule::getSystem(const chimera::P
                         auto recursive = features.find("recursive");
                         if(recursive != features.end() && recursive->second != 0)
                         {
-                            std::cout << "RECURSIVE SINGLE" << std::endl;
                             return (chimera::simulation::AbstractIntegrator*)new Euler_recursive_vecDouble(getChimeraSystem()->getTypeSystem(), _init, sys);
                         }
                         else
                         {
-                            std::cout << "NOT! SINGLE" << std::endl;
                             return (chimera::simulation::AbstractIntegrator*)new Euler_double_vecDouble(getChimeraSystem()->getTypeSystem(), _init, sys, dt);
                         }
                     }
@@ -129,12 +127,10 @@ chimera::simulation::AbstractIntegrator* EulerModule::getSystem(const chimera::P
                         auto recursive = features.find("recursive");
                         if(recursive != features.end() && recursive->second != 0)
                         {
-                            std::cout << "RECURSIVE MULTI" << std::endl;
                             return (chimera::simulation::AbstractIntegrator*)new Euler_recursive_vecvecDouble(getChimeraSystem()->getTypeSystem(), _init, sys);
                         }
                         else
                         {
-                            std::cout << "NOT! MULTI" << std::endl;
                             return (chimera::simulation::AbstractIntegrator*)new Euler_double_vecvecDouble(getChimeraSystem()->getTypeSystem(), _init, sys, dt);
                         }
                         //std::cout << "RETURN new RungeKutta_double_vecvecDouble(sys, dt);" << std::endl;
