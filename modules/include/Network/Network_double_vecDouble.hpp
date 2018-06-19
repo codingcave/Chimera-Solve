@@ -4,14 +4,14 @@
 class Network_double_vecDouble:
     //template<typename time_type, typename state_type>
     public chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> > >,
-    public INetwork<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> > >
+    public INetwork<double, boost::numeric::ublas::vector<double> >
 {
     public:
         Network_double_vecDouble(chimera::ParameterTypeSystem* ps, chimera::ParameterValue& unit, const int& number, chimera::ParameterValue& coupling);
 
         virtual ~Network_double_vecDouble();
 
-        virtual chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> > >* getNode(int i) override;
+        virtual chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> > getNode(int i) override;
 
         virtual void operator()(const boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >& x, boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >& dxdt, const double& t) override;
 

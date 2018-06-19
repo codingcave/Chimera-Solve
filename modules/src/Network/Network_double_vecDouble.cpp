@@ -105,7 +105,7 @@ const std::string Network_double_vecDouble::getSystemName() const
     return "ode";
 }
 
-chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> > >* Network_double_vecDouble::getNode(int i)
+chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >* Network_double_vecDouble::getNode(int i)
 {
     return _unitSys;
 }
