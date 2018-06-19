@@ -104,3 +104,12 @@ const std::string MultiNetwork_double_vecDouble::getSystemName() const
 {
     return "ode";
 }
+
+chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> > >* MultiNetwork_double_vecDouble::getNode(int i)
+{
+    if (i >= 0 && i < _number) {
+        return (*_unitSystems)[i];
+    } else {
+        return nullptr;
+    }
+}

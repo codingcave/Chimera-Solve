@@ -30,6 +30,7 @@
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/TemplateOdeSystem.hpp"
 #include "EntryPointBase/SystemDynamicModule.hpp"
+#include "Network/INetwork.hpp"
 #include "Network/Network_double_vecDouble.hpp"
 #include "Network/MultiNetwork_double_vecDouble.hpp"
 #include "Network/NetworkModule.hpp"
