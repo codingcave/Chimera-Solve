@@ -32,6 +32,7 @@
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/TemplateOdeSystem.hpp"
 #include "EntryPointBase/SystemDynamicModule.hpp"
+#include "Network/INetwork.hpp"
 #include "Network/MultiNetwork_double_vecDouble.hpp"
 
 MultiNetwork_double_vecDouble::MultiNetwork_double_vecDouble(

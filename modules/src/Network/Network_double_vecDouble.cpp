@@ -32,6 +32,7 @@
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/TemplateOdeSystem.hpp"
 #include "EntryPointBase/SystemDynamicModule.hpp"
+#include "Network/INetwork.hpp"
 #include "Network/Network_double_vecDouble.hpp"
 
 Network_double_vecDouble::Network_double_vecDouble(chimera::ParameterTypeSystem* ps, chimera::ParameterValue& unit, const int& number, chimera::ParameterValue& coupling):
