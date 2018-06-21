@@ -26,13 +26,10 @@
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/TemplateOdeSystem.hpp"
 
+#include "Network/INetwork.hpp"
 #include "Network/AbstractCoupling.hpp"
 #include "Network/TemplateCoupling.hpp"
 #include "Network/CouplingEntryPoint.hpp"
-#include "EntryPointBase/AbstractSystemDynamic.hpp"
-#include "EntryPointBase/TemplateOdeSystem.hpp"
-#include "EntryPointBase/SystemDynamicModule.hpp"
-#include "Network/INetwork.hpp"
 #include "Network/MultiNetwork_double_vecDouble.hpp"
 
 MultiNetwork_double_vecDouble::MultiNetwork_double_vecDouble(
@@ -76,7 +73,7 @@ void MultiNetwork_double_vecDouble::operator()(const boost::numeric::ublas::vect
         dxdt[i].resize(x[i].size());
         (*(*_unitSystems)[i])(x[i], dxdt[i], t);
 
-        (*_coupling)(x, t, i, *_tmp);
+        (*_coupling)(this, x, t, i, *_tmp);
         for(unsigned int inner = 0; inner < x[i].size(); inner++)
         {
             dxdt[i][inner] = dxdt[i][inner] + _tmp->operator[](inner);
@@ -106,7 +103,7 @@ const std::string MultiNetwork_double_vecDouble::getSystemName() const
     return "ode";
 }
 
-chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >* MultiNetwork_double_vecDouble::getNode(int i)
+chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >* MultiNetwork_double_vecDouble::getNode(int i) const
 {
     if (i >= 0 && i < _number) {
         return (*_unitSystems)[i];

@@ -22,7 +22,7 @@ class KuramotoCoupling
     public:
         KuramotoCoupling(double sigma, double alpha, double beta, double epsilon);
         virtual ~KuramotoCoupling();
-        virtual void operator()(const boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >& system, const double& t, const int& i, boost::numeric::ublas::vector<double>& out) override;
+        virtual void operator()(const INetwork<double, boost::numeric::ublas::vector<double> >* network, const boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >& system, const double& t, const int& i, boost::numeric::ublas::vector<double>& out) override;
     protected:
     private:
         void recalcSinCos(const boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >& system, const int& N);

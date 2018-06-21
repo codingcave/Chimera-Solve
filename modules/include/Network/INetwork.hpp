@@ -7,7 +7,7 @@ class INetwork
     public:
         INetwork() { }
         virtual ~INetwork() { }
-        virtual chimera::simulation::TemplateOdeSystem<time_type, state_type>* getNode(int i) = 0;
+        virtual chimera::simulation::TemplateOdeSystem<time_type, state_type>* getNode(int i) const = 0;
     protected:
     private:
 };

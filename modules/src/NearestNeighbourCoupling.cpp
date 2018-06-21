@@ -28,6 +28,9 @@
 //#include "event/Observer.hpp"
 //#include "event/StateEventListener.hpp"
 //#include "NotificationManager.hpp"
+#include "EntryPointBase/AbstractSystemDynamic.hpp"
+#include "EntryPointBase/TemplateOdeSystem.hpp"
+#include "Network/INetwork.hpp"
 #include "Network/AbstractCoupling.hpp"
 #include "Network/TemplateCoupling.hpp"
 #include "Network/CouplingModule.hpp"
@@ -117,7 +120,7 @@ NearestNeighbourCoupling::~NearestNeighbourCoupling()
 
 }
 
-void NearestNeighbourCoupling::operator()(const boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >& system, const double& t, const int& i, boost::numeric::ublas::vector<double>& out)
+void NearestNeighbourCoupling::operator()(const INetwork<double, boost::numeric::ublas::vector<double> >* network, const boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >& system, const double& t, const int& i, boost::numeric::ublas::vector<double>& out)
 {
     int j, k;
     int N = system.size();

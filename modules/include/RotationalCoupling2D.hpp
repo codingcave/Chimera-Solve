@@ -22,7 +22,7 @@ class RotationalCoupling2D
     public:
         RotationalCoupling2D(double epsilon, double sigma, double phi, chimera::ParameterValue couplingValue);
         virtual ~RotationalCoupling2D();
-        virtual void operator()(const boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >& system, const double& t, const int& i, boost::numeric::ublas::vector<double>& out) override;
+        virtual void operator()(const INetwork<double, boost::numeric::ublas::vector<double> >* network, const boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >& system, const double& t, const int& i, boost::numeric::ublas::vector<double>& out) override;
     protected:
     private:
         double _epsilon;

@@ -11,7 +11,7 @@ class MultiNetwork_double_vecDouble:
 
         virtual ~MultiNetwork_double_vecDouble();
 
-        virtual chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >* getNode(int i) override;
+        virtual chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >* getNode(int i) const override;
 
         virtual void operator()(const boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >& x, boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >& dxdt, const double& t) override;
 
