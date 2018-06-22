@@ -23,6 +23,9 @@
 #include "EntryPointSystem.hpp"
 #include "ChimeraSystem.hpp"
 
+#include "EntryPointBase/AbstractSystemDynamic.hpp"
+#include "EntryPointBase/TemplateOdeSystem.hpp"
+#include "Network/INetwork.hpp"
 #include "Network/AbstractCoupling.hpp"
 #include "Network/TemplateCoupling.hpp"
 #include "Network/CouplingEntryPoint.hpp"
