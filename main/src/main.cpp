@@ -8,7 +8,9 @@
 #include <complex>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/algorithm/string.hpp>
 #include <pwd.h>
+#include <cstdlib>
 #include "lua.hpp"
 
 #include "Naming.hpp"
@@ -90,6 +92,29 @@ int main(int argc, char** argv)
         if (fs::exists(userConf2))
         {
             conf.load(userConf2.string());
+        }
+    }
+    const char* cimeraEnv = std::getenv("CHIMERACONF");
+    if (cimeraEnv != nullptr) {
+        std::string envPath = std::string(cimeraEnv);
+        boost::trim(envPath);
+        if (envPath.size() > 0)
+        {
+            size_t s_start = 0;
+            size_t s_end;
+
+            do
+            {
+                s_end = envPath.find(':', s_start + 1);
+                std::string envPathLocation = envPath.substr(s_start, s_end - s_start);
+                boost::trim(envPathLocation);
+                fs::path envPathItem = fs::system_complete( fs::path( envPathLocation ) );
+                if (fs::exists(envPathItem))
+                {
+                    conf.load(envPathItem.string());
+                }
+                s_start = s_end + 1;
+            } while (s_end != std::string::npos);
         }
     }
 #endif // DEBUG

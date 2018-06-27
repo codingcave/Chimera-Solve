@@ -81,6 +81,12 @@ void Configuration::load(const std::string& confPath)
         {}
     }
 
+    std::vector<std::pair<std::string, chimera::runtime::IModulePathProvider*> >* lastLoaders = nullptr;
+    if(_pathLookup->size() > 0)
+    {
+        lastLoaders = _pathLookup;
+        _pathLookup = new std::vector<std::pair<std::string, chimera::runtime::IModulePathProvider*> >();
+    }
     for (pt::ptree::value_type &row : root)
     {
         if(!row.second.empty())
@@ -96,6 +102,14 @@ void Configuration::load(const std::string& confPath)
                 }
             }
         }
+    }
+    if(lastLoaders != nullptr)
+    {
+        for (auto loader = lastLoaders->begin(); loader != lastLoaders->end(); loader++)
+        {
+            _pathLookup->push_back(*loader);
+        }
+        delete lastLoaders;
     }
 }
 
