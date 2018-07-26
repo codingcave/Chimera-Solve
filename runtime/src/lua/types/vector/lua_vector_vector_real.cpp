@@ -49,6 +49,8 @@ int chimera::runtime::types::luat_vector_vector_real_init(lua_State* const L)
 
     lua_pushcfunction (L, lua_vector_vector_real_get);
     lua_setfield(L, -2, "__get");
+    lua_pushcfunction (L, lua_vector_vector_real_new);
+    lua_setfield(L, -2, "__new");
     //lua_pop(L, 1);
 
     return 1;
@@ -68,6 +70,42 @@ int chimera::runtime::types::luat_vector_vector_real_delete(lua_State* const L)
     return 0;
 }
 
+int chimera::runtime::types::lua_vector_vector_real_new(lua_State* const L)
+{
+    int a = lua_tointeger(L, 1);
+    vec_vec_real* v = new vec_vec_real(a);
+    if(lua_gettop(L) > 1)
+    {
+        void * const value = lua_touserdata(L, 2);
+        const struct chimera::simulation::T_VectorDef* initVd = *((const struct chimera::simulation::T_VectorDef**)value);
+        ublas::vector<double>* initVec = (ublas::vector<double>*)initVd->value;
+        int b = initVd->length;
+
+        for(int i = 0; i < a; i++) {
+            (*v)[i].resize(b);
+            for(int j = 0; j < b; j++) {
+                (*v)[i][j] = (*initVec)[j];
+            }
+        }
+    } else {
+        for(int i = 0; i < a; i++) {
+            (*v)[i].resize(1);
+            (*v)[i][0] = 0.;
+        }
+    }
+
+    struct chimera::simulation::T_VectorDef** vd = (struct chimera::simulation::T_VectorDef**)lua_newuserdata(L, sizeof(struct chimera::simulation::T_VectorDef*));
+    *vd = new struct chimera::simulation::T_VectorDef({a, false, true, v});
+
+    lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_METATABLES);
+    lua_rawget(L, LUA_REGISTRYINDEX);
+    lua_rawgeti(L, -1, vector_vector_real_pid);
+    lua_setmetatable(L, -3);
+    lua_pop(L, 1);
+
+    return 1;
+}
+
 int chimera::runtime::types::lua_vector_vector_real_get(lua_State* const L)
 {
     struct chimera::simulation::T_VectorDef* vd = *((struct chimera::simulation::T_VectorDef **)lua_touserdata(L, 1));
@@ -76,7 +114,8 @@ int chimera::runtime::types::lua_vector_vector_real_get(lua_State* const L)
 
     struct chimera::simulation::T_VectorDef** vd2 = (struct chimera::simulation::T_VectorDef**)lua_newuserdata(L, sizeof(struct chimera::simulation::T_VectorDef*));
     int s = ((*v)(a)).size();
-    auto vvi = new ublas::vector<double>((*v)(a));
+    //auto vvi = new ublas::vector<double>((*v)(a));
+    auto vvi = &((*v)[a]);
     *vd2 = new struct chimera::simulation::T_VectorDef({s, vd->readonly, false, vvi});
 
     lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_METATABLES);

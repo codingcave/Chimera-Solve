@@ -8,6 +8,7 @@ namespace chimera {
 
             int luat_vector_vector_real_init(lua_State* const L);
             int luat_vector_vector_real_delete(lua_State* const L);
+            int lua_vector_vector_real_new(lua_State* const L);
             int lua_vector_vector_real_get(lua_State* const L);
         }
     }
