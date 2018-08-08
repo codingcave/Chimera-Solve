@@ -1,5 +1,5 @@
-#ifndef NETWORK_H
-#define NETWORK_H
+#ifndef NETWORK_DOUBLE_VECDOUBLE_H
+#define NETWORK_DOUBLE_VECDOUBLE_H
 
 class Network_double_vecDouble:
     //template<typename time_type, typename state_type>
@@ -28,4 +28,4 @@ class Network_double_vecDouble:
         boost::numeric::ublas::vector<double>* _tmp;
 };
 
-#endif // NETWORK_H
+#endif // NETWORK_DOUBLE_VECDOUBLE_H

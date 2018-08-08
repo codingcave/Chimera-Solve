@@ -1,5 +1,5 @@
-#ifndef RUNGEKUTTA_H
-#define RUNGEKUTTA_H
+#ifndef RUNGEKUTTA_DOUBLE_VECDOUBLE_H
+#define RUNGEKUTTA_DOUBLE_VECDOUBLE_H
 
 namespace odeint = boost::numeric::odeint;
 
@@ -35,4 +35,4 @@ class RungeKutta_double_vecDouble:
         size_t _init;
 };
 
-#endif // RUNGEKUTTA_H
+#endif // RUNGEKUTTA_DOUBLE_VECDOUBLE_H

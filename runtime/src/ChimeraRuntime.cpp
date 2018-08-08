@@ -34,6 +34,7 @@
 #include "lua/types/vector/lua_vector_real.hpp"
 #include "lua/types/vector/lua_vector_complex.hpp"
 #include "lua/types/vector/lua_vector_vector_real.hpp"
+#include "lua/types/vector/lua_vector_vector_complex.hpp"
 #include "lua/types/matrix/lua_matrix_common.hpp"
 #include "lua/types/matrix/lua_matrix_real.hpp"
 #include "lua/types/lua_Simulation.hpp"
@@ -215,6 +216,7 @@ chimera::runtime::ChimeraRuntime::ChimeraRuntime(const std::string& filename, st
     size_t vecRealId = registerVector(chimera::systemtypes::PID_NUMBER, {types::luat_vector_real_init, chimera::luat_UserData_push, types::luat_vector_real_delete, nullptr});
     size_t vecCompId = registerVector(_pid_complex, {types::luat_vector_complex_init, chimera::luat_UserData_push, types::luat_vector_complex_delete, nullptr});
     registerVector(vecRealId, {types::luat_vector_vector_real_init, chimera::luat_UserData_push, types::luat_vector_vector_real_delete, nullptr});
+    registerVector(vecCompId, {types::luat_vector_vector_complex_init, chimera::luat_UserData_push, types::luat_vector_vector_complex_delete, nullptr});
 
     registerMatrix(chimera::systemtypes::PID_NUMBER, {types::luat_matrix_real_init, chimera::luat_UserData_push, types::luat_matrix_real_delete, nullptr});
 

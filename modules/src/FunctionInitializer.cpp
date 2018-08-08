@@ -99,8 +99,11 @@ FunctionInitializer::~FunctionInitializer()
 
 void FunctionInitializer::initialize(chimera::simulation::AbstractSystemDynamic* system, void* state)
 {
+    static const size_t pid_complex = _ps->getParameterID(std::string(chimera::simulation::Naming::Type_Complex));
     static const size_t pid_vecReal = _ps->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
     static const size_t pid_vecvecReal = _ps->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
+    static const size_t pid_vecComplex = _ps->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Complex));
+    static const size_t pid_vecvecComplex = _ps->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Complex));
 
     std::unordered_map<std::string, size_t> features = system->getFeatures();
     auto stateType = features.find(chimera::simulation::Naming::Feature_state_type);
@@ -127,6 +130,39 @@ void FunctionInitializer::initialize(chimera::simulation::AbstractSystemDynamic*
                     chimera::ParameterValue next = chimera::ParameterValue((*_functionValue)(i, j));
                     if(next.getType() == chimera::systemtypes::PID_NUMBER) {
                         (*vState)[i][j] = next;
+                    }
+                }
+            }
+        }
+        else if(stateType->second == pid_vecComplex)
+        {
+            boost::numeric::ublas::vector<std::complex<double> >* vState = (boost::numeric::ublas::vector<std::complex<double> >*)state;
+            for(int i = 0; i < vState->size(); i++)
+            {
+                chimera::ParameterValue next = (*_functionValue)(i);
+                if(next.getType() == chimera::systemtypes::PID_NUMBER) {
+                    (*vState)[i] = next;
+                }
+                else if (next.getType() == pid_complex)
+                {
+                    (*vState)[i] = *((std::complex<double>*)next.getValue());
+                }
+            }
+        }
+        else if(stateType->second == pid_vecvecComplex)
+        {
+            boost::numeric::ublas::vector<boost::numeric::ublas::vector<std::complex<double> > >* vState = (boost::numeric::ublas::vector<boost::numeric::ublas::vector<std::complex<double> > >*)state;
+            for(int i = 0; i < vState->size(); i++)
+            {
+                for(int j = 0; j < (*vState)[i].size(); j++)
+                {
+                    chimera::ParameterValue next = chimera::ParameterValue((*_functionValue)(i, j));
+                    if(next.getType() == chimera::systemtypes::PID_NUMBER) {
+                        (*vState)[i][j] = next;
+                    }
+                    else if (next.getType() == pid_complex)
+                    {
+                        (*vState)[i][j] = *((std::complex<double>*)next.getValue());
                     }
                 }
             }

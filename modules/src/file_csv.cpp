@@ -161,6 +161,8 @@ chimera::simulation::IEventListener* CsvFileWriter::provideListener(size_t id, v
 {
     static const size_t pid_vecReal = _ps->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
     static const size_t pid_vecvecReal = _ps->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
+    static const size_t pid_vecComplex = _ps->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Complex));
+    static const size_t pid_vecvecComplex = _ps->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Complex));
 
     switch(id){
     case 1: // StateEventListener
@@ -180,6 +182,16 @@ chimera::simulation::IEventListener* CsvFileWriter::provideListener(size_t id, v
                 {
                     open();
                     return new FileOutput_real_vecvecReal(_file);
+                }
+                if(spArgs->state_type == pid_vecComplex)
+                {
+                    open();
+                    return new FileOutput_real_vecComplex(_file);
+                }
+                if(spArgs->state_type == pid_vecvecComplex)
+                {
+                    open();
+                    return new FileOutput_real_vecvecComplex(_file);
                 }
             }
         }
@@ -237,6 +249,73 @@ void FileOutput_real_vecvecReal::notify(const double& time, const boost::numeric
 }
 
 void FileOutput_real_vecvecReal::notify(void const * const sender, void* args)
+{
+
+}
+
+FileOutput_real_vecComplex::FileOutput_real_vecComplex(std::ofstream* file)
+{
+    _file = file;
+}
+
+FileOutput_real_vecComplex::~FileOutput_real_vecComplex()
+{
+
+}
+
+void FileOutput_real_vecComplex::notify(const double& time, const boost::numeric::ublas::vector<std::complex<double> >& state)
+{
+    static double i;
+    (*_file) << time;
+    for(auto item : state)
+    {
+        i = std::imag(item);
+        (*_file) << "," << std::real(item);
+        if (i >= 0)
+        {
+            (*_file) << "+";
+        }
+        (*_file) << i << "i";
+    }
+    (*_file) << std::endl;
+}
+
+void FileOutput_real_vecComplex::notify(void const * const sender, void* args)
+{
+
+}
+
+FileOutput_real_vecvecComplex::FileOutput_real_vecvecComplex(std::ofstream* file)
+{
+    _file = file;
+}
+
+FileOutput_real_vecvecComplex::~FileOutput_real_vecvecComplex()
+{
+
+}
+
+void FileOutput_real_vecvecComplex::notify(const double& time, const boost::numeric::ublas::vector<boost::numeric::ublas::vector<std::complex<double> > >& state)
+{
+    static double i;
+    (*_file) << time;
+    for(auto node : state)
+    {
+        for(auto item : node)
+        {
+            i = std::imag(item);
+            (*_file) << "," << std::real(item);
+            if (i >= 0)
+            {
+                (*_file) << "+";
+            }
+            (*_file) << i << "i";
+        }
+    }
+    (*_file) << std::endl;
+}
+
+void FileOutput_real_vecvecComplex::notify(void const * const sender, void* args)
 {
 
 }

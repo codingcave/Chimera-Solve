@@ -58,4 +58,28 @@ class FileOutput_real_vecvecReal:
         std::ofstream* _file;
 };
 
+class FileOutput_real_vecComplex:
+    public chimera::simulation::StateEventListener<double, boost::numeric::ublas::vector<std::complex<double> > >
+{
+    public:
+        FileOutput_real_vecComplex(std::ofstream* file);
+        virtual ~FileOutput_real_vecComplex();
+        virtual void notify(const double& time, const boost::numeric::ublas::vector<std::complex<double> >& state) override;
+        virtual void notify(void const * const sender, void* args) override;
+    private:
+        std::ofstream* _file;
+};
+
+class FileOutput_real_vecvecComplex:
+    public chimera::simulation::StateEventListener<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<std::complex<double> > > >
+{
+    public:
+        FileOutput_real_vecvecComplex(std::ofstream* file);
+        virtual ~FileOutput_real_vecvecComplex();
+        virtual void notify(const double& time, const boost::numeric::ublas::vector<boost::numeric::ublas::vector<std::complex<double> > >& state) override;
+        virtual void notify(void const * const sender, void* args) override;
+    private:
+        std::ofstream* _file;
+};
+
 #endif // CSV_FILE_H

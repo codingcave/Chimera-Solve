@@ -6,6 +6,7 @@
 #include <list>
 #include <boost/numeric/odeint.hpp>
 #include <boost/numeric/ublas/vector.hpp>
+#include <complex>
 
 #include "Naming.hpp"
 #include "ExtensionNaming.hpp"
@@ -37,7 +38,9 @@
 #include "EntryPointBase/IntegratorModule.hpp"
 #include "RungeKutta/RungeKuttaSystem.hpp"
 #include "RungeKutta/RungeKutta_double_vecDouble.hpp"
+#include "RungeKutta/RungeKutta_double_vecComplex.hpp"
 #include "RungeKutta/RungeKutta_double_vecvecDouble.hpp"
+#include "RungeKutta/RungeKutta_double_vecvecComplex.hpp"
 #include "RungeKutta/RungeKuttaModule.hpp"
 
 extern "C"
@@ -86,9 +89,14 @@ void RungeKuttaModule::load(chimera::EntryPoint const * const entryPoint, void c
 chimera::simulation::AbstractIntegrator* RungeKuttaModule::getSystem(const chimera::ParameterValue& param, const double& dt) const
 {
     static const std::string vectorRealMetaName = (std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
+    static const std::string vectorComplexMetaName = (std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Complex));
     static const std::string vectorVectorRealMetaName = (std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
+    static const std::string vectorVectorComplexMetaName = (std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Complex));
+
     static const size_t vectorRealType = getChimeraSystem()->getTypeSystem()->getParameterID(vectorRealMetaName);
+    static const size_t vectorComplexType = getChimeraSystem()->getTypeSystem()->getParameterID(vectorComplexMetaName);
     static const size_t vectorVectorRealType = getChimeraSystem()->getTypeSystem()->getParameterID(vectorVectorRealMetaName);
+    static const size_t vectorVectorComplexType = getChimeraSystem()->getTypeSystem()->getParameterID(vectorVectorComplexMetaName);
 
     static const size_t basetype = chimera::systemtypes::PID_INSTANCE;
     static const size_t tagtype = (size_t)(getChimeraSystem()->getEntryPointSystem()->getEntryPoint(chimera::simulation::Naming::EntryPoint_dynamics));
@@ -110,18 +118,31 @@ chimera::simulation::AbstractIntegrator* RungeKuttaModule::getSystem(const chime
                         return (chimera::simulation::AbstractIntegrator*)new RungeKutta_double_vecDouble(getChimeraSystem()->getTypeSystem(), _init, sys, dt);
                     }
                 }
+                if(stateType->second == vectorComplexType) {
+                    chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<std::complex<double> > >* sys;
+                    sys = dynamic_cast<chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<std::complex<double> > >*>(dyn);
+                    if(sys != nullptr) {
+                        return (chimera::simulation::AbstractIntegrator*)new RungeKutta_double_vecComplex(getChimeraSystem()->getTypeSystem(), _init, sys, dt);
+                    }
+                }
                 if(stateType->second == vectorVectorRealType) {
                     chimera::simulation::TemplateOdeSystem<double, vec_vec_real>* sys;
                     sys = dynamic_cast<chimera::simulation::TemplateOdeSystem<double, vec_vec_real>*>(dyn);
                     if(sys != nullptr) {
                         return (chimera::simulation::AbstractIntegrator*)new RungeKutta_double_vecvecDouble(getChimeraSystem()->getTypeSystem(), _init, sys, dt);
-                        //std::cout << "RETURN new RungeKutta_double_vecvecDouble(sys, dt);" << std::endl;
+                    }
+                }
+                if(stateType->second == vectorVectorComplexType) {
+                    chimera::simulation::TemplateOdeSystem<double, vec_vec_complex>* sys;
+                    sys = dynamic_cast<chimera::simulation::TemplateOdeSystem<double, vec_vec_complex>*>(dyn);
+                    if(sys != nullptr) {
+                        return (chimera::simulation::AbstractIntegrator*)new RungeKutta_double_vecvecComplex(getChimeraSystem()->getTypeSystem(), _init, sys, dt);
                     }
                 }
             }
         }
-        return nullptr;
     }
+    return nullptr;
 }
 
 chimera::simulation::AbstractIntegrator* RungeKuttaModule::getIntegratorInstance(chimera::vec_t_LuaItem& parameters) const
@@ -171,15 +192,24 @@ chimera::simulation::AbstractIntegrator* RungeKuttaModule::getIntegratorInstance
 bool RungeKuttaModule::checkFeatures(const chimera::map_t_size& features) const
 {
     static const std::string vectorRealMetaName = (std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
+    static const std::string vectorComplexMetaName = (std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Complex));
     static const std::string vectorVectorRealMetaName = (std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
+    static const std::string vectorVectorComplexMetaName = (std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Complex));
+
     static const size_t vectorRealType = getChimeraSystem()->getTypeSystem()->getParameterID(vectorRealMetaName);
+    static const size_t vectorComplexType = getChimeraSystem()->getTypeSystem()->getParameterID(vectorComplexMetaName);
     static const size_t vectorVectorRealType = getChimeraSystem()->getTypeSystem()->getParameterID(vectorVectorRealMetaName);
+    static const size_t vectorVectorComplexType = getChimeraSystem()->getTypeSystem()->getParameterID(vectorVectorComplexMetaName);
 
     auto timeType = features.find(chimera::simulation::Naming::Feature_time_type);
     auto stateType = features.find(chimera::simulation::Naming::Feature_state_type);
     if(timeType != features.end() && stateType != features.end()) {
         if(timeType->second == chimera::systemtypes::PID_NUMBER) {
-            if(stateType->second == vectorRealType || stateType->second == vectorVectorRealType) {
+            if(stateType->second == vectorRealType ||
+               stateType->second == vectorComplexType ||
+               stateType->second == vectorVectorRealType ||
+               stateType->second == vectorVectorComplexType)
+            {
                 return true;
             }
         }
