@@ -5,6 +5,7 @@
 #include <vector>
 #include <boost/numeric/ublas/vector.hpp>
 #include <limits>
+#include <complex>
 
 #include "Naming.hpp"
 #include "ExtensionNaming.hpp"
@@ -164,12 +165,16 @@ TimedObserverProvider::TimedObserverProvider(double start, double step, double e
 {
     _args1 = new struct chimera::simulation::T_TimeStateArgs<double, boost::numeric::ublas::vector<double> >();
     _args2 = new struct chimera::simulation::T_TimeStateArgs<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> > >();
+    _args3 = new struct chimera::simulation::T_TimeStateArgs<double, boost::numeric::ublas::vector<std::complex<double> > >();
+    _args4 = new struct chimera::simulation::T_TimeStateArgs<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<std::complex<double> > > >();
 }
 
 TimedObserverProvider::~TimedObserverProvider()
 {
     delete _args1;
     delete _args2;
+    delete _args3;
+    delete _args4;
 }
 
 chimera::simulation::Observer* TimedObserverProvider::getObserver(chimera::simulation::NotificationManager* sender)
@@ -191,7 +196,22 @@ chimera::simulation::Observer* TimedObserverProvider::getObserver(chimera::simul
                 return new chimera::simulation::TemplateStateObserver<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> > >(integrator->getTimeType(), integrator->getStateType());
             }
         }
+        {
+            chimera::simulation::TemplateIntegrator<double, boost::numeric::ublas::vector<std::complex<double> > >* integrator = dynamic_cast<chimera::simulation::TemplateIntegrator<double, boost::numeric::ublas::vector<std::complex<double> > >*>(sim->getIntegrator());
+            if(integrator)
+            {
+                return new chimera::simulation::TemplateStateObserver<double, boost::numeric::ublas::vector<double> >(integrator->getTimeType(), integrator->getStateType());
+            }
+        }
+        {
+            chimera::simulation::TemplateIntegrator<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<std::complex<double> > > >* integrator = dynamic_cast<chimera::simulation::TemplateIntegrator<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<std::complex<double> > > >*>(sim->getIntegrator());
+            if(integrator)
+            {
+                return new chimera::simulation::TemplateStateObserver<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<std::complex<double> > > >(integrator->getTimeType(), integrator->getStateType());
+            }
+        }
     }
+    return nullptr;
 }
 
 bool TimedObserverProvider::triggerCondition(chimera::simulation::NotificationManager* sender)
@@ -245,7 +265,26 @@ void* TimedObserverProvider::getEventArgs(chimera::simulation::NotificationManag
                 return _args2;
             }
         }
+        {
+            chimera::simulation::TemplateIntegrator<double, boost::numeric::ublas::vector<std::complex<double> > >* integrator = dynamic_cast<chimera::simulation::TemplateIntegrator<double, boost::numeric::ublas::vector<std::complex<double> > >*>(sim->getIntegrator());
+            if(integrator)
+            {
+                _args3->time = integrator->getTime();
+                _args3->state = integrator->getState();
+                return _args3;
+            }
+        }
+        {
+            chimera::simulation::TemplateIntegrator<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<std::complex<double> > > >* integrator = dynamic_cast<chimera::simulation::TemplateIntegrator<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<std::complex<double> > > >*>(sim->getIntegrator());
+            if(integrator)
+            {
+                _args4->time = integrator->getTime();
+                _args4->state = integrator->getState();
+                return _args4;
+            }
+        }
     }
+    return nullptr;
 }
 
 std::string TimedObserverProvider::getName() const

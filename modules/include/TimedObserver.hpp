@@ -31,6 +31,8 @@ class TimedObserverProvider:
         double _last;
         struct chimera::simulation::T_TimeStateArgs<double, boost::numeric::ublas::vector<double> >* _args1;
         struct chimera::simulation::T_TimeStateArgs<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> > >* _args2;
+        struct chimera::simulation::T_TimeStateArgs<double, boost::numeric::ublas::vector<std::complex<double> > >* _args3;
+        struct chimera::simulation::T_TimeStateArgs<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<std::complex<double> > > >* _args4;
 };
 
 #endif // TIMEDOBSERVER_H
