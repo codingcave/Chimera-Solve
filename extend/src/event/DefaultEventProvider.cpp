@@ -1,5 +1,6 @@
 #include <iostream>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "event/Observer.hpp"
@@ -8,9 +9,7 @@
 #include "event/DefaultEventProvider.hpp"
 #include "event/NotificationManager.hpp"
 
-chimera::simulation::DefaultEventProvider::DefaultEventProvider(const std::string& name, Observer* observer):
-    _name(name),
-    _observer(observer)
+chimera::simulation::DefaultEventProvider::DefaultEventProvider()
 {
     //ctor
 }
@@ -20,22 +19,12 @@ chimera::simulation::DefaultEventProvider::~DefaultEventProvider()
     //dtor
 }
 
-chimera::simulation::Observer* chimera::simulation::DefaultEventProvider::getObserver(NotificationManager*)
-{
-    return _observer;
-}
-
-bool chimera::simulation::DefaultEventProvider::triggerCondition(NotificationManager*)
+bool chimera::simulation::DefaultEventProvider::triggerCondition(NotificationManager const * const)
 {
     return true;
 }
 
-void* chimera::simulation::DefaultEventProvider::getEventArgs(NotificationManager*)
+void* chimera::simulation::DefaultEventProvider::getEventArgs(NotificationManager const * const)
 {
     return nullptr;
-}
-
-std::string chimera::simulation::DefaultEventProvider::getName() const
-{
-    return _name;
 }

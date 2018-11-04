@@ -1,15 +1,15 @@
-#ifndef SIMULATION_H
-#define SIMULATION_H
+#ifndef TEMPORALSIMULATION_H
+#define TEMPORALSIMULATION_H
 
 namespace chimera {
     namespace runtime {
 
-        class Simulation:
-            public chimera::simulation::NotificationManager, public chimera::simulation::ISimulation
+        class TemporalSimulation:
+            public chimera::simulation::AbstractSimulation
         {
             public:
-                Simulation(chimera::simulation::AbstractIntegrator* integrator);
-                virtual ~Simulation();
+                TemporalSimulation(chimera::simulation::AbstractTemporalIntegrator* integrator);
+                virtual ~TemporalSimulation();
                 bool getYield() const;
                 void setYield(bool value);
                 bool nextStep();
@@ -17,7 +17,8 @@ namespace chimera {
                 virtual chimera::simulation::AbstractIntegrator* getIntegrator() override;
             protected:
             private:
-                chimera::simulation::AbstractIntegrator* _integrator;
+                chimera::simulation::AbstractTemporalIntegrator* _integrator;
+                chimera::simulation::TemporalStateEventProvider* _onStep;
                 bool _yield;
                 size_t _type;
                 std::string _name;
@@ -25,4 +26,4 @@ namespace chimera {
         };
     }
 }
-#endif // SIMULATION_H
+#endif // TEMPORALSIMULATION_H

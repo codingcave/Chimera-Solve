@@ -39,6 +39,9 @@ namespace chimera {
             virtual ~ParameterValue();
             size_t getType() const;
             void* getValue() const;
+            size_t getBaseType() const;
+            size_t getTag() const;
+            size_t getFlag(const std::string& flag) const;
             void* const operator-> ();
             void dispose();
 

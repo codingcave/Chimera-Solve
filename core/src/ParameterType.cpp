@@ -49,6 +49,36 @@ chimera::ParameterType::ParameterType(const std::string& name, const int& id, vo
     //ctor
 }
 
+chimera::ParameterType::ParameterType(const std::string& name, const int& id, void const * const origin, const struct chimera::T_ParameterDef& pdef, const std::unordered_map<std::string, size_t>& flags):
+    _id(id),
+    _name(name),
+    _origin(origin),
+    _initialize(pdef.initialize),
+    _pushValue(pdef.pushValue),
+    _deleteValue(pdef.deleteValue),
+    _dispose(pdef.dispose),
+    _base(0),
+    _tag(0),
+    _flags(flags)
+{
+    //ctor
+}
+
+chimera::ParameterType::ParameterType(const std::string& name, const int& id, void const * const origin, const struct T_ParameterDef& pdef, size_t base, size_t tag, const std::unordered_map<std::string, size_t>& flags):
+    _id(id),
+    _name(name),
+    _origin(origin),
+    _initialize(pdef.initialize),
+    _pushValue(pdef.pushValue),
+    _deleteValue(pdef.deleteValue),
+    _dispose(pdef.dispose),
+    _base(base),
+    _tag(tag),
+    _flags(flags)
+{
+    //ctor
+}
+
 chimera::ParameterType::~ParameterType()
 {
 
@@ -149,6 +179,19 @@ bool chimera::ParameterType::castFrom(lua_State* const L, size_t type, void * co
     }
 
     return false;
+}
+
+size_t chimera::ParameterType::getFlag(const std::string& flag) const
+{
+    if (_flags.size() > 0)
+    {
+        auto flagValue = _flags.find (flag);
+        if (flagValue != _flags.end())
+        {
+            flagValue->second;
+        }
+    }
+    return 0;
 }
 
 void chimera::ParameterType::addCast(size_t from, lua_CFunction fn_cast)

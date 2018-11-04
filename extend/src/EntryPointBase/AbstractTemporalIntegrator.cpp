@@ -8,13 +8,14 @@
 #include "def.hpp"
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/AbstractIntegrator.hpp"
+#include "EntryPointBase/AbstractTemporalIntegrator.hpp"
 
-chimera::simulation::AbstractIntegrator::AbstractIntegrator()
+chimera::simulation::AbstractTemporalIntegrator::AbstractTemporalIntegrator()
 {
-
+    //ctor
 }
 
-chimera::simulation::AbstractIntegrator::~AbstractIntegrator()
+chimera::simulation::AbstractTemporalIntegrator::~AbstractTemporalIntegrator()
 {
     //dtor
 }

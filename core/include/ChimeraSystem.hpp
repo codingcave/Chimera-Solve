@@ -51,6 +51,8 @@ namespace chimera {
             void pushLibrary(const std::string& name, lua_CFunction createMetaTable);
             size_t registerParameter(const std::string& name, const struct T_ParameterDef& pdef, size_t base, size_t tag);
             size_t registerParameter(const std::string& name, const struct T_ParameterDef& pdef);
+            size_t registerParameter(const std::string& name, const struct T_ParameterDef& pdef, size_t base, size_t tag, const std::unordered_map<std::string, size_t>& flags);
+            size_t registerParameter(const std::string& name, const struct T_ParameterDef& pdef, const std::unordered_map<std::string, size_t>& flags);
             void setLogLevel(const unsigned int& loglevel);
         private:
 

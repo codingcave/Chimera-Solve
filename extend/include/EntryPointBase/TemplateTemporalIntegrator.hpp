@@ -1,5 +1,5 @@
-#ifndef TEMPLATEINTEGRATOR_H
-#define TEMPLATEINTEGRATOR_H
+#ifndef TEMPLATETEMPORALINTEGRATOR_H
+#define TEMPLATETEMPORALINTEGRATOR_H
 
 /*
 namespace chimera {
@@ -8,10 +8,10 @@ namespace chimera {
         class IEventListenerProvider;
 
         template<typename time_type, typename state_type>
-        class TemplateStateObserver;
+        class TemplateTemporalStateObserver;
 
         template<typename time_type, typename state_type>
-        class TemplateStateEventProvider;
+        class TemplateTemporalStateEventProvider;
 
         template<typename time_type, typename state_type>
         struct T_TimeStateArgs
@@ -21,37 +21,43 @@ namespace chimera {
         };
 
         template<typename time_type, typename state_type>
-        class TemplateIntegrator:
-            public AbstractIntegrator
+        class TemplateTemporalIntegrator:
+            public AbstractTemporalIntegrator
         {
             public:
-                TemplateIntegrator(){}
-                virtual ~TemplateIntegrator(){}
+                TemplateTemporalIntegrator() {}
+                virtual ~TemplateTemporalIntegrator() {}
 
                 //void * currentTime() override { return (void *)getTime(); }
                 //void * currentState() override { return (void *)getState(); }
                 virtual const time_type& getTime() const = 0;
                 virtual const state_type& getState() const = 0;
-                virtual AbstractEventProvider* createStateEvent() override
-                {
-                    return new TemplateStateEventProvider<time_type, state_type>(this);
-                }
+
+                //virtual AbstractEventProvider* createStateEvent() override
+                //{
+                //    return new TemplateTemporalStateEventProvider<time_type, state_type>(this);
+                //}
             protected:
             private:
         };
 
+
+
+
+
+
         template<typename time_type, typename state_type>
-        class TemplateStateEventProvider:
+        class TemplateTemporalStateEventProvider:
             public AbstractEventProvider
         {
             public:
-                TemplateStateEventProvider(TemplateIntegrator<time_type, state_type>* integrator)
+                TemplateTemporalStateEventProvider(TemplateTemporalIntegrator<time_type, state_type>* integrator)
                 {
                     _integrator = integrator;
-                    _observer = new TemplateStateObserver<time_type, state_type>(integrator->getTimeType(), integrator->getStateType());
+                    _observer = new TemplateTemporalStateObserver<time_type, state_type>(integrator->getTimeType(), integrator->getStateType());
                     _args = new struct T_TimeStateArgs<time_type, state_type>();
                 }
-                virtual ~TemplateStateEventProvider()
+                virtual ~TemplateTemporalStateEventProvider()
                 {
                     delete _observer;
                     delete _args;
@@ -77,21 +83,21 @@ namespace chimera {
             protected:
             private:
                 Observer* _observer;
-                TemplateIntegrator<time_type, state_type>* _integrator;
+                TemplateTemporalIntegrator<time_type, state_type>* _integrator;
                 struct T_TimeStateArgs<time_type, state_type>* _args;
         };
 
         template<typename time_type, typename state_type>
-        class TemplateStateObserver:
+        class TemplateTemporalStateObserver:
             public Observer
         {
             public:
-                TemplateStateObserver(size_t timeType, size_t stateType){
+                TemplateTemporalStateObserver(size_t timeType, size_t stateType){
                     _timeType = timeType;
                     _stateType = stateType;
                     _listeners = new std::unordered_set<StateEventListener<time_type, state_type>* >();
                 }
-                virtual ~TemplateStateObserver(){
+                virtual ~TemplateTemporalStateObserver(){
                     delete _listeners;
                 }
 
@@ -142,4 +148,4 @@ namespace chimera {
 }
 */
 
-#endif // TEMPLATEINTEGRATOR_H
+#endif // TEMPLATETEMPORALINTEGRATOR_H

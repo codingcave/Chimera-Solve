@@ -5,6 +5,7 @@
 #include <list>
 #include "lua.hpp"
 
+#include "ExtensionNaming.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
 #include "def.hpp"
@@ -15,7 +16,6 @@
 #include "event/Observer.hpp"
 #include "EntryPointBase/AbstractEventProvider.hpp"
 #include "event/DefaultEventProvider.hpp"
-#include "NotificationManager.hpp"
 #include "EntryPointBase/OutputModule.hpp"
 
 chimera::simulation::OutputModule::OutputModule()
@@ -33,3 +33,14 @@ void* chimera::simulation::OutputModule::getInstance(vec_t_LuaItem& parameters) 
     return (void*)getOutputInstance(parameters);
 }
 
+size_t chimera::simulation::OutputModule::getFlag(const std::string& flag) const
+{
+    if (flag == chimera::simulation::Naming::Flag_Observer)
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}

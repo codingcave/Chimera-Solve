@@ -3,12 +3,14 @@
 
 namespace chimera {
     namespace simulation {
+        class NotificationManager;
+
         class IEventListener
         {
             public:
                 IEventListener() {}
                 virtual ~IEventListener() {}
-                virtual void notify(void const * const sender, void* args) = 0;
+                virtual void notify(NotificationManager const * const sender, void const * const args) = 0;
             protected:
             private:
         };

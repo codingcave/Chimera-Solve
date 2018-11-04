@@ -3,6 +3,7 @@
 
 namespace chimera {
     namespace simulation {
+        /*
         struct StateProviderArgs {
             size_t time_type;
             size_t state_type;
@@ -19,6 +20,7 @@ namespace chimera {
             protected:
             private:
         };
+        */
     }
 }
 

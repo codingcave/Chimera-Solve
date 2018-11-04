@@ -91,13 +91,40 @@ chimera::Module* chimera::ChimeraSystem::includeModule(chimera::EntryPoint* entr
 
 size_t chimera::ChimeraSystem::registerParameter(const std::string& name, const struct T_ParameterDef& pdef, size_t base, size_t tag)
 {
-    getTypeSystem()->registerParameter(name, this, pdef, base, tag);
+    return getTypeSystem()->registerParameter(name, this, pdef, base, tag);
 }
 
 size_t chimera::ChimeraSystem::registerParameter(const std::string& name, const struct T_ParameterDef& pdef)
 {
-    getTypeSystem()->registerParameter(name, this, pdef);
+    return getTypeSystem()->registerParameter(name, this, pdef);
 }
+
+size_t chimera::ChimeraSystem::registerParameter(const std::string& name, const struct T_ParameterDef& pdef, size_t base, size_t tag, const std::unordered_map<std::string, size_t>& flags)
+{
+    return getTypeSystem()->registerParameter(name, this, pdef, base, tag, flags);
+}
+
+size_t chimera::ChimeraSystem::registerParameter(const std::string& name, const struct T_ParameterDef& pdef, const std::unordered_map<std::string, size_t>& flags)
+{
+    return getTypeSystem()->registerParameter(name, this, pdef, flags);
+}
+
+/*
+void chimera::ChimeraSystem::pushLuaValue(lua_State* const L, chimera::ParameterValue& param) const
+{
+    _typeSys->pushValue(L, param.getType(), param.getValue());
+}
+
+void chimera::ChimeraSystem::pushLuaValue(lua_State* const L, size_t type, void* value) const
+{
+    _typeSys->pushValue(L, type, value);
+}
+
+void chimera::ChimeraSystem::pushLuaValue(lua_State* const L, const std::string& type, void* value) const
+{
+    _typeSys->pushValue(L, _typeSys->getParameterID(type), value);
+}
+*/
 
 void chimera::ChimeraSystem::deleteLuaValue(lua_State* const L, ParameterValue& value) const
 {

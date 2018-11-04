@@ -5,15 +5,19 @@ namespace chimera {
     namespace simulation {
         class AbstractEventProvider
         {
+            friend class NotificationManager;
+
             public:
                 AbstractEventProvider();
                 virtual ~AbstractEventProvider();
-                virtual Observer* getObserver(NotificationManager* sender) = 0;
-                virtual bool triggerCondition(NotificationManager* sender) = 0;
-                virtual void* getEventArgs(NotificationManager* sender) = 0;
-                virtual std::string getName() const = 0;
+                void trigger(NotificationManager* sender);
+                Observer* getObserver();
+                virtual IEventListener* provideListener(IEventListenerProvider* provider) const = 0;
             protected:
+                virtual bool triggerCondition(NotificationManager const * const sender) = 0;
+                virtual void* getEventArgs(NotificationManager const * const sender) = 0;
             private:
+                Observer* _observer;
         };
 
     }

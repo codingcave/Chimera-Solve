@@ -1,4 +1,3 @@
-/*
 #include <iostream>
 #include <unordered_map>
 #include <unordered_set>
@@ -19,18 +18,19 @@
 //#include "event/NotificationManager.hpp"
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/AbstractIntegrator.hpp"
-#include "EntryPointBase/TemplateIntegrator.hpp"
-*/
+#include "EntryPointBase/AbstractTemporalIntegrator.hpp"
+#include "EntryPointBase/TemplateTemporalIntegrator.hpp"
+
 
 /*
 template<typename time_type, typename state_type>
-TemplateIntegrator<time_type, state_type>::TemplateIntegrator()
+TemplateTemporalIntegrator<time_type, state_type>::TemplateTemporalIntegrator()
 {
     //ctor
 }
 
 template<typename time_type, typename state_type>
-TemplateIntegrator<time_type, state_type>::~TemplateIntegrator()
+TemplateTemporalIntegrator<time_type, state_type>::~TemplateTemporalIntegrator()
 {
     //dtor
 }

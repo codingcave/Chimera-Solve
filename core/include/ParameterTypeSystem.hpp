@@ -56,6 +56,8 @@ namespace chimera {
             void removeParameter(void const * const origin);
             size_t registerParameter(const std::string& name, void const * const origin, const struct T_ParameterDef& pdef, size_t base, size_t tag);
             size_t registerParameter(const std::string& name, void const * const origin, const struct T_ParameterDef& pdef);
+            size_t registerParameter(const std::string& name, void const * const origin, const struct T_ParameterDef& pdef, size_t base, size_t tag, const std::unordered_map<std::string, size_t>& flags);
+            size_t registerParameter(const std::string& name, void const * const origin, const struct T_ParameterDef& pdef, const std::unordered_map<std::string, size_t>& flags);
         private:
             friend int chimera::lua_UserData_gc(lua_State* L);
             friend int chimera::luat_luafunction_call(lua_State* L);
@@ -68,7 +70,7 @@ namespace chimera {
             std::unordered_map<void*, ParameterValue>* _references;
 
             ParameterTypeSystem();
-            size_t registerParameter(const std::string& name, void const * const origin, const struct T_ParameterDef& pdef, size_t base, size_t tag, bool notify);
+            size_t registerParameter(const std::string& name, void const * const origin, const struct T_ParameterDef& pdef, size_t base, size_t tag, const std::unordered_map<std::string, size_t>& flags, bool notify);
             void deleteAllReferences(size_t type);
             //void notifyUnload(StateSynchrony* sender, void const * const data) override;
             //void notifyItemRemoved(StateSynchrony* sender, void const * const item, void const * const data) override;
