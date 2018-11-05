@@ -38,6 +38,7 @@
 #include "Network/Network_double_vecDouble.hpp"
 #include "Network/Network_double_vecComplex.hpp"
 #include "Network/MultiNetwork_double_vecDouble.hpp"
+#include "Network/MultiNetwork_double_vecComplex.hpp"
 #include "Network/NetworkModule.hpp"
 
 
@@ -257,11 +258,14 @@ void* NetworkModule::getInstance(chimera::vec_t_LuaItem& parameters) const
             }
             case 1:
             {
-                if(sysType != 1) {
-                    break;
-                }
-                std::vector<chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >*> oscillators;
                 size_t randomEntryPoint = (size_t)getChimeraSystem()->getEntryPointSystem()->getEntryPoint(chimera::simulation::Naming::EntryPoint_random);
+
+                std::vector<chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >*> oscillators1;
+                std::vector<chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<std::complex<double> > >*> oscillators2;
+                chimera::simulation::AbstractSystemDynamic* oscItem;
+                chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >* odeItem1;
+                chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<std::complex<double> > >* odeItem2;
+                int oscType = 0;
 
                 for(int i = 0; i < number; i++)
                 {
@@ -289,23 +293,71 @@ void* NetworkModule::getInstance(chimera::vec_t_LuaItem& parameters) const
                             }
                         }
                     }
-                    chimera::simulation::AbstractSystemDynamic* oscItem = (chimera::simulation::AbstractSystemDynamic*)sysMod->getInstance(initParams);
-                    chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >* odeItem = dynamic_cast<chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >*>(oscItem);
-                    if(odeItem != nullptr)
-                    {
-                        oscillators.push_back(odeItem);
-                    }
-                    else
-                    {
-                        for(auto osc : oscillators)
-                        {
-                            delete osc;
+                    oscItem = (chimera::simulation::AbstractSystemDynamic*)sysMod->getInstance(initParams);
+
+
+                    if (i == 0) {
+                        odeItem1 = dynamic_cast<chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >*>(oscItem);
+                        if (odeItem1) {
+                            oscType = 1;
+                            oscillators1.push_back(odeItem1);
+                        } else {
+                            odeItem2 = dynamic_cast<chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<std::complex<double> > >*>(oscItem);
+                            if (odeItem2) {
+                                oscType = 2;
+                                oscillators2.push_back(odeItem2);
+                            } else {
+                                return nullptr;
+                            }
                         }
-                        return nullptr;
+                    } else {
+                        switch (oscType)
+                        {
+                            case 1:
+                                odeItem1 = dynamic_cast<chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >*>(oscItem);
+                                if(odeItem1 != nullptr)
+                                {
+                                    oscillators1.push_back(odeItem1);
+                                }
+                                else
+                                {
+                                    delete odeItem1;
+                                    for(auto osc : oscillators1)
+                                    {
+                                        delete osc;
+                                    }
+                                    return nullptr;
+                                }
+                                break;
+                            case 2:
+                                odeItem2 = dynamic_cast<chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<std::complex<double> > >*>(oscItem);
+                                if(odeItem2 != nullptr)
+                                {
+                                    oscillators2.push_back(odeItem2);
+                                }
+                                else
+                                {
+                                    delete odeItem2;
+                                    for(auto osc : oscillators2)
+                                    {
+                                        delete osc;
+                                    }
+                                    return nullptr;
+                                }
+                                break;
+                        }
                     }
                 }
 
-                return new MultiNetwork_double_vecDouble(getChimeraSystem()->getTypeSystem(), sysMod, oscillators, pvCoupling);
+                switch (oscType)
+                {
+                    case 1:
+                        return new MultiNetwork_double_vecDouble(getChimeraSystem()->getTypeSystem(), sysMod, oscillators1, pvCoupling);
+                    case 2:
+                        return new MultiNetwork_double_vecComplex(getChimeraSystem()->getTypeSystem(), sysMod, oscillators2, pvCoupling);
+                    default:
+                        return nullptr;
+                }
             }
         }
     } else {
