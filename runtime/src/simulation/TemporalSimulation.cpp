@@ -16,6 +16,7 @@
 #include "EntryPointBase/AbstractIntegrator.hpp"
 #include "EntryPointBase/AbstractTemporalIntegrator.hpp"
 #include "simulation/TemporalStateEventProvider.hpp"
+
 #include "simulation/AbstractSimulation.hpp"
 #include "simulation/TemporalSimulation.hpp"
 
@@ -23,15 +24,13 @@ chimera::runtime::TemporalSimulation::TemporalSimulation(chimera::simulation::Ab
 {
     _running = false;
     _integrator = integrator;
-    _onStep = new chimera::simulation::TemporalStateEventProvider(integrator);
+    _onStep = new chimera::simulation::TemporalStateEventProvider(integrator->getTimeType(), integrator->getStateType());
     registerEvent("step", _onStep);
-
 }
 
 chimera::runtime::TemporalSimulation::~TemporalSimulation()
 {
     delete _onStep;
-    //dtor
 }
 
 bool chimera::runtime::TemporalSimulation::isRunning() const
@@ -47,17 +46,25 @@ bool chimera::runtime::TemporalSimulation::getYield() const
 void chimera::runtime::TemporalSimulation::setYield(bool value)
 {
     _yield = value;
-    if(value)
+    if(value) {
         _running = false;
+    }
 }
 
 bool chimera::runtime::TemporalSimulation::nextStep()
 {
+    static struct chimera::simulation::T_TimeStateArgs args;
+
     _running = true;
     if(!_integrator->finished())
     {
         _integrator->nextStep();
-        _onStep->trigger(this);
+        if(!_onStep->getObserver()->empty()) {
+            args.time = _integrator->currentTime();
+            args.state = _integrator->currentState();
+            _onStep->getObserver()->trigger(this, &args);
+        }
+
         return true;
     }
     else

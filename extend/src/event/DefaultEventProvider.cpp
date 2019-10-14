@@ -4,7 +4,8 @@
 #include <vector>
 
 #include "event/Observer.hpp"
-//#include "interfaces/IEventListener.hpp"
+#include "interfaces/IEventListener.hpp"
+#include "interfaces/IEventListenerProvider.hpp"
 #include "EntryPointBase/AbstractEventProvider.hpp"
 #include "event/DefaultEventProvider.hpp"
 #include "event/NotificationManager.hpp"
@@ -19,12 +20,7 @@ chimera::simulation::DefaultEventProvider::~DefaultEventProvider()
     //dtor
 }
 
-bool chimera::simulation::DefaultEventProvider::triggerCondition(NotificationManager const * const)
+chimera::simulation::IEventListener* chimera::simulation::DefaultEventProvider::provideListener(IEventListenerProvider* provider) const
 {
-    return true;
-}
-
-void* chimera::simulation::DefaultEventProvider::getEventArgs(NotificationManager const * const)
-{
-    return nullptr;
+    return provider->provideListener(0, nullptr);
 }

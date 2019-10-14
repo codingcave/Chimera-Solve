@@ -22,15 +22,15 @@ namespace chimera {
             public AbstractEventProvider
         {
             public:
-                TemporalStateEventProvider(AbstractTemporalIntegrator* integrator);
+                TemporalStateEventProvider(size_t time_type, size_t state_type);
                 virtual ~TemporalStateEventProvider();
                 virtual IEventListener* provideListener(IEventListenerProvider* provider) const override;
             protected:
-                virtual bool triggerCondition(NotificationManager const * const sender) override;
-                virtual void* getEventArgs(NotificationManager const * const sender) override;
+                //virtual bool triggerCondition(NotificationManager const * const sender) override;
+                //virtual void* getEventArgs(NotificationManager const * const sender) override;
             private:
-                AbstractTemporalIntegrator* _integrator;
-                struct T_TimeStateArgs* _args;
+                T_StateProviderArgs _providerArgs;
+                //struct T_TimeStateArgs* _args;
         };
     }
 }

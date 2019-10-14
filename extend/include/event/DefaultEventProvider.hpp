@@ -9,9 +9,8 @@ namespace chimera {
             public:
                 DefaultEventProvider();
                 virtual ~DefaultEventProvider();
+                virtual IEventListener* provideListener(IEventListenerProvider* provider) const = 0;
             protected:
-                virtual bool triggerCondition(NotificationManager const * const) override;
-                virtual void* getEventArgs(NotificationManager const * const) override;
             private:
         };
     }

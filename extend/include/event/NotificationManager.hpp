@@ -11,15 +11,16 @@ namespace chimera {
             public:
                 NotificationManager();
                 virtual ~NotificationManager();
-                void addListener(const std::string& name, IEventListener* listener);
+                bool addListener(const std::string& name, IEventListener* listener);
                 IEventListener const * const addListener(const std::string& name, IEventListenerProvider* listener);
-                void removeListener(const std::string& name, IEventListener* listener);
+                bool removeListener(const std::string& name, IEventListener* listener);
                 bool hasEvent(const std::string& name) const;
+                size_t getEventType(const std::string& name) const;
             protected:
                 Observer* getObserver(const std::string& name);
                 void registerEvent(const std::string& name, AbstractEventProvider* eventProvider);
-                void notifyEvent(const std::string& name);
-                void notifyAll();
+                void notifyEvent(const std::string& name, void const * const args);
+                //void notifyAll();
             private:
                 std::unordered_map<std::string, AbstractEventProvider*>* _providerMap;
         };

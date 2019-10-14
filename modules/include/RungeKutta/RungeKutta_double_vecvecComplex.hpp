@@ -11,7 +11,7 @@ vec_vec_complex operator*(const double a, const vec_vec_complex &v);
 vec_vec_complex operator+(const vec_vec_complex &a, const vec_vec_complex &v);
 
 class RungeKutta_double_vecvecComplex:
-    public chimera::simulation::TemplateIntegrator<double, vec_vec_complex>
+    public chimera::simulation::AbstractTemporalIntegrator
 {
     public:
         RungeKutta_double_vecvecComplex(chimera::ParameterTypeSystem* ps, chimera::EntryPoint* init, chimera::simulation::TemplateOdeSystem<double, vec_vec_complex>* system, double dt);
@@ -19,9 +19,6 @@ class RungeKutta_double_vecvecComplex:
         virtual void nextStep() override;
         virtual size_t getTimeType() const override;
         virtual size_t getStateType() const override;
-        virtual const double& getTime() const override;
-        virtual const vec_vec_complex& getState() const override;
-
         virtual void * currentTime() override;
         virtual void * currentState() override;
         virtual void initialize(chimera::vec_t_LuaItem args) override;

@@ -9,7 +9,12 @@
 
 chimera::simulation::AbstractEventProvider::AbstractEventProvider()
 {
-    _observer = new Observer();
+    _observer = new Observer(0);
+}
+
+chimera::simulation::AbstractEventProvider::AbstractEventProvider(size_t eventType)
+{
+    _observer = new Observer(eventType);
 }
 
 chimera::simulation::AbstractEventProvider::~AbstractEventProvider()
@@ -17,15 +22,13 @@ chimera::simulation::AbstractEventProvider::~AbstractEventProvider()
     delete _observer;
 }
 
-void chimera::simulation::AbstractEventProvider::trigger(NotificationManager* sender)
+size_t chimera::simulation::AbstractEventProvider::getType() const
 {
-    if(!_observer->empty() && triggerCondition(sender))
-    {
-        _observer->trigger(sender, getEventArgs(sender));
-    }
+    return _observer->getType();
 }
 
 chimera::simulation::Observer* chimera::simulation::AbstractEventProvider::getObserver()
 {
     return _observer;
 }
+

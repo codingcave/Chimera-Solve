@@ -379,7 +379,8 @@ size_t chimera::ParameterValue::getFlag(const std::string& flag) const
 {
     if(_data)
     {
-        if (_data->type == chimera::systemtypes::PID_INSTANCE)
+        if (_data->type == chimera::systemtypes::PID_INSTANCE ||
+            _data->cmSys->getTypeSystem()->getParameterBase(_data->type) == chimera::systemtypes::PID_INSTANCE)
         {
             lua_State* L = _data->cmSys->getLuaState();
             lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_METATABLES);

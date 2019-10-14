@@ -8,6 +8,7 @@
 #include "lua.hpp"
 
 #include "Naming.hpp"
+#include "extendTypes.hpp"
 #include "ExtensionNaming.hpp"
 #include "StateSynchrony.hpp"
 #include "interfaces/ILogger.hpp"
@@ -24,10 +25,16 @@
 #include "ChimeraSystem.hpp"
 #include "interfaces/IEventListener.hpp"
 #include "interfaces/IEventListenerProvider.hpp"
+#include "event/Observer.hpp"
+#include "EntryPointBase/AbstractEventProvider.hpp"
 #include "event/StateEventListener.hpp"
+#include "event/NotificationManager.hpp"
+//#include "simulation/TemporalStateEventProvider.hpp"
 #include "EntryPointBase/OutputMultiModule.hpp"
 //#include "types/LuaFunctionWrapper.hpp"
 //#include "EntryPointBase/OutputModule.hpp"
+
+
 
 #include "file_csv.hpp"
 
@@ -157,7 +164,7 @@ const std::string CsvFileWriter::getPath() const
     return _path;
 }
 
-chimera::simulation::IEventListener* CsvFileWriter::provideListener(size_t id, void* args)
+chimera::simulation::IEventListener* CsvFileWriter::provideListener(size_t id, void const * const args)
 {
     static const size_t pid_vecReal = _ps->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
     static const size_t pid_vecvecReal = _ps->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
@@ -167,7 +174,7 @@ chimera::simulation::IEventListener* CsvFileWriter::provideListener(size_t id, v
     switch(id){
     case 1: // StateEventListener
         {
-            struct chimera::simulation::StateProviderArgs* spArgs = (struct chimera::simulation::StateProviderArgs*)args;
+            struct T_StateProviderArgs* spArgs = (struct T_StateProviderArgs*)args;
             //std::cout << "Time:  " << spArgs->time_type << " :: " << _ps->getParameterName(spArgs->time_type) << std::endl;
             //std::cout << "State: " << spArgs->state_type << " :: " << _ps->getParameterName(spArgs->state_type) << std::endl;
 
@@ -210,19 +217,17 @@ FileOutput_real_vecReal::~FileOutput_real_vecReal()
 
 }
 
-void FileOutput_real_vecReal::notify(const double& time, const boost::numeric::ublas::vector<double>& state)
+//void FileOutput_real_vecReal::notify(const double& time, const boost::numeric::ublas::vector<double>& state)
+void FileOutput_real_vecReal::notify(chimera::simulation::NotificationManager const * const sender, void const * const args)
 {
-    (*_file) << time;
-    for(auto item : state)
+    T_TimeStateArgs const * const c_args = (T_TimeStateArgs const * const)args;
+    (*_file) << *((double*)c_args->time);
+    chimera::simulation::T_VectorDef* state = (chimera::simulation::T_VectorDef*)c_args->state;
+    for(auto item : *((boost::numeric::ublas::vector<double>*)state->value))
     {
         (*_file) << "," << item;
     }
     (*_file) << std::endl;
-}
-
-void FileOutput_real_vecReal::notify(void const * const sender, void* args)
-{
-
 }
 
 FileOutput_real_vecvecReal::FileOutput_real_vecvecReal(std::ofstream* file)
@@ -235,10 +240,13 @@ FileOutput_real_vecvecReal::~FileOutput_real_vecvecReal()
 
 }
 
-void FileOutput_real_vecvecReal::notify(const double& time, const boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >& state)
+//void FileOutput_real_vecvecReal::notify(const double& time, const boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >& state)
+void FileOutput_real_vecvecReal::notify(chimera::simulation::NotificationManager const * const sender, void const * const args)
 {
-    (*_file) << time;
-    for(auto node : state)
+    T_TimeStateArgs* c_args = (T_TimeStateArgs*)args;
+    (*_file) << *((double*)c_args->time);
+    chimera::simulation::T_VectorDef* state = (chimera::simulation::T_VectorDef*)c_args->state;
+    for(auto node : *((boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >*)state->value))
     {
         for(auto item : node)
         {
@@ -246,11 +254,6 @@ void FileOutput_real_vecvecReal::notify(const double& time, const boost::numeric
         }
     }
     (*_file) << std::endl;
-}
-
-void FileOutput_real_vecvecReal::notify(void const * const sender, void* args)
-{
-
 }
 
 FileOutput_real_vecComplex::FileOutput_real_vecComplex(std::ofstream* file)
@@ -263,11 +266,14 @@ FileOutput_real_vecComplex::~FileOutput_real_vecComplex()
 
 }
 
-void FileOutput_real_vecComplex::notify(const double& time, const boost::numeric::ublas::vector<std::complex<double> >& state)
+//void FileOutput_real_vecComplex::notify(const double& time, const boost::numeric::ublas::vector<std::complex<double> >& state)
+void FileOutput_real_vecComplex::notify(chimera::simulation::NotificationManager const * const sender, void const * const args)
 {
+    T_TimeStateArgs* c_args = (T_TimeStateArgs*)args;
     static double i;
-    (*_file) << time;
-    for(auto item : state)
+    (*_file) << *((double*)c_args->time);
+    chimera::simulation::T_VectorDef* state = (chimera::simulation::T_VectorDef*)c_args->state;
+    for(auto item : *((boost::numeric::ublas::vector<std::complex<double> >*)state->value))
     {
         i = std::imag(item);
         (*_file) << "," << std::real(item);
@@ -280,11 +286,6 @@ void FileOutput_real_vecComplex::notify(const double& time, const boost::numeric
     (*_file) << std::endl;
 }
 
-void FileOutput_real_vecComplex::notify(void const * const sender, void* args)
-{
-
-}
-
 FileOutput_real_vecvecComplex::FileOutput_real_vecvecComplex(std::ofstream* file)
 {
     _file = file;
@@ -295,11 +296,14 @@ FileOutput_real_vecvecComplex::~FileOutput_real_vecvecComplex()
 
 }
 
-void FileOutput_real_vecvecComplex::notify(const double& time, const boost::numeric::ublas::vector<boost::numeric::ublas::vector<std::complex<double> > >& state)
+//void FileOutput_real_vecvecComplex::notify(const double& time, const boost::numeric::ublas::vector<boost::numeric::ublas::vector<std::complex<double> > >& state)
+void FileOutput_real_vecvecComplex::notify(chimera::simulation::NotificationManager const * const sender, void const * const args)
 {
+    T_TimeStateArgs* c_args = (T_TimeStateArgs*)args;
     static double i;
-    (*_file) << time;
-    for(auto node : state)
+    (*_file) << *((double*)c_args->time);
+    chimera::simulation::T_VectorDef* state = (chimera::simulation::T_VectorDef*)c_args->state;
+    for(auto node : *((boost::numeric::ublas::vector<boost::numeric::ublas::vector<std::complex<double> > >*)state->value))
     {
         for(auto item : node)
         {
@@ -313,9 +317,4 @@ void FileOutput_real_vecvecComplex::notify(const double& time, const boost::nume
         }
     }
     (*_file) << std::endl;
-}
-
-void FileOutput_real_vecvecComplex::notify(void const * const sender, void* args)
-{
-
 }

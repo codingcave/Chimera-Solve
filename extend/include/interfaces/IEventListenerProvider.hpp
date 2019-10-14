@@ -8,7 +8,7 @@ namespace chimera {
             public:
                 IEventListenerProvider() {}
                 virtual ~IEventListenerProvider() {}
-                virtual IEventListener* provideListener(size_t id, void* args) = 0;
+                virtual IEventListener* provideListener(size_t id, void const * const args) = 0;
             protected:
             private:
         };

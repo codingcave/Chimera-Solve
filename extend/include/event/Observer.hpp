@@ -11,14 +11,17 @@ namespace chimera {
         {
             public:
                 Observer();
+                Observer(size_t eventType);
                 virtual ~Observer();
-                void trigger(NotificationManager* sender, void* args);
-                void addListener(chimera::simulation::IEventListener* listener);
-               void removeListener(chimera::simulation::IEventListener* listener);
+                void trigger(NotificationManager* sender, void const * const args);
+                bool addListener(chimera::simulation::IEventListener* listener);
+                bool removeListener(chimera::simulation::IEventListener* listener);
                 bool empty() const;
+                size_t getType() const;
             protected:
             private:
                 std::unordered_set<IEventListener*>* _listeners;
+                size_t _eventType;
         };
     }
 }

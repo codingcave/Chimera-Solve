@@ -305,15 +305,12 @@ int chimera::runtime::lua_TemporalSimulation_onStep(lua_State* L)
     lua_gettable(L, LUA_REGISTRYINDEX);
     ChimeraRuntime* chSys = (ChimeraRuntime*)lua_touserdata(L, -1);
     lua_pop(L, 1);
-
+    // test for nullptr
     TemporalSimulation* sim = dynamic_cast<TemporalSimulation*>
-        ((chimera::simulation::AbstractSimulation*)lua_touserdata(L, lua_upvalueindex(1)));
-
-
+        (*((chimera::simulation::AbstractSimulation**)lua_touserdata(L, lua_upvalueindex(1))));
     if (lua_gettop(L) > 0)
     {
         ParameterValue v(chSys->getTypeSystem()->getValue(L, 1));
-
         if(v.getFlag(chimera::simulation::Naming::Flag_MultiObserver))
         {
             chimera::simulation::IEventListenerProvider* provider = (chimera::simulation::IEventListenerProvider*)v.getValue();
@@ -328,6 +325,5 @@ int chimera::runtime::lua_TemporalSimulation_onStep(lua_State* L)
             return 0;
         }
     }
-
     return 0;
 }

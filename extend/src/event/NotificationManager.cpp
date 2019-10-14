@@ -28,30 +28,24 @@ void chimera::simulation::NotificationManager::registerEvent(const std::string& 
     }
 }
 
-void chimera::simulation::NotificationManager::notifyEvent(const std::string& name)
+void chimera::simulation::NotificationManager::notifyEvent(const std::string& name, void const * const args)
 {
     auto available = _providerMap->find (name);
     if(available != _providerMap->end())
     {
-        available->second->trigger(this);
+        available->second->getObserver()-> trigger(this, args);
     }
 }
 
-void chimera::simulation::NotificationManager::notifyAll()
-{
-    for(auto provider = _providerMap->begin(); provider != _providerMap->end(); provider++)
-    {
-        provider->second->trigger(this);
-    }
-}
-
-void chimera::simulation::NotificationManager::addListener(const std::string& name, chimera::simulation::IEventListener* listener)
+bool chimera::simulation::NotificationManager::addListener(const std::string& name, chimera::simulation::IEventListener* listener)
 {
     auto available = _providerMap->find (name);
     if(available != _providerMap->end())
     {
         available->second->getObserver()->addListener(listener);
+        return true;
     }
+    return false;
 }
 
 chimera::simulation::IEventListener const * const chimera::simulation::NotificationManager::addListener(const std::string& name, chimera::simulation::IEventListenerProvider* provider)
@@ -71,18 +65,32 @@ chimera::simulation::IEventListener const * const chimera::simulation::Notificat
     return nullptr;
 }
 
-void chimera::simulation::NotificationManager::removeListener(const std::string& name, chimera::simulation::IEventListener* listener)
+bool chimera::simulation::NotificationManager::removeListener(const std::string& name, chimera::simulation::IEventListener* listener)
 {
     auto available = _providerMap->find (name);
     if(available != _providerMap->end())
     {
-        available->second->getObserver()->removeListener(listener);
+        return available->second->getObserver()->removeListener(listener);
     }
+    return false;
 }
 
 bool chimera::simulation::NotificationManager::hasEvent(const std::string& name) const
 {
     return _providerMap->count(name);
+}
+
+size_t chimera::simulation::NotificationManager::getEventType(const std::string& name) const
+{
+    auto available = _providerMap->find(name);
+    if(available != _providerMap->end())
+    {
+        available->second->getType();
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 chimera::simulation::Observer* chimera::simulation::NotificationManager::getObserver(const std::string& name)

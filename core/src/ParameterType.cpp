@@ -188,7 +188,7 @@ size_t chimera::ParameterType::getFlag(const std::string& flag) const
         auto flagValue = _flags.find (flag);
         if (flagValue != _flags.end())
         {
-            flagValue->second;
+            return flagValue->second;
         }
     }
     return 0;

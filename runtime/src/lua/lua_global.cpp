@@ -157,16 +157,18 @@ int chimera::runtime::lua_global_simulation(lua_State* L)
 
     chimera::simulation::AbstractSimulation** sim = (chimera::simulation::AbstractSimulation**)lua_newuserdata(L, sizeof(chimera::simulation::AbstractSimulation*));
     lua_newtable(L);
+    lua_State* NL = lua_newthread(L);
 
     *sim = nullptr;
     // case for all simulation types
     if (tempInt) {
         *sim = new TemporalSimulation(tempInt);
         lua_pushliteral(L, "temporal");
-        lua_setfield(L, -2, "__simtype");
+        lua_setfield(L, -3, "__simtype");
+        lua_pushlightuserdata(NL, (void*)*sim);
+        lua_pushcclosure(NL, lua_TemporalSimulation_run, 1);
     }
 
-    lua_State* NL = lua_newthread(L);
     lua_setfield(L, -2, "__thread");
     lua_pushcfunction (L, lua_ignore_newindex);
     lua_setfield(L, -2, "__newindex");

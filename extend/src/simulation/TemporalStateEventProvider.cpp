@@ -23,23 +23,26 @@
 #include "EntryPointBase/TemplateTemporalIntegrator.hpp"
 
 
-chimera::simulation::TemporalStateEventProvider::TemporalStateEventProvider(chimera::simulation::AbstractTemporalIntegrator* integrator)
+chimera::simulation::TemporalStateEventProvider::TemporalStateEventProvider(size_t timeType, size_t stateType):
+    chimera::simulation::AbstractEventProvider(1)
 {
-    _integrator = integrator;
-    _args = new struct chimera::simulation::T_TimeStateArgs();
+    _providerArgs.time_type = timeType;
+    _providerArgs.state_type = stateType;
+    //_args = new struct chimera::simulation::T_TimeStateArgs();
 }
 
 chimera::simulation::TemporalStateEventProvider::~TemporalStateEventProvider()
 {
-    delete _args;
+    //delete _args;
 }
 
 chimera::simulation::IEventListener* chimera::simulation::TemporalStateEventProvider::provideListener(chimera::simulation::IEventListenerProvider* provider) const
 {
-    T_StateProviderArgs args = { .time_type = _integrator->getTimeType(), .state_type = _integrator->getStateType() };
-    return provider->provideListener(1, &args);
+    //T_StateProviderArgs args = { .time_type = _integrator->getTimeType(), .state_type = _integrator->getStateType() };
+    return provider->provideListener(1, &_providerArgs);
 }
 
+/*
 bool chimera::simulation::TemporalStateEventProvider::triggerCondition(chimera::simulation::NotificationManager const * const sender)
 {
     return true;
@@ -51,3 +54,4 @@ void* chimera::simulation::TemporalStateEventProvider::getEventArgs(chimera::sim
     _args->state = _integrator->currentTime();
     return _args;
 }
+*/

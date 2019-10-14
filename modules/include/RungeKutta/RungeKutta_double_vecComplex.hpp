@@ -4,9 +4,7 @@
 namespace odeint = boost::numeric::odeint;
 
 class RungeKutta_double_vecComplex:
-    public chimera::simulation::TemplateIntegrator
-    <double, boost::numeric::ublas::vector<std::complex<double> > >
-    //public AbstractIntegrator
+    public chimera::simulation::AbstractTemporalIntegrator
 {
     public:
         RungeKutta_double_vecComplex(chimera::ParameterTypeSystem* ps, chimera::EntryPoint* init, chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<std::complex<double> > >* system, double dt);
@@ -15,9 +13,6 @@ class RungeKutta_double_vecComplex:
         virtual void nextStep() override;
         virtual size_t getTimeType() const override;
         virtual size_t getStateType() const override;
-        virtual const double& getTime() const override;
-        virtual const boost::numeric::ublas::vector<std::complex<double> >& getState() const override;
-
         virtual void * currentTime() override;
         virtual void * currentState() override;
         virtual void initialize(chimera::vec_t_LuaItem args) override;
