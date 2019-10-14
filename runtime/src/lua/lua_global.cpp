@@ -201,8 +201,8 @@ int chimera::runtime::lua_global_simulation(lua_State* L)
         lua_pushcclosure(L, lua_TemporalSimulation_current, 1);
         lua_setfield(L, -2, "state");
         lua_pushvalue(L, -4);
-        lua_pushcclosure(L, lua_TemporalSimulation_onStep, 1);
-        lua_setfield(L, -2, "onstep");
+        lua_pushcclosure(L, lua_TemporalSimulation_on, 1);
+        lua_setfield(L, -2, "on");
     }
     //lua_pushcclosure(L, lua_Simulation_add_event, 1);
     //lua_setfield(L, -2, "observe");

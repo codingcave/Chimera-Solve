@@ -12,6 +12,7 @@ namespace chimera {
         int lua_TemporalSimulation_step(lua_State* L);
         int lua_TemporalSimulation_run(lua_State* L);
         int lua_TemporalSimulation_current(lua_State* L);
+        int lua_TemporalSimulation_on(lua_State* L);
         int lua_TemporalSimulation_onStep(lua_State* L);
     }
 }

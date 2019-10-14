@@ -299,6 +299,19 @@ int chimera::runtime::lua_TemporalSimulation_run(lua_State* L)
     return 0;
 }
 
+int chimera::runtime::lua_TemporalSimulation_on(lua_State* L)
+{
+    if (lua_gettop(L) > 0)
+    {
+        if (lua_type(L, 1) == LUA_TSTRING && lua_tostring(L, 1) == std::string("step"))
+        {
+            lua_remove(L, 1);
+            return lua_TemporalSimulation_onStep(L);
+        }
+    }
+    return 0;
+}
+
 int chimera::runtime::lua_TemporalSimulation_onStep(lua_State* L)
 {
     lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
