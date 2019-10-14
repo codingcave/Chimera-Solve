@@ -3,7 +3,6 @@
 
 namespace chimera {
     namespace simulation {
-        class AbstractEventProvider;
         class IEventListener;
         class IEventListenerProvider;
 
@@ -12,21 +11,18 @@ namespace chimera {
             public:
                 NotificationManager();
                 virtual ~NotificationManager();
-                void registerEvent(const std::string& name, chimera::simulation::Observer* evList);
-                void registerEvent(AbstractEventProvider* eventProvider);
-                void notifyEvent(const std::string& name);
-                void notifyAll();
-                void addListener(const std::string& name, IEventListener* listener);
-                void addListener(const std::string& name, IEventListenerProvider* listener);
-                void removeListener(const std::string& name, IEventListener* listener);
+                bool addListener(const std::string& name, IEventListener* listener);
+                IEventListener const * const addListener(const std::string& name, IEventListenerProvider* listener);
+                bool removeListener(const std::string& name, IEventListener* listener);
                 bool hasEvent(const std::string& name) const;
-                chimera::simulation::Observer* getObserver(const std::string& name);
+                size_t getEventType(const std::string& name) const;
             protected:
+                Observer* getObserver(const std::string& name);
+                void registerEvent(const std::string& name, AbstractEventProvider* eventProvider);
+                void notifyEvent(const std::string& name, void const * const args);
+                //void notifyAll();
             private:
-                std::unordered_map<std::string, size_t>* _observerMap;
-                std::vector<DefaultEventProvider*>* _defaultProvider;
-                std::vector<AbstractEventProvider*>* _provider;
-                std::vector<Observer*>* _observer;
+                std::unordered_map<std::string, AbstractEventProvider*>* _providerMap;
         };
     }
 }

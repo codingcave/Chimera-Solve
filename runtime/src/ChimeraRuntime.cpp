@@ -253,7 +253,10 @@ chimera::runtime::ChimeraRuntime::ChimeraRuntime(const std::string& filename, st
     lua_setmetatable(L, -2);  // set meta table for argv
     lua_rawset(L, -3);  // set argv
 
-    registerParameter(chimera::simulation::Naming::Type_Simulation, {nullptr, nullptr, luat_Simulation_delete, nullptr});
+    std::unordered_map<std::string, size_t> simulationFlags;
+    simulationFlags[chimera::simulation::Naming::Flag_Observable] = 1;
+
+    registerParameter(chimera::simulation::Naming::Type_Simulation, {nullptr, nullptr, luat_Simulation_delete, nullptr}, simulationFlags);
 
     lua_settop(L, 0);
 }

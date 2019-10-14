@@ -21,6 +21,7 @@ namespace chimera {
             virtual void destroyInstance(void * const instance) const = 0;
             virtual void load(EntryPoint const * const entryPoint, void const * const params);
             virtual void unload();
+            virtual size_t getFlag(const std::string& flag) const;
             ChimeraSystem* getChimeraSystem() const override;
             // size_t registerParameter(const std::string& name, const struct T_ParameterDef& pdef);
             // size_t registerParameter(const std::string& name, const struct T_ParameterDef& pdef, size_t base, size_t tag);

@@ -24,15 +24,16 @@
 #include "ChimeraSystem.hpp"
 #include "event/Observer.hpp"
 #include "EntryPointBase/AbstractEventProvider.hpp"
-#include "event/DefaultEventProvider.hpp"
 #include "event/NotificationManager.hpp"
 #include "interfaces/IEventListener.hpp"
 #include "interfaces/IEventListenerProvider.hpp"
+#include "EntryPointBase/AbstractEventManager.hpp"
+#include "event/DefaultEventProvider.hpp"
 #include "event/StateEventListener.hpp"
 #include "EntryPointBase/AbstractIntegrator.hpp"
-#include "EntryPointBase/AbstractEventProvider.hpp"
-#include "EntryPointBase/TemplateIntegrator.hpp"
-#include "interfaces/ISimulation.hpp"
+#include "EntryPointBase/AbstractTemporalIntegrator.hpp"
+#include "simulation/AbstractSimulation.hpp"
+#include "simulation/TemporalStateEventProvider.hpp"
 #include "EntryPointBase/ObserverModule.hpp"
 #include "TimedObserver.hpp"
 
@@ -51,15 +52,14 @@ extern "C"
     }
 }
 
-
 TimedObserverModule::TimedObserverModule()
 {
-    //ctor
+
 }
 
 TimedObserverModule::~TimedObserverModule()
 {
-    //dtor
+
 }
 
 const std::string TimedObserverModule::getGUID() const
@@ -69,7 +69,7 @@ const std::string TimedObserverModule::getGUID() const
 
 void TimedObserverModule::destroyInstance(void* instance) const
 {
-    delete ((TimedObserverProvider*)instance);
+    delete ((TimedObserver*)instance);
 }
 
 const std::string TimedObserverModule::getVersion() const
@@ -77,8 +77,10 @@ const std::string TimedObserverModule::getVersion() const
     return "1.0.0";
 }
 
-chimera::simulation::AbstractEventProvider* TimedObserverModule::getEventInstance(chimera::vec_t_LuaItem& parameters) const
+chimera::simulation::AbstractEventManager* TimedObserverModule::getEventInstance(chimera::vec_t_LuaItem& parameters) const
 {
+    bool inNM = false;
+    chimera::simulation::NotificationManager* nm;
     double start = 0.0;
     double step = 1.0;
     double end = std::numeric_limits<double>::infinity();
@@ -88,6 +90,11 @@ chimera::simulation::AbstractEventProvider* TimedObserverModule::getEventInstanc
         chimera::map_t_LuaItem* paramMap = (chimera::map_t_LuaItem*)parameters[0].getValue();
         for(auto p : *paramMap)
         {
+            if(p.first == "observe" && p.second.getFlag(chimera::simulation::Naming::Flag_Observable))
+            {
+                inNM = true;
+                nm = (chimera::simulation::NotificationManager*)p.second.getValue();
+            }
             if(p.first == "start" && p.second.getType() == chimera::systemtypes::PID_NUMBER)
             {
                 start = p.second;
@@ -105,19 +112,43 @@ chimera::simulation::AbstractEventProvider* TimedObserverModule::getEventInstanc
                 end = p.second;
             }
         }
-        return new TimedObserverProvider(start, step, end);
+        if (inNM) {
+            return new TimedObserver(nm, start, step, end);
+        } else {
+            return nullptr;
+        }
     }
     else
     {
-        if(parameters.size() == 3)
+        if(parameters.size() > 0 && parameters[0].getFlag(chimera::simulation::Naming::Flag_Observable))
         {
-            if(chimera::systemtypes::PID_NUMBER == parameters[0].getType() &&
-               chimera::systemtypes::PID_NUMBER == parameters[1].getType() &&
+            inNM = true;
+            nm = (chimera::simulation::NotificationManager*)parameters[0].getValue();
+        } else {
+            return nullptr;
+        }
+        if(parameters.size() == 4)
+        {
+            if(chimera::systemtypes::PID_NUMBER == parameters[1].getType() &&
+               chimera::systemtypes::PID_NUMBER == parameters[2].getType() &&
+               chimera::systemtypes::PID_NUMBER == parameters[3].getType())
+            {
+                start = parameters[1];
+                step = parameters[2];
+                end = parameters[3];
+            }
+            else
+            {
+                return nullptr;
+            }
+        }
+        else  if(parameters.size() == 3)
+        {
+            if(chimera::systemtypes::PID_NUMBER == parameters[1].getType() &&
                chimera::systemtypes::PID_NUMBER == parameters[2].getType())
             {
-                start = parameters[0];
-                step = parameters[1];
-                end = parameters[2];
+                start = parameters[1];
+                step = parameters[2];
             }
             else
             {
@@ -126,10 +157,8 @@ chimera::simulation::AbstractEventProvider* TimedObserverModule::getEventInstanc
         }
         else  if(parameters.size() == 2)
         {
-            if(chimera::systemtypes::PID_NUMBER == parameters[0].getType() &&
-               chimera::systemtypes::PID_NUMBER == parameters[1].getType())
+            if(chimera::systemtypes::PID_NUMBER == parameters[1].getType())
             {
-                start = parameters[0];
                 step = parameters[1];
             }
             else
@@ -137,157 +166,83 @@ chimera::simulation::AbstractEventProvider* TimedObserverModule::getEventInstanc
                 return nullptr;
             }
         }
-        else  if(parameters.size() == 1)
-        {
-            if(chimera::systemtypes::PID_NUMBER == parameters[0].getType())
-            {
-                step = parameters[0];
-            }
-            else
-            {
-                return nullptr;
-            }
-        }
     }
 
-    if(step <= 0)
+    if(step <= 0 || !inNM)
     {
         return nullptr;
     }
-    return new TimedObserverProvider(start, step, end);
+    return new TimedObserver(nm, start, step, end);
 }
 
-TimedObserverProvider::TimedObserverProvider(double start, double step, double end):
+TimedObserver::TimedObserver(chimera::simulation::NotificationManager* nm, double start, double step, double end):
     _start(start),
     _step(step),
     _end(end),
     _last(start - step)
 {
-    _args1 = new struct chimera::simulation::T_TimeStateArgs<double, boost::numeric::ublas::vector<double> >();
-    _args2 = new struct chimera::simulation::T_TimeStateArgs<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> > >();
-    _args3 = new struct chimera::simulation::T_TimeStateArgs<double, boost::numeric::ublas::vector<std::complex<double> > >();
-    _args4 = new struct chimera::simulation::T_TimeStateArgs<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<std::complex<double> > > >();
-}
-
-TimedObserverProvider::~TimedObserverProvider()
-{
-    delete _args1;
-    delete _args2;
-    delete _args3;
-    delete _args4;
-}
-
-chimera::simulation::Observer* TimedObserverProvider::getObserver(chimera::simulation::NotificationManager* sender)
-{
-    chimera::simulation::ISimulation* sim = dynamic_cast<chimera::simulation::ISimulation*>(sender);
-    if(sim)
+    _elapsedEvent = nullptr;
+    assignObservation(nm);
+    chimera::simulation::AbstractSimulation* sim = dynamic_cast<chimera::simulation::AbstractSimulation*>(getObservationObject());
+    if (sim)
     {
+        chimera::simulation::AbstractTemporalIntegrator* integrator = dynamic_cast<chimera::simulation::AbstractTemporalIntegrator*>(sim->getIntegrator());
+        if (integrator)
         {
-            chimera::simulation::TemplateIntegrator<double, boost::numeric::ublas::vector<double> >* integrator = dynamic_cast<chimera::simulation::TemplateIntegrator<double, boost::numeric::ublas::vector<double> >*>(sim->getIntegrator());
-            if(integrator)
-            {
-                return new chimera::simulation::TemplateStateObserver<double, boost::numeric::ublas::vector<double> >(integrator->getTimeType(), integrator->getStateType());
-            }
+            _elapsedEvent = new chimera::simulation::TemporalStateEventProvider(integrator->getTimeType(), integrator->getStateType());
+            registerEvent(TIMED_OBSERVER_EVENT_NAME, _elapsedEvent);
         }
+    }
+}
+
+TimedObserver::~TimedObserver()
+{
+    delete _elapsedEvent;
+}
+
+chimera::simulation::NotificationManager* TimedObserver::getObservationObject()
+{
+    chimera::simulation::AbstractEventManager* eventManager = dynamic_cast<chimera::simulation::AbstractEventManager*>(_nm);
+    if (eventManager)
+    {
+        return eventManager->getObservationObject();
+    }
+    else
+    {
+        return _nm;
+    }
+}
+
+void TimedObserver::assignObservation(chimera::simulation::NotificationManager* baseObject)
+{
+    _nm = baseObject;
+    _nm->addListener("step", (IEventListener*)this);
+}
+
+chimera::simulation::IEventListener* TimedObserver::provideListener(size_t id, void const * const args)
+{
+    switch(id){
+    case 1: // StateEventListener
         {
-            chimera::simulation::TemplateIntegrator<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> > >* integrator = dynamic_cast<chimera::simulation::TemplateIntegrator<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> > >*>(sim->getIntegrator());
-            if(integrator)
+            struct T_StateProviderArgs* spArgs = (struct T_StateProviderArgs*)args;
+            if(spArgs->time_type == chimera::systemtypes::PID_NUMBER)
             {
-                return new chimera::simulation::TemplateStateObserver<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> > >(integrator->getTimeType(), integrator->getStateType());
-            }
-        }
-        {
-            chimera::simulation::TemplateIntegrator<double, boost::numeric::ublas::vector<std::complex<double> > >* integrator = dynamic_cast<chimera::simulation::TemplateIntegrator<double, boost::numeric::ublas::vector<std::complex<double> > >*>(sim->getIntegrator());
-            if(integrator)
-            {
-                return new chimera::simulation::TemplateStateObserver<double, boost::numeric::ublas::vector<double> >(integrator->getTimeType(), integrator->getStateType());
-            }
-        }
-        {
-            chimera::simulation::TemplateIntegrator<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<std::complex<double> > > >* integrator = dynamic_cast<chimera::simulation::TemplateIntegrator<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<std::complex<double> > > >*>(sim->getIntegrator());
-            if(integrator)
-            {
-                return new chimera::simulation::TemplateStateObserver<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<std::complex<double> > > >(integrator->getTimeType(), integrator->getStateType());
+                return (chimera::simulation::IEventListener*)this;
             }
         }
     }
     return nullptr;
 }
 
-bool TimedObserverProvider::triggerCondition(chimera::simulation::NotificationManager* sender)
+void TimedObserver::notify(chimera::simulation::NotificationManager const * const sender, void const * const args)
 {
-    chimera::simulation::ISimulation* sim = dynamic_cast<chimera::simulation::ISimulation*>(sender);
-    if(sim)
+    const double time = *((double*)((struct chimera::simulation::T_TimeStateArgs const * const)args)->time);
+    if(time >= _last + _step)
     {
-        chimera::simulation::AbstractIntegrator* integrator = dynamic_cast<chimera::simulation::AbstractIntegrator*>(sim->getIntegrator());
-        if(integrator)
+        while(_last + _step < time)
         {
-            double time = *((double*)integrator->currentTime());
-            if(time >= _last + _step)
-            {
-                while(_last + _step < time)
-                {
-                    _last += _step;
-                }
-                return true;
-            }
+            _last += _step;
         }
+        notifyEvent(TIMED_OBSERVER_EVENT_NAME, args);
     }
-    return false;
-}
-
-void* TimedObserverProvider::getEventArgs(chimera::simulation::NotificationManager* sender)
-{
-    chimera::simulation::ISimulation* sim = dynamic_cast<chimera::simulation::ISimulation*>(sender);
-    if(sim)
-    {
-        chimera::simulation::AbstractIntegrator* integrator = dynamic_cast<chimera::simulation::AbstractIntegrator*>(sim->getIntegrator());
-        if(integrator)
-        {
-
-        }
-
-        {
-            chimera::simulation::TemplateIntegrator<double, boost::numeric::ublas::vector<double> >* integrator = dynamic_cast<chimera::simulation::TemplateIntegrator<double, boost::numeric::ublas::vector<double> >*>(sim->getIntegrator());
-            if(integrator)
-            {
-                _args1->time = integrator->getTime();
-                _args1->state = integrator->getState();
-                return _args1;
-            }
-        }
-        {
-            chimera::simulation::TemplateIntegrator<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> > >* integrator = dynamic_cast<chimera::simulation::TemplateIntegrator<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> > >*>(sim->getIntegrator());
-            if(integrator)
-            {
-                _args2->time = integrator->getTime();
-                _args2->state = integrator->getState();
-                return _args2;
-            }
-        }
-        {
-            chimera::simulation::TemplateIntegrator<double, boost::numeric::ublas::vector<std::complex<double> > >* integrator = dynamic_cast<chimera::simulation::TemplateIntegrator<double, boost::numeric::ublas::vector<std::complex<double> > >*>(sim->getIntegrator());
-            if(integrator)
-            {
-                _args3->time = integrator->getTime();
-                _args3->state = integrator->getState();
-                return _args3;
-            }
-        }
-        {
-            chimera::simulation::TemplateIntegrator<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<std::complex<double> > > >* integrator = dynamic_cast<chimera::simulation::TemplateIntegrator<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<std::complex<double> > > >*>(sim->getIntegrator());
-            if(integrator)
-            {
-                _args4->time = integrator->getTime();
-                _args4->state = integrator->getState();
-                return _args4;
-            }
-        }
-    }
-    return nullptr;
-}
-
-std::string TimedObserverProvider::getName() const
-{
-    return "elapsed";
 }

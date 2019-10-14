@@ -9,7 +9,7 @@ namespace chimera {
             public:
                 InitializerModule();
                 virtual ~InitializerModule();
-                void* getInstance(chimera::vec_t_LuaItem& parameters) const override;
+                void* getInstance(chimera::vec_t_LuaItem& parameters) const final;
                 virtual AbstractInitializer* getInitializerInstance(chimera::vec_t_LuaItem& parameters) const = 0;
             protected:
             private:

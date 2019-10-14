@@ -36,7 +36,7 @@
 #include "EntryPointBase/TemplateOdeSystem.hpp"
 #include "EntryPointBase/AbstractInitializer.hpp"
 #include "EntryPointBase/AbstractIntegrator.hpp"
-#include "EntryPointBase/TemplateIntegrator.hpp"
+#include "EntryPointBase/AbstractTemporalIntegrator.hpp"
 #include "EntryPointBase/IntegratorModule.hpp"
 #include "RungeKutta/RungeKuttaSystem.hpp"
 #include "RungeKutta/RungeKutta_double_vecComplex.hpp"
@@ -90,16 +90,6 @@ void * RungeKutta_double_vecComplex::currentTime()
 void * RungeKutta_double_vecComplex::currentState()
 {
     return new struct chimera::simulation::T_VectorDef({_state->size(), true, false, _state});
-}
-
-const double& RungeKutta_double_vecComplex::getTime() const
-{
-    return _time;
-}
-
-const boost::numeric::ublas::vector<std::complex<double> >& RungeKutta_double_vecComplex::getState() const
-{
-    return *_state;
 }
 
 void RungeKutta_double_vecComplex::nextStep()

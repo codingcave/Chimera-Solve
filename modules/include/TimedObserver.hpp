@@ -1,6 +1,13 @@
 #ifndef TIMEDOBSERVER_H
 #define TIMEDOBSERVER_H
 
+const char * const TIMED_OBSERVER_EVENT_NAME = "elapsed";
+
+struct T_StateProviderArgs {
+    size_t time_type;
+    size_t state_type;
+};
+
 class TimedObserverModule:
     public chimera::simulation::ObserverModule
 {
@@ -9,30 +16,30 @@ class TimedObserverModule:
         virtual ~TimedObserverModule();
         virtual const std::string getGUID() const override;
         virtual const std::string getVersion() const override;
-        virtual chimera::simulation::AbstractEventProvider* getEventInstance(chimera::vec_t_LuaItem& parameters) const override;
+        virtual chimera::simulation::AbstractEventManager* getEventInstance(chimera::vec_t_LuaItem& parameters) const override;
         virtual void destroyInstance(void * const instance) const override;
 };
 
-class TimedObserverProvider:
-    public chimera::simulation::AbstractEventProvider
+class TimedObserver:
+    public chimera::simulation::AbstractEventManager,
+    public chimera::simulation::IEventListener
 {
     public:
-        explicit TimedObserverProvider(double start, double step, double end);
-        virtual ~TimedObserverProvider();
-        virtual chimera::simulation::Observer* getObserver(chimera::simulation::NotificationManager* sender) override;
-        virtual bool triggerCondition(chimera::simulation::NotificationManager* sender) override;
-        virtual void* getEventArgs(chimera::simulation::NotificationManager* sender) override;
-        virtual std::string getName() const override;
+        explicit TimedObserver(chimera::simulation::NotificationManager* nm, double start, double step, double end);
+        virtual ~TimedObserver();
+        virtual NotificationManager* getObservationObject() override;
+        virtual void assignObservation(NotificationManager* baseObject) override;
+        virtual IEventListener* provideListener(size_t id, void const * const args) override;
+        virtual void notify(chimera::simulation::NotificationManager const * const sender, void const * const args) override;
     protected:
     private:
+        chimera::simulation::NotificationManager* _nm;
+        chimera::simulation::TemporalStateEventProvider* _elapsedEvent;
         double _start;
         double _step;
         double _end;
         double _last;
-        struct chimera::simulation::T_TimeStateArgs<double, boost::numeric::ublas::vector<double> >* _args1;
-        struct chimera::simulation::T_TimeStateArgs<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> > >* _args2;
-        struct chimera::simulation::T_TimeStateArgs<double, boost::numeric::ublas::vector<std::complex<double> > >* _args3;
-        struct chimera::simulation::T_TimeStateArgs<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<std::complex<double> > > >* _args4;
 };
+
 
 #endif // TIMEDOBSERVER_H

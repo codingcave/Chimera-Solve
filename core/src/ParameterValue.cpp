@@ -351,6 +351,67 @@ void* chimera::ParameterValue::getValue() const
     }
 }
 
+size_t chimera::ParameterValue::getBaseType() const
+{
+    if(_data)
+    {
+        return _data->cmSys->getTypeSystem()->getParameterBase(_data->type);
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+size_t chimera::ParameterValue::getTag() const
+{
+    if(_data)
+    {
+        return _data->cmSys->getTypeSystem()->getParameterTag(_data->type);
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+size_t chimera::ParameterValue::getFlag(const std::string& flag) const
+{
+    if(_data)
+    {
+        if (_data->type == chimera::systemtypes::PID_INSTANCE ||
+            _data->cmSys->getTypeSystem()->getParameterBase(_data->type) == chimera::systemtypes::PID_INSTANCE)
+        {
+            lua_State* L = _data->cmSys->getLuaState();
+            lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_METATABLES);
+            lua_rawget(L, LUA_REGISTRYINDEX);
+            if(lua_rawgeti(L, -1, _data->type))
+            {
+                size_t value = 0;
+                lua_pushliteral(L, "__modptr");
+                if(lua_rawget(L, -2) == LUA_TLIGHTUSERDATA) {
+                    Module* mod = (Module*)lua_touserdata(L, -1);
+                    value = mod->getFlag(flag);
+                }
+                lua_pop(L, 3);
+                return value;
+            }
+            else
+            {
+                lua_pop(L, 2);
+            }
+        }
+        else
+        {
+            const ParameterType* p = _data->cmSys->getTypeSystem()->getParameter(_data->type);
+            if (p) {
+                return p->getFlag(flag);
+            }
+        }
+    }
+    return 0;
+}
+
 chimera::ChimeraSystem* chimera::ParameterValue::getChimeraSystem(struct ParameterValueData* data)
 {
     if(data)

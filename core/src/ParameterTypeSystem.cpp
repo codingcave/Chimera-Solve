@@ -56,15 +56,25 @@ chimera::ParameterTypeSystem::~ParameterTypeSystem()
 
 size_t chimera::ParameterTypeSystem::registerParameter(const std::string& name, void const * const origin, const struct chimera::T_ParameterDef& pdef)
 {
-    return registerParameter(name, origin, pdef, 0, 0, true);
+    return registerParameter(name, origin, pdef, 0, 0, std::unordered_map<std::string, size_t>(), true);
 }
 
 size_t chimera::ParameterTypeSystem::registerParameter(const std::string& name, void const * const origin, const struct T_ParameterDef& pdef, size_t base, size_t tag)
 {
-    return registerParameter(name, origin, pdef, base, tag, true);
+    return registerParameter(name, origin, pdef, base, tag, std::unordered_map<std::string, size_t>(), true);
 }
 
-size_t chimera::ParameterTypeSystem::registerParameter(const std::string& name, void const * const origin, const struct T_ParameterDef& pdef, size_t base, size_t tag, bool notify)
+size_t chimera::ParameterTypeSystem::registerParameter(const std::string& name, void const * const origin, const struct chimera::T_ParameterDef& pdef, const std::unordered_map<std::string, size_t>& flags)
+{
+    return registerParameter(name, origin, pdef, 0, 0, flags, true);
+}
+
+size_t chimera::ParameterTypeSystem::registerParameter(const std::string& name, void const * const origin, const struct T_ParameterDef& pdef, size_t base, size_t tag, const std::unordered_map<std::string, size_t>& flags)
+{
+    return registerParameter(name, origin, pdef, base, tag, flags, true);
+}
+
+size_t chimera::ParameterTypeSystem::registerParameter(const std::string& name, void const * const origin, const struct T_ParameterDef& pdef, size_t base, size_t tag, const std::unordered_map<std::string, size_t>& flags, bool notify)
 {
     for(auto it = _typeList->begin(); it != _typeList->end(); it++)
     {
@@ -74,7 +84,7 @@ size_t chimera::ParameterTypeSystem::registerParameter(const std::string& name, 
         }
     }
     ++_lastID;
-    ParameterType* p = new ParameterType(name, _lastID, origin, pdef, base, tag);
+    ParameterType* p = new ParameterType(name, _lastID, origin, pdef, base, tag, flags);
     _typeList->push_back(p);
     if(notify) {
         itemAdded(p, nullptr);

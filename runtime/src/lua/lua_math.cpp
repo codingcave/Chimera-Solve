@@ -29,8 +29,7 @@
 #include "event/DefaultEventProvider.hpp"
 #include "event/NotificationManager.hpp"
 #include "EntryPointBase/AbstractIntegrator.hpp"
-#include "interfaces/ISimulation.hpp"
-#include "Simulation.hpp"
+#include "simulation/AbstractSimulation.hpp"
 #include "lua/types/lua_Simulation.hpp"
 #include "ChimeraSystem.hpp"
 #include "lua/lua_global.hpp"
@@ -38,7 +37,6 @@
 #include "lua/lua_math.hpp"
 
 static int __complexTypeId = 0;
-
 
 void chimera::runtime::push_math_library(lua_State* const L, const size_t& complexTypeId)
 {

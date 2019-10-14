@@ -36,8 +36,7 @@
 #include "EntryPointBase/OutputMultiModule.hpp"
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/AbstractIntegrator.hpp"
-#include "interfaces/ISimulation.hpp"
-#include "Simulation.hpp"
+#include "simulation/AbstractSimulation.hpp"
 #include "ChimeraSystem.hpp"
 #include "ChimeraRuntime.hpp"
 #include "lua/types/lua_Simulation.hpp"
@@ -45,10 +44,18 @@
 int chimera::runtime::luat_Simulation_delete(lua_State* const L)
 {
     void * const value = lua_touserdata(L, 2);
-    delete (Simulation*)value;
+    delete (chimera::simulation::AbstractSimulation*)value;
     return 0;
 }
 
+
+int chimera::runtime::lua_Simulation_tostring(lua_State* L)
+{
+    lua_pushstring(L, chimera::simulation::Naming::Type_Simulation);
+    return 1;
+}
+
+/*
 int chimera::runtime::lua_Simulation_tostring(lua_State* L)
 {
     lua_pushstring(L, chimera::simulation::Naming::Type_Simulation);
@@ -287,3 +294,4 @@ int chimera::runtime::lua_Simulation_run(lua_State* L)
 
     return 0;
 }
+*/

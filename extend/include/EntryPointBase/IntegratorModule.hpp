@@ -13,7 +13,7 @@ namespace chimera {
                 virtual ~IntegratorModule();
                 virtual bool checkFeatures(const chimera::map_t_size& features) const = 0;
                 virtual const std::string getSystemName() const = 0;
-                void* getInstance(chimera::vec_t_LuaItem& parameters) const override;
+                void* getInstance(chimera::vec_t_LuaItem& parameters) const final;
                 virtual AbstractIntegrator* getIntegratorInstance(chimera::vec_t_LuaItem& parameters) const = 0;
             protected:
             private:

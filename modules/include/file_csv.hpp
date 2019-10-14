@@ -1,6 +1,17 @@
 #ifndef CSV_FILE_H
 #define CSV_FILE_H
 
+struct T_TimeStateArgs
+{
+    void* time;
+    void* state;
+};
+
+struct T_StateProviderArgs {
+    size_t time_type;
+    size_t state_type;
+};
+
 class CsvFileModule:
     public chimera::simulation::OutputMultiModule
 {
@@ -24,7 +35,7 @@ class CsvFileWriter:
         void open();
         void close();
         const std::string getPath() const;
-        virtual chimera::simulation::IEventListener* provideListener(size_t id, void* args) override;
+        virtual chimera::simulation::IEventListener* provideListener(size_t id, void const * const args) override;
         //virtual void notifyStep(void const * const sender, size_t timeType, void* time, size_t stateType, void* state) override;
     protected:
     private:
@@ -35,49 +46,45 @@ class CsvFileWriter:
 };
 
 class FileOutput_real_vecReal:
-    public chimera::simulation::StateEventListener<double, boost::numeric::ublas::vector<double> >
+    public chimera::simulation::IEventListener
 {
     public:
         FileOutput_real_vecReal(std::ofstream* file);
         virtual ~FileOutput_real_vecReal();
-        virtual void notify(const double& time, const boost::numeric::ublas::vector<double>& state) override;
-        virtual void notify(void const * const sender, void* args) override;
+        virtual void notify(chimera::simulation::NotificationManager const * const sender, void const * const args) override;
     private:
         std::ofstream* _file;
 };
 
 class FileOutput_real_vecvecReal:
-    public chimera::simulation::StateEventListener<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> > >
+    public chimera::simulation::IEventListener
 {
     public:
         FileOutput_real_vecvecReal(std::ofstream* file);
         virtual ~FileOutput_real_vecvecReal();
-        virtual void notify(const double& time, const boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >& state) override;
-        virtual void notify(void const * const sender, void* args) override;
+        virtual void notify(chimera::simulation::NotificationManager const * const sender, void const * const args) override;
     private:
         std::ofstream* _file;
 };
 
 class FileOutput_real_vecComplex:
-    public chimera::simulation::StateEventListener<double, boost::numeric::ublas::vector<std::complex<double> > >
+    public chimera::simulation::IEventListener
 {
     public:
         FileOutput_real_vecComplex(std::ofstream* file);
         virtual ~FileOutput_real_vecComplex();
-        virtual void notify(const double& time, const boost::numeric::ublas::vector<std::complex<double> >& state) override;
-        virtual void notify(void const * const sender, void* args) override;
+        virtual void notify(chimera::simulation::NotificationManager const * const sender, void const * const args) override;
     private:
         std::ofstream* _file;
 };
 
 class FileOutput_real_vecvecComplex:
-    public chimera::simulation::StateEventListener<double, boost::numeric::ublas::vector<boost::numeric::ublas::vector<std::complex<double> > > >
+    public chimera::simulation::IEventListener
 {
     public:
         FileOutput_real_vecvecComplex(std::ofstream* file);
         virtual ~FileOutput_real_vecvecComplex();
-        virtual void notify(const double& time, const boost::numeric::ublas::vector<boost::numeric::ublas::vector<std::complex<double> > >& state) override;
-        virtual void notify(void const * const sender, void* args) override;
+        virtual void notify(chimera::simulation::NotificationManager const * const sender, void const * const args) override;
     private:
         std::ofstream* _file;
 };

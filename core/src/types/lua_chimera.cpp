@@ -21,7 +21,7 @@
 #include "EntryPoint.hpp"
 #include "EntryPointSystem.hpp"
 #include "ChimeraSystem.hpp"
-//#include "lua_chimea.hpp"
+#include "types/lua_chimera.hpp"
 
 void chimera::ChimeraSystem::init()
 {

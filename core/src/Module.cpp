@@ -71,6 +71,11 @@ void chimera::Module::unloadModule()
     }
 }
 
+size_t chimera::Module::getFlag(const std::string& flag) const
+{
+    return 0;
+}
+
 chimera::ChimeraSystem* chimera::Module::getChimeraSystem() const
 {
     return _cmSys;

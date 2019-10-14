@@ -12,12 +12,12 @@
 #include "StateSynchrony.hpp"
 #include "Module.hpp"
 #include "interfaces/IEventListener.hpp"
+#include "interfaces/IEventListenerProvider.hpp"
 #include "event/Observer.hpp"
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/IntegratorModule.hpp"
 #include "EntryPointBase/AbstractEventProvider.hpp"
-#include "event/DefaultEventProvider.hpp"
-#include "NotificationManager.hpp"
+#include "event/NotificationManager.hpp"
 #include "EntryPointBase/AbstractIntegrator.hpp"
 
 chimera::simulation::IntegratorModule::IntegratorModule()

@@ -9,8 +9,9 @@ namespace chimera {
             public:
                 OutputModule();
                 virtual ~OutputModule();
-                void* getInstance(chimera::vec_t_LuaItem& parameters) const override;
+                void* getInstance(chimera::vec_t_LuaItem& parameters) const final;
                 virtual IEventListener* getOutputInstance(chimera::vec_t_LuaItem& parameters) const = 0;
+                virtual size_t getFlag(const std::string& flag) const override;
             protected:
             private:
         };

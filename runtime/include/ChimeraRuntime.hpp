@@ -17,10 +17,10 @@ namespace chimera {
         class ChimeraRuntime:
             public chimera::ChimeraSystem
         {
-            friend int lua_Simulation_start(lua_State*);
-            friend int chimera::runtime::lua_Simulation_run(lua_State*);
-            friend int lua_Simulation_step(lua_State*);
-            friend int lua_Simulation_current(lua_State*);
+            friend int lua_TemporalSimulation_start(lua_State*);
+            friend int chimera::runtime::lua_TemporalSimulation_run(lua_State*);
+            friend int lua_TemporalSimulation_step(lua_State*);
+            friend int lua_TemporalSimulation_current(lua_State*);
 
             public:
                 ChimeraRuntime(const std::string& filename, std::vector<char*>& argv, ModuleLoader* loader);

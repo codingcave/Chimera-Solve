@@ -7,16 +7,11 @@ namespace chimera {
             public AbstractEventProvider
         {
             public:
-                DefaultEventProvider(const std::string& name, Observer* observer);
+                DefaultEventProvider();
                 virtual ~DefaultEventProvider();
-                virtual Observer* getObserver(NotificationManager*) override;
-                virtual bool triggerCondition(NotificationManager*) override;
-                virtual void* getEventArgs(NotificationManager*) override;
-                virtual std::string getName() const override;
+                virtual IEventListener* provideListener(IEventListenerProvider* provider) const = 0;
             protected:
             private:
-                std::string _name;
-                Observer* _observer;
         };
     }
 }

@@ -32,12 +32,11 @@
 #include "event/StateEventListener.hpp"
 #include "event/DefaultEventProvider.hpp"
 #include "event/NotificationManager.hpp"
-#include "NotificationManager.hpp"
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/TemplateOdeSystem.hpp"
 #include "EntryPointBase/AbstractInitializer.hpp"
 #include "EntryPointBase/AbstractIntegrator.hpp"
-#include "EntryPointBase/TemplateIntegrator.hpp"
+#include "EntryPointBase/AbstractTemporalIntegrator.hpp"
 #include "EntryPointBase/IntegratorModule.hpp"
 #include "RungeKutta/RungeKuttaSystem.hpp"
 #include "RungeKutta/RungeKutta_double_vecvecComplex.hpp"
@@ -95,16 +94,6 @@ void * RungeKutta_double_vecvecComplex::currentTime()
 void * RungeKutta_double_vecvecComplex::currentState()
 {
     return new struct chimera::simulation::T_VectorDef({_state->size(), true, false, _state});
-}
-
-const double& RungeKutta_double_vecvecComplex::getTime() const
-{
-    return _time;
-}
-
-const vec_vec_complex& RungeKutta_double_vecvecComplex::getState() const
-{
-    return *_state;
 }
 
 void RungeKutta_double_vecvecComplex::nextStep()

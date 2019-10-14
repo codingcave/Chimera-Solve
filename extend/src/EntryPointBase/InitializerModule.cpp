@@ -15,7 +15,6 @@
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/AbstractInitializer.hpp"
 #include "EntryPointBase/AbstractEventProvider.hpp"
-#include "event/DefaultEventProvider.hpp"
 #include "event/NotificationManager.hpp"
 #include "EntryPointBase/InitializerModule.hpp"
 

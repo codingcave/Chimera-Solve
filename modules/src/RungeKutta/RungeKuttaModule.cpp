@@ -34,7 +34,7 @@
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/TemplateOdeSystem.hpp"
 #include "EntryPointBase/AbstractIntegrator.hpp"
-#include "EntryPointBase/TemplateIntegrator.hpp"
+#include "EntryPointBase/AbstractTemporalIntegrator.hpp"
 #include "EntryPointBase/IntegratorModule.hpp"
 #include "RungeKutta/RungeKuttaSystem.hpp"
 #include "RungeKutta/RungeKutta_double_vecDouble.hpp"

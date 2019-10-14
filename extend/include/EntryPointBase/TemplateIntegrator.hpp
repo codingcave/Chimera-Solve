@@ -1,6 +1,7 @@
 #ifndef TEMPLATEINTEGRATOR_H
 #define TEMPLATEINTEGRATOR_H
 
+/*
 namespace chimera {
     namespace simulation {
         class IEventListener;
@@ -139,4 +140,6 @@ namespace chimera {
         };
     }
 }
+*/
+
 #endif // TEMPLATEINTEGRATOR_H

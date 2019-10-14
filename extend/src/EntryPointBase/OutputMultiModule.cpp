@@ -3,6 +3,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "ExtensionNaming.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
 #include "def.hpp"
@@ -28,4 +29,16 @@ chimera::simulation::OutputMultiModule::~OutputMultiModule()
 void* chimera::simulation::OutputMultiModule::getInstance(chimera::vec_t_LuaItem& parameters) const
 {
     return (void*)getOutputInstance(parameters);
+}
+
+size_t chimera::simulation::OutputMultiModule::getFlag(const std::string& flag) const
+{
+    if (flag == chimera::simulation::Naming::Flag_MultiObserver)
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
 }

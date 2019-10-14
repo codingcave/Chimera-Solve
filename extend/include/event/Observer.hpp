@@ -1,5 +1,5 @@
-#ifndef EVENTMANAGER_H
-#define EVENTMANAGER_H
+#ifndef OBSERVER_H
+#define OBSERVER_H
 
 namespace chimera {
     namespace simulation {
@@ -11,16 +11,19 @@ namespace chimera {
         {
             public:
                 Observer();
+                Observer(size_t eventType);
                 virtual ~Observer();
-                virtual void trigger(NotificationManager* sender, void* args) = 0;
-                virtual void addListener(chimera::simulation::IEventListener* listener) = 0;
-                virtual void addListener(chimera::simulation::IEventListenerProvider* listener) = 0;
-                virtual void removeListener(chimera::simulation::IEventListener* listener) = 0;
-                virtual bool empty() const = 0;
+                void trigger(NotificationManager* sender, void const * const args);
+                bool addListener(chimera::simulation::IEventListener* listener);
+                bool removeListener(chimera::simulation::IEventListener* listener);
+                bool empty() const;
+                size_t getType() const;
             protected:
             private:
+                std::unordered_set<IEventListener*>* _listeners;
+                size_t _eventType;
         };
     }
 }
 
-#endif // EVENTMANAGER_H
+#endif // OBSERVER_H
