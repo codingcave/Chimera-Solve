@@ -8,8 +8,6 @@ namespace chimera {
 
     int lua_Instance_tostring(lua_State* L);
 
-    int lua_Instance_destroy(lua_State* L);
-
     int lua_Instance_index(lua_State* L);
 
     int lua_Instance_forwardMethod(lua_State* L);

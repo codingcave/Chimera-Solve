@@ -57,6 +57,8 @@ RungeKutta_double_vecComplex::RungeKutta_double_vecComplex(
     _rk = new odeint::runge_kutta4<ublas::vector<std::complex<double> > >();
     _dt = dt;
     _system = new RungeKuttaSystem<double, boost::numeric::ublas::vector<std::complex<double> > >(system);
+    ps->addDependency(this, system);
+    ps->addDependency(this, init);
     _time = 0;
     int length = system->getFeatures()[chimera::simulation::Naming::Feature_size];
     _state = new ublas::vector<std::complex<double> >(length);

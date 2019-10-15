@@ -74,7 +74,7 @@ AbstractCoupling* RotationalCoupling2DModule::getCoupling(chimera::vec_t_LuaItem
     double epsilon;
     double sigma;
     double phi;
-    chimera::ParameterValue pvMatrix;
+    struct chimera::simulation::T_VectorDef* vd;
 
     if(parameters.size() == 1 && parameters[0].getType() == chimera::systemtypes::PID_TABLE)
     {
@@ -107,14 +107,16 @@ AbstractCoupling* RotationalCoupling2DModule::getCoupling(chimera::vec_t_LuaItem
             if(p.first == "G" && p.second.getType() == type)
             {
                 inMatrix = true;
-                pvMatrix = p.second;
+                vd = (struct chimera::simulation::T_VectorDef*)p.second.getValue();
             }
         }
         if(!(inSigma && inEpsilon && inPhi && inMatrix))
         {
             return nullptr;
         }
-        return new RotationalCoupling2D(epsilon, sigma, phi, pvMatrix);
+        auto result = new RotationalCoupling2D(epsilon, sigma, phi, (boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >*)vd->value);
+        getChimeraSystem()->getTypeSystem()->addDependency(result, vd);
+        return result;
     }
     /*
     else if(parameters.size() >= 2 && parameters[0].getType() == chimera::systemtypes::PID_NUMBER && parameters[1].getType() == chimera::systemtypes::PID_NUMBER)
@@ -127,16 +129,16 @@ AbstractCoupling* RotationalCoupling2DModule::getCoupling(chimera::vec_t_LuaItem
     return nullptr;
 }
 
-RotationalCoupling2D::RotationalCoupling2D(double epsilon, double sigma, double phi, chimera::ParameterValue couplingValue):
+RotationalCoupling2D::RotationalCoupling2D(double epsilon, double sigma, double phi, boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >* coupling):
     _epsilon(epsilon),
     _sigma(sigma),
     _phi(phi)
 {
     _sinPhi = sin(phi);
     _cosPhi = cos(phi);
-    _couplingValue = new chimera::ParameterValue(couplingValue);
-    struct chimera::simulation::T_VectorDef* vd = (struct chimera::simulation::T_VectorDef*)couplingValue.getValue();
-    _couplingMatrix = (boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >*)vd->value;
+    //struct chimera::simulation::T_VectorDef* vd = (struct chimera::simulation::T_VectorDef*)couplingValue.getValue();
+    //_couplingMatrix = (boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >*)vd->value;
+    _couplingMatrix = coupling;
 }
 
 RotationalCoupling2D::~RotationalCoupling2D()

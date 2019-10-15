@@ -132,6 +132,7 @@ chimera::simulation::AbstractRandom* UniformRandomModule::getRandomInstance(chim
 UniformDistribution::UniformDistribution(chimera::simulation::AbstractRandomGenerator* generator, chimera::ParameterTypeSystem* ps, double a, double b)
 {
     _uniRealDist = new std::uniform_real_distribution<double>(a, b);
+    ps->addDependency(this, generator);
     _generator = generator;
 }
 

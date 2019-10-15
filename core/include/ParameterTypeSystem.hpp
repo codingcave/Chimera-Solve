@@ -39,15 +39,19 @@ namespace chimera {
             friend std::ostream& operator<<(std::ostream& os, const ParameterValue& obj);
 
             virtual const std::string getGUID() const override;
-            ParameterValue getValue(lua_State* const L, const int& index) const;
+            ParameterValue getValue(lua_State* const L, const int& index);
             size_t getParameterType(lua_State* const L, const int& index) const;
+
+            void addDependency(void* item, void* dependency);
+            void releaseDependency(void* item, void* dependency);
+            void removeDependencyItem(void* item);
         protected:
-            bool pushValue(lua_State* const L, struct T_Parameter value) const;
-            bool pushValue(lua_State* const L, size_t type, void* value) const;
-            bool pushReal(lua_State* const L, const double& value) const;
-            bool pushString(lua_State* const L, const std::string& value) const;
-            bool pushBoolean(lua_State* const L, const bool& value) const;
-            bool pushFunction(lua_State* const L, lua_CFunction value) const;
+            bool pushValue(lua_State* const L, struct T_Parameter value);
+            bool pushValue(lua_State* const L, size_t type, void* value);
+            //bool pushReal(lua_State* const L, const double& value) const;
+            //bool pushString(lua_State* const L, const std::string& value) const;
+            //bool pushBoolean(lua_State* const L, const bool& value) const;
+            //bool pushFunction(lua_State* const L, lua_CFunction value) const;
             void deleteValue(lua_State* const L, ParameterValue& value) const;
             void deleteValue(lua_State* const L, size_t type, void* value) const;
             ParameterType const * const getParameter(const size_t& id) const;
@@ -69,9 +73,13 @@ namespace chimera {
             std::vector<ParameterType*>* _typeList;
             std::unordered_map<void*, ParameterValue>* _references;
 
+            std::unordered_map<void*, std::unordered_set<void*> >* _dependencies;
+            std::unordered_map<void*, std::unordered_set<void*> >* _reverseDependencies;
+
             ParameterTypeSystem();
             size_t registerParameter(const std::string& name, void const * const origin, const struct T_ParameterDef& pdef, size_t base, size_t tag, const std::unordered_map<std::string, size_t>& flags, bool notify);
             void deleteAllReferences(size_t type);
+            void disposeReference(void* value);
             //void notifyUnload(StateSynchrony* sender, void const * const data) override;
             //void notifyItemRemoved(StateSynchrony* sender, void const * const item, void const * const data) override;
             //static void finalizeValue(lua_State* const L, ParameterValue& value);

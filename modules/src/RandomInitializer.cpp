@@ -78,28 +78,28 @@ chimera::simulation::AbstractInitializer* RandomInitializerModule::getInitialize
             {
                 if(p.first == "engine" && getChimeraSystem()->getTypeSystem()->getParameterBase(p.second.getType()) == chimera::systemtypes::PID_INSTANCE && getChimeraSystem()->getTypeSystem()->getParameterTag(p.second.getType()) == randomEntryPoint)
                 {
-                    return new RandomInitializer(getChimeraSystem()->getTypeSystem(), p.second, (chimera::simulation::AbstractRandom*)p.second.getValue());
+                    return new RandomInitializer(getChimeraSystem()->getTypeSystem(), (chimera::simulation::AbstractRandom*)p.second.getValue());
                 }
             }
         }
         else if(parameters.size() == 1 && getChimeraSystem()->getTypeSystem()->getParameterBase(parameters[0].getType()) == chimera::systemtypes::PID_INSTANCE && getChimeraSystem()->getTypeSystem()->getParameterTag(parameters[0].getType()) == randomEntryPoint)
         {
-            return new RandomInitializer(getChimeraSystem()->getTypeSystem(), parameters[0], (chimera::simulation::AbstractRandom*)parameters[0].getValue());
+            return new RandomInitializer(getChimeraSystem()->getTypeSystem(), (chimera::simulation::AbstractRandom*)parameters[0].getValue());
         }
     }
     return nullptr;
 }
 
-RandomInitializer::RandomInitializer(chimera::ParameterTypeSystem* ps, const chimera::ParameterValue& randomValue, chimera::simulation::AbstractRandom* random)
+RandomInitializer::RandomInitializer(chimera::ParameterTypeSystem* ps, chimera::simulation::AbstractRandom* random)
 {
     _ps = ps;
     _random = random;
-    _randomValue = new chimera::ParameterValue(randomValue);
+    _ps->addDependency(this, random);
 }
 
 RandomInitializer::~RandomInitializer()
 {
-    delete _randomValue;
+
 }
 
 void RandomInitializer::initialize(chimera::simulation::AbstractSystemDynamic* system, void* state)

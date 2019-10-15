@@ -7,7 +7,7 @@ class Network_double_vecComplex:
     public INetwork<double, boost::numeric::ublas::vector<std::complex<double> > >
 {
     public:
-        Network_double_vecComplex(chimera::ParameterTypeSystem* ps, chimera::ParameterValue& unit, const int& number, chimera::ParameterValue& coupling);
+        Network_double_vecComplex(chimera::ParameterTypeSystem* ps, chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<std::complex<double> > >* unit, const int& number, TemplateCoupling<double, boost::numeric::ublas::vector<std::complex<double> > >* coupling);
 
         virtual ~Network_double_vecComplex();
 
@@ -21,10 +21,8 @@ class Network_double_vecComplex:
     private:
         chimera::ParameterTypeSystem* _ps;
         chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<std::complex<double> > >* _unitSys;
-        chimera::ParameterValue* _unitValue;
         int _number;
         TemplateCoupling<double, boost::numeric::ublas::vector<std::complex<double> > >* _coupling;
-        chimera::ParameterValue* _couplingValue;
         boost::numeric::ublas::vector<std::complex<double> >* _tmp;
 };
 

@@ -128,6 +128,7 @@ NormalDistribution::NormalDistribution(chimera::simulation::AbstractRandomGenera
 {
     _normDist = new std::normal_distribution<double>(mean, sigma);
     _generator = generator;
+    ps->addDependency(this, generator);
 }
 
 NormalDistribution::~NormalDistribution()

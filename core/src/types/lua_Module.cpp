@@ -112,8 +112,7 @@ void chimera::ChimeraSystem::pushModule(EntryPoint* ep, const std::string& name,
         lua_setfield(_L, -2, "__modptr");
         lua_pushlstring(_L, name.c_str(), name.size());
         lua_setfield(_L, -2, "__module");
-        lua_pushvalue(_L, modPos);
-        lua_pushcclosure(_L, chimera::lua_Instance_destroy, 1);
+        lua_pushcfunction(_L, chimera::lua_UserData_gc);
         lua_setfield(_L, -2, "__gc");
         lua_pushlstring(_L, name.c_str(), name.size());
         lua_pushvalue(_L, modPos);
@@ -224,17 +223,6 @@ int chimera::lua_Instance_tostring(lua_State* L)
     return 1;
 }
 
-int chimera::lua_Instance_destroy(lua_State* L)
-{
-    void* item = *((void**)lua_touserdata(L, 1));
-    const Module *mod = *((const Module **)lua_touserdata(L, lua_upvalueindex(1)));
-    if(mod != nullptr && item != nullptr)
-    {
-        mod->destroyInstance(item);
-    }
-    return 0;
-}
-
 int chimera::lua_Instance_forwardMethod(lua_State* L)
 {
     luaL_getmetafield(L, lua_upvalueindex(1), "__modptr");
@@ -298,6 +286,7 @@ int chimera::instance_deleteValue(lua_State* const L)
         lua_rawget(L, -2);
         const Module *lmod = (const Module *)lua_touserdata(L, -1);
         lmod->destroyInstance(value);
+        lmod->getChimeraSystem()->getTypeSystem()->removeDependencyItem(value);
     }
     return 0;
 }

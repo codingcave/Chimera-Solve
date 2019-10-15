@@ -17,13 +17,12 @@ class RandomInitializer:
     public chimera::simulation::AbstractInitializer
 {
     public:
-        explicit RandomInitializer(chimera::ParameterTypeSystem* ps, const chimera::ParameterValue& randomValue, chimera::simulation::AbstractRandom* random);
+        explicit RandomInitializer(chimera::ParameterTypeSystem* ps, chimera::simulation::AbstractRandom* random);
         virtual ~RandomInitializer();
         virtual void initialize(chimera::simulation::AbstractSystemDynamic* system, void* state) override;
     protected:
     private:
         chimera::ParameterTypeSystem* _ps;
-        chimera::ParameterValue* _randomValue;
         chimera::simulation::AbstractRandom* _random;
 };
 

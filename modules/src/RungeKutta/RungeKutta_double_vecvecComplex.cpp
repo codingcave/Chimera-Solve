@@ -55,6 +55,8 @@ RungeKutta_double_vecvecComplex::RungeKutta_double_vecvecComplex(
     //ctor
     _rk = new odeint::runge_kutta4<vec_vec_complex>();
     _dt = dt;
+    ps->addDependency(this, system);
+    ps->addDependency(this, init);
     _time = 0;
     _system = new RungeKuttaSystem<double, vec_vec_complex>(system);
     size_t length = system->getFeatures()[chimera::simulation::Naming::Feature_size];

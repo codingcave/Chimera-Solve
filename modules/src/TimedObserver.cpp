@@ -172,7 +172,9 @@ chimera::simulation::AbstractEventManager* TimedObserverModule::getEventInstance
     {
         return nullptr;
     }
-    return new TimedObserver(nm, start, step, end);
+    auto result = new TimedObserver(nm, start, step, end);
+    getChimeraSystem()->getTypeSystem()->addDependency(result, nm);
+    return result;
 }
 
 TimedObserver::TimedObserver(chimera::simulation::NotificationManager* nm, double start, double step, double end):

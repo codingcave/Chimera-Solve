@@ -33,14 +33,14 @@
 #include "Network/CouplingEntryPoint.hpp"
 #include "Network/Network_double_vecComplex.hpp"
 
-Network_double_vecComplex::Network_double_vecComplex(chimera::ParameterTypeSystem* ps, chimera::ParameterValue& unit, const int& number, chimera::ParameterValue& coupling):
+Network_double_vecComplex::Network_double_vecComplex(chimera::ParameterTypeSystem* ps, chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<std::complex<double> > >* unit, const int& number, TemplateCoupling<double, boost::numeric::ublas::vector<std::complex<double> > >* coupling):
     _ps(ps)
 {
-    _unitSys = (chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<std::complex<double> > >*)unit.getValue();
-    _unitValue = new chimera::ParameterValue(unit);
+    _unitSys = unit;
     _number = number;
-    _coupling = (TemplateCoupling<double, boost::numeric::ublas::vector<std::complex<double> > >*)coupling.getValue();
-    _couplingValue = new chimera::ParameterValue(coupling);
+    _coupling = coupling;
+    ps->addDependency(this, unit);
+    ps->addDependency(this, coupling);
     auto unitFeatures = _unitSys->getFeatures();
     auto unitSize = unitFeatures.find(chimera::simulation::Naming::Feature_size);
     _tmp = nullptr;
@@ -53,8 +53,6 @@ Network_double_vecComplex::Network_double_vecComplex(chimera::ParameterTypeSyste
 
 Network_double_vecComplex::~Network_double_vecComplex()
 {
-    delete _unitValue;
-    delete _couplingValue;
     if(_tmp) delete _tmp;
 }
 

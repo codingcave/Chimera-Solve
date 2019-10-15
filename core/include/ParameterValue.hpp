@@ -13,7 +13,6 @@ namespace chimera {
         size_t type;
         void* value;
         int references;
-        lua_State* luaref;
     };
 
     class ParameterValue

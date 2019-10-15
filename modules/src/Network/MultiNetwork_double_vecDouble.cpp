@@ -36,14 +36,14 @@ MultiNetwork_double_vecDouble::MultiNetwork_double_vecDouble(
     chimera::ParameterTypeSystem* ps,
     chimera::Module* unitModule,
     std::vector<chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >*>& units,
-    chimera::ParameterValue& coupling):
+    TemplateCoupling<double, boost::numeric::ublas::vector<double> >* coupling):
         _ps(ps)
 {
     _unitSystems = new std::vector<chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >*>(units);
     _unitModule = unitModule;
     _number = units.size();
-    _coupling = (TemplateCoupling<double, boost::numeric::ublas::vector<double> >*)coupling.getValue();
-    _couplingValue = new chimera::ParameterValue(coupling);
+    _coupling = coupling;
+    ps->addDependency(this, coupling);
     auto unitFeatures = ((*_unitSystems)[0])->getFeatures();
     auto unitSize = unitFeatures.find(chimera::simulation::Naming::Feature_size);
     _tmp = nullptr;
@@ -60,7 +60,6 @@ MultiNetwork_double_vecDouble::~MultiNetwork_double_vecDouble()
         delete ptr;
     }
     delete _unitSystems;
-    delete _couplingValue;
     if(_tmp) delete _tmp;
 }
 

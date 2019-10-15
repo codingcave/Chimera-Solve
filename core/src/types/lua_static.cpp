@@ -54,14 +54,11 @@ int chimera::lua_UserData_gc(lua_State* L)
         lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
         lua_gettable(L, LUA_REGISTRYINDEX);
         chimera::ChimeraSystem* chSys = (chimera::ChimeraSystem*)lua_touserdata(L, -1);
-
         if(value)
         {
             if(chSys->getTypeSystem()->isReferenced(value))
             {
-                chimera::ParameterValue pv = chSys->getTypeSystem()->createValue(type, value);
-                pv._data->luaref = nullptr;
-                pv.dispose();
+                chSys->getTypeSystem()->releaseDependency(L, value);
             }
             else
             {

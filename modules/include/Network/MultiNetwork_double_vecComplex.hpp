@@ -7,7 +7,7 @@ class MultiNetwork_double_vecComplex:
     public INetwork<double, boost::numeric::ublas::vector<std::complex<double> > >
 {
     public:
-        MultiNetwork_double_vecComplex(chimera::ParameterTypeSystem* ps, chimera::Module* unitModule, std::vector<chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<std::complex<double> > >*>& units, chimera::ParameterValue& coupling);
+        MultiNetwork_double_vecComplex(chimera::ParameterTypeSystem* ps, chimera::Module* unitModule, std::vector<chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<std::complex<double> > >*>& units, TemplateCoupling<double, boost::numeric::ublas::vector<std::complex<double> > >* coupling);
 
         virtual ~MultiNetwork_double_vecComplex();
 
@@ -24,7 +24,6 @@ class MultiNetwork_double_vecComplex:
         std::vector<chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<std::complex<double> > >*>* _unitSystems;
         int _number;
         TemplateCoupling<double, boost::numeric::ublas::vector<std::complex<double> > >* _coupling;
-        chimera::ParameterValue* _couplingValue;
         boost::numeric::ublas::vector<std::complex<double> >* _tmp;
 };
 

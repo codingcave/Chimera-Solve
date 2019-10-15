@@ -203,11 +203,9 @@ chimera::ParameterValue::ParameterValue(chimera::ChimeraSystem* cmSys, size_t ty
                 cmSys,
                 type,
                 value,
-                0,
-                nullptr
+                0
             });
             _disposed = false;
-
             cmSys->getTypeSystem()->_references->insert(
                 std::make_pair(value,*this)
             );
@@ -234,8 +232,7 @@ chimera::ParameterValue::ParameterValue(size_t type, void* value)
             nullptr,
             type,
             value,
-            1,
-            nullptr
+            1
         });
         _disposed = false;
     }
@@ -466,7 +463,7 @@ void chimera::ParameterValue::dispose()
         if(getValue())
         {
             --(_data->references);
-            if(_data->references == 0 && !_data->luaref)
+            if(_data->references == 0 && !_data->cmSys->getTypeSystem()->_reverseDependencies->count(_data->value))
             {
                 if(_data->cmSys)
                 {

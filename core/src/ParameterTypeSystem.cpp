@@ -25,7 +25,9 @@ chimera::ParameterTypeSystem::ParameterTypeSystem():
     _chimeraSystem(nullptr),
     _lastID(7),
     _typeList(new std::vector<chimera::ParameterType*>(8)),
-    _references(new std::unordered_map<void*, chimera::ParameterValue>())
+    _references(new std::unordered_map<void*, chimera::ParameterValue>()),
+    _dependencies(new std::unordered_map<void*, std::unordered_set<void*> >()),
+    _reverseDependencies(new std::unordered_map<void*, std::unordered_set<void*> >())
 {
     (*_typeList)[chimera::systemtypes::PID_NIL] = new ParameterType(chimera::typenames::TYPE_NIL, chimera::systemtypes::PID_NIL, this, {nullptr, chimera::luat_nil_push, nullptr, nullptr});
     (*_typeList)[chimera::systemtypes::PID_NUMBER] = new ParameterType(chimera::typenames::TYPE_NUMBER, chimera::systemtypes::PID_NUMBER, this, {nullptr, chimera::luat_real_push, chimera::luat_real_delete, nullptr});
@@ -52,6 +54,8 @@ chimera::ParameterTypeSystem::~ParameterTypeSystem()
     }
     delete _typeList;
     delete _references;
+    delete _dependencies;
+    delete _reverseDependencies;
 }
 
 size_t chimera::ParameterTypeSystem::registerParameter(const std::string& name, void const * const origin, const struct chimera::T_ParameterDef& pdef)
@@ -177,7 +181,7 @@ size_t ParameterTypeSystem::getParameterID(const size_t& base, const size_t& tag
 }
 */
 
-chimera::ParameterValue chimera::ParameterTypeSystem::getValue(lua_State* const L, const int& index) const
+chimera::ParameterValue chimera::ParameterTypeSystem::getValue(lua_State* const L, const int& index)
 {
     switch(lua_type(L, index))
     {
@@ -266,7 +270,8 @@ chimera::ParameterValue chimera::ParameterTypeSystem::getValue(lua_State* const 
                         return {type, value};
                         */
                         ParameterValue pv(_chimeraSystem, type, value);
-                        pv._data->luaref = L;
+                        addDependency(L, value);
+
                         return pv;
                     }
                     else
@@ -349,12 +354,12 @@ void chimera::ParameterTypeSystem::deleteValue(lua_State* const L, size_t type, 
     }
 }
 
-bool chimera::ParameterTypeSystem::pushValue(lua_State* const L, struct chimera::T_Parameter value) const
+bool chimera::ParameterTypeSystem::pushValue(lua_State* const L, struct chimera::T_Parameter value)
 {
     return pushValue(L, value.type, value.value);
 }
 
-bool chimera::ParameterTypeSystem::pushValue(lua_State* const L, size_t type, void* value) const
+bool chimera::ParameterTypeSystem::pushValue(lua_State* const L, size_t type, void* value)
 {
     switch(type) {
     case chimera::systemtypes::PID_NIL:
@@ -390,7 +395,7 @@ bool chimera::ParameterTypeSystem::pushValue(lua_State* const L, size_t type, vo
                 auto it = _references->find((void*)fw->getOrigin());
                 if(it != _references->end())
                 {
-                    it->second._data->luaref = fw->_chSys->getLuaState();
+                    addDependency(fw->_chSys->getLuaState(), value);
                 }
             }
             else
@@ -413,7 +418,8 @@ bool chimera::ParameterTypeSystem::pushValue(lua_State* const L, size_t type, vo
                 lua_rawget(L, LUA_REGISTRYINDEX);
                 if(it != _references->end())
                 {
-                    if(it->second._data->luaref != nullptr) {
+                    if(_reverseDependencies->count(value))
+                    {
                         if(lua_rawgetp(L, -1, value))
                         {
                             lua_remove(L, -2);
@@ -421,10 +427,10 @@ bool chimera::ParameterTypeSystem::pushValue(lua_State* const L, size_t type, vo
                         }
                         lua_pop(L, 1);
                     }
-                    it->second._data->luaref = _chimeraSystem->getLuaState();
+                    addDependency(_chimeraSystem->getLuaState(), value);
                 } else {
                     ParameterValue p(_chimeraSystem, type, value);
-                    p._data->luaref = _chimeraSystem->getLuaState();
+                    addDependency(_chimeraSystem->getLuaState(), value);
                     p.dispose();
                 }
                 (*_typeList)[type]->pushValue(L, value);
@@ -478,6 +484,109 @@ chimera::ParameterValue chimera::ParameterTypeSystem::createValue(size_t type, v
 chimera::LuaFunctionWrapper chimera::ParameterTypeSystem::createFunction(chimera::fn_luafnwrapper fn) const
 {
     return LuaFunctionWrapper(_chimeraSystem, fn);
+}
+
+void chimera::ParameterTypeSystem::addDependency(void* item, void* dependency)
+{
+    {
+        if (!_dependencies->count(item))
+        {
+            _dependencies->insert(std::make_pair(item, std::unordered_set<void*>()));
+        }
+
+        auto listItem = _dependencies->find(item);
+        if(listItem != _dependencies->end())
+        {
+            if(!listItem->second.count(dependency))
+            {
+                listItem->second.insert(dependency);
+            }
+        }
+    }
+
+    {
+        if (!_reverseDependencies->count(dependency))
+        {
+            _reverseDependencies->insert(std::make_pair(dependency, std::unordered_set<void*>()));
+        }
+
+        auto listItem = _reverseDependencies->find(dependency);
+        if(listItem != _reverseDependencies->end())
+        {
+            if(!listItem->second.count(item))
+            {
+                listItem->second.insert(item);
+            }
+        }
+    }
+}
+
+void chimera::ParameterTypeSystem::releaseDependency(void* item, void* dependency)
+{
+    auto listItem = _dependencies->find(item);
+    auto listDep = _reverseDependencies->find(dependency);
+    if (listItem != _dependencies->end() && listDep != _reverseDependencies->end())
+    {
+        listItem->second.erase(dependency);
+        listDep->second.erase(item);
+
+        if (listDep->second.size() == 0)
+        {
+            _reverseDependencies->erase(listDep);
+            removeDependencyItem(dependency);
+            disposeReference(dependency);
+        }
+
+        if (listItem->second.size() == 0)
+        {
+            _dependencies->erase(listItem);
+        }
+    }
+}
+
+void chimera::ParameterTypeSystem::removeDependencyItem(void* item)
+{
+    //static void* dependency;
+    std::unordered_set<void*> itemCache;
+
+    auto depList = _dependencies->find(item);
+    if(depList != _dependencies->end())
+    {
+        for(auto it = depList->second.begin(); it != depList->second.end(); it++)
+        {
+            auto itemList = _reverseDependencies->find(*it);
+            if (itemList != _reverseDependencies->end())
+            {
+                itemList->second.erase(item);
+                if (itemList->second.size() == 0)
+                {
+                    _reverseDependencies->erase(itemList);
+                    // delete reference
+                    itemCache.insert(*it);
+                }
+            }
+        }
+        _dependencies->erase(depList);
+
+        for(auto it = itemCache.begin(); it != itemCache.end(); it++)
+        {
+            removeDependencyItem(*it);
+            disposeReference(*it);
+        }
+    }
+}
+
+void chimera::ParameterTypeSystem::disposeReference(void* value)
+{
+    auto refItem = _references->find(value);
+    if(refItem != _references->end()) {
+        if(refItem->second._data->references == 0 && !_reverseDependencies->count(value))
+        {
+            deleteValue(_chimeraSystem->getLuaState(), refItem->second._data->type, refItem->second._data->value);
+            refItem->second.dispose();
+            _references->erase(value);
+        }
+    }
 }
 
 /*

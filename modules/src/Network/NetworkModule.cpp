@@ -148,8 +148,6 @@ void* NetworkModule::getInstance(chimera::vec_t_LuaItem& parameters) const
 
     TemplateCoupling<double, boost::numeric::ublas::vector<double> >* coupling1;
     TemplateCoupling<double, boost::numeric::ublas::vector<std::complex<double> > >* coupling2;
-    chimera::ParameterValue pvSystem;
-    chimera::ParameterValue pvCoupling;
 
     if(parameters.size() == 1 && parameters[0].getType() == chimera::systemtypes::PID_TABLE)
     {
@@ -176,7 +174,6 @@ void* NetworkModule::getInstance(chimera::vec_t_LuaItem& parameters) const
                 if(inSystem)
                 {
                     switchNumber = 0;
-                    pvSystem = p.second;
                     continue;
                 }
                 else
@@ -219,7 +216,6 @@ void* NetworkModule::getInstance(chimera::vec_t_LuaItem& parameters) const
                 }
                 if(inCoupling)
                 {
-                    pvCoupling = p.second;
                     continue;
                 }
             }
@@ -250,9 +246,9 @@ void* NetworkModule::getInstance(chimera::vec_t_LuaItem& parameters) const
                     switch(sysType)
                     {
                         case 1:
-                            return new Network_double_vecDouble(getChimeraSystem()->getTypeSystem(), pvSystem, number, pvCoupling);
+                            return new Network_double_vecDouble(getChimeraSystem()->getTypeSystem(), odeSys1, number, coupling1);
                         case 2:
-                            return new Network_double_vecComplex(getChimeraSystem()->getTypeSystem(), pvSystem, number, pvCoupling);
+                            return new Network_double_vecComplex(getChimeraSystem()->getTypeSystem(), odeSys2, number, coupling2);
                     }
                 }
             }
@@ -352,9 +348,9 @@ void* NetworkModule::getInstance(chimera::vec_t_LuaItem& parameters) const
                 switch (oscType)
                 {
                     case 1:
-                        return new MultiNetwork_double_vecDouble(getChimeraSystem()->getTypeSystem(), sysMod, oscillators1, pvCoupling);
+                        return new MultiNetwork_double_vecDouble(getChimeraSystem()->getTypeSystem(), sysMod, oscillators1, coupling1);
                     case 2:
-                        return new MultiNetwork_double_vecComplex(getChimeraSystem()->getTypeSystem(), sysMod, oscillators2, pvCoupling);
+                        return new MultiNetwork_double_vecComplex(getChimeraSystem()->getTypeSystem(), sysMod, oscillators2, coupling2);
                     default:
                         return nullptr;
                 }
@@ -371,7 +367,6 @@ void* NetworkModule::getInstance(chimera::vec_t_LuaItem& parameters) const
         {
             return nullptr;
         }
-        pvSystem = parameters[0];
 
         if(parameters[1].getType() != chimera::systemtypes::PID_NUMBER)
         {
@@ -384,9 +379,8 @@ void* NetworkModule::getInstance(chimera::vec_t_LuaItem& parameters) const
         {
             return nullptr;
         }
-        pvCoupling = parameters[2];
 
-        return new Network_double_vecDouble(getChimeraSystem()->getTypeSystem(), pvSystem, number, pvCoupling);
+        return new Network_double_vecDouble(getChimeraSystem()->getTypeSystem(), odeSys1, number, coupling1);
     }
 
     return nullptr;
