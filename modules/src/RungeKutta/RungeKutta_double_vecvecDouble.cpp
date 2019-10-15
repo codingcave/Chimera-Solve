@@ -94,7 +94,9 @@ void * RungeKutta_double_vecvecDouble::currentTime()
 //struct T_VectorDef* RungeKutta::getState()
 void * RungeKutta_double_vecvecDouble::currentState()
 {
-    return new struct chimera::simulation::T_VectorDef({_state->size(), true, false, _state});
+    auto state = new struct chimera::simulation::T_VectorDef({_state->size(), true, false, _state});
+    _ps->addDependency(state, this);
+    return state;
 }
 
 void RungeKutta_double_vecvecDouble::nextStep()

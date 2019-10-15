@@ -163,6 +163,7 @@ int chimera::runtime::lua_global_simulation(lua_State* L)
     // case for all simulation types
     if (tempInt) {
         *sim = new TemporalSimulation(tempInt);
+        chSys->getTypeSystem()->addDependency(*sim, tempInt);
         lua_pushliteral(L, "temporal");
         lua_setfield(L, -3, "__simtype");
         lua_pushlightuserdata(NL, (void*)*sim);
