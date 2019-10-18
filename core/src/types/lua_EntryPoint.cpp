@@ -16,7 +16,7 @@
 #include "types/LuaFunctionWrapper.hpp"
 #include "types/lua_static.hpp"
 #include "ParameterTypeSystem.hpp"
-#include "ItemContainer.hpp"
+#include "ParameterValueCollection.hpp"
 #include "Module.hpp"
 #include "EntryPoint.hpp"
 #include "EntryPointSystem.hpp"
@@ -92,6 +92,7 @@ void chimera::ChimeraSystem::pushEntryPoint(const std::string& name, EntryPoint*
 void chimera::ChimeraSystem::popEntryPoint(const std::string& name, EntryPoint* ep)
 {
 return;
+/*
     int top = lua_gettop(_L);
     lua_pushstring(_L, chimera::registrynames::LUA_REGISTRY_CHIMERA_REFERENCES);
     lua_rawget(_L, LUA_REGISTRYINDEX);
@@ -117,6 +118,7 @@ return;
         *lep = nullptr;
     }
     lua_settop(_L, top);
+*/
 }
 
 int chimera::lua_EntryPoint_call(lua_State* L)

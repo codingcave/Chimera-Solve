@@ -4,7 +4,7 @@
 namespace chimera {
     class Module;
 
-    class EntryPoint:public StateSynchrony, public ItemContainer
+    class EntryPoint:public StateSynchrony, public ParameterValueCollection
     {
         friend class ChimeraSystem;
         friend class EntryPointSystem;
@@ -12,8 +12,6 @@ namespace chimera {
             EntryPoint();
             virtual ~EntryPoint();
             class iterator;
-            //const struct T_Parameter* getValue(const std::string& name) const;
-            //virtual const std::string getGUID() const = 0;
             virtual const std::string getVersion() const = 0;
             bool addModule(const std::string& name, Module * const module);
             void removeModule(const std::string& name);

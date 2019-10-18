@@ -1,5 +1,5 @@
-#ifndef LUA_STATIC_H
-#define LUA_STATIC_H
+#ifndef LUA_RUNTIME_STATIC_H
+#define LUA_RUNTIME_STATIC_H
 
 namespace chimera {
     namespace runtime {
@@ -12,8 +12,6 @@ namespace chimera {
         int lua_global_warning(lua_State* L);
         int lua_global_exit(lua_State* L);
         int lua_global_simulation(lua_State* L);
-        int lua_global_scope_newindex(lua_State* L);
-        int lua_ignore_newindex(lua_State* L);
         int lua_argv_len(lua_State* L);
 
         int lua_EntryPoint_call(lua_State* L);
@@ -27,4 +25,4 @@ namespace chimera {
     }
 }
 
-#endif // LUA_STATIC_H
+#endif // LUA_RUNTIME_STATIC_H

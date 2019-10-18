@@ -14,7 +14,7 @@
 #include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
-#include "ItemContainer.hpp"
+#include "ParameterValueCollection.hpp"
 #include "Module.hpp"
 #include "EntryPoint.hpp"
 #include "EntryPointSystem.hpp"

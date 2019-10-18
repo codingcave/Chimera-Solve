@@ -17,7 +17,7 @@ namespace chimera {
 
     class ParameterValue
     {
-        friend class ItemContainer;
+        friend class ParameterValueCollection;
         friend class ParameterTypeSystem;
         friend class ParameterReferenceInteger;
         friend class ParameterReferenceString;

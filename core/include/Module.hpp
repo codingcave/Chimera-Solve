@@ -6,7 +6,7 @@ namespace chimera {
 
     class Module:
         public StateSynchrony,
-        public ItemContainer
+        public ParameterValueCollection
     {
         public:
             friend class EntryPoint;

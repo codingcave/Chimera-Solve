@@ -1,13 +1,13 @@
-#ifndef ITEMCONTAINER_H
-#define ITEMCONTAINER_H
+#ifndef PARAMETERVALUECOLLECTION_H
+#define PARAMETERVALUECOLLECTION_H
 
 namespace chimera {
-    class ItemContainer
+    class ParameterValueCollection
     {
         friend class ChimeraSystem;
         public:
-            ItemContainer();
-            virtual ~ItemContainer();
+            ParameterValueCollection();
+            virtual ~ParameterValueCollection();
 
             void setValue(const std::string& name, ParameterValue& value);
             std::unordered_map<std::string, ParameterValue>::const_iterator beginItems() const;
@@ -21,4 +21,4 @@ namespace chimera {
     };
 }
 
-#endif // ITEMCONTAINER_H
+#endif // PARAMETERVALUECOLLECTION_H

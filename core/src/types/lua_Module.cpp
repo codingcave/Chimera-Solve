@@ -15,7 +15,7 @@
 #include "types/LuaFunctionWrapper.hpp"
 #include "types/lua_static.hpp"
 #include "ParameterTypeSystem.hpp"
-#include "ItemContainer.hpp"
+#include "ParameterValueCollection.hpp"
 #include "Module.hpp"
 #include "EntryPoint.hpp"
 #include "EntryPointSystem.hpp"
@@ -125,6 +125,7 @@ void chimera::ChimeraSystem::pushModule(EntryPoint* ep, const std::string& name,
 void chimera::ChimeraSystem::popModule(EntryPoint* ep, Module const * const module)
 {
 return;
+/*
     const std::string name = ep->findModule(module);
     if(name.size() > 0)
     {
@@ -157,6 +158,7 @@ return;
         lua_rawset(_L, top + 1);
         lua_settop(_L, top);
     }
+*/
 }
 
 int chimera::lua_Module_call(lua_State* L)

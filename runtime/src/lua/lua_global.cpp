@@ -19,7 +19,7 @@
 #include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
-#include "ItemContainer.hpp"
+#include "ParameterValueCollection.hpp"
 #include "Module.hpp"
 #include "EntryPoint.hpp"
 #include "EntryPointSystem.hpp"
@@ -37,6 +37,7 @@
 #include "simulation/AbstractSimulation.hpp"
 #include "simulation/TemporalSimulation.hpp"
 //#include "Simulation.hpp"
+#include "types/lua_static.hpp"
 #include "lua/types/lua_Simulation.hpp"
 #include "lua/types/lua_TemporalSimulation.hpp"
 #include "ChimeraSystem.hpp"
@@ -219,28 +220,6 @@ int chimera::runtime::lua_global_simulation(lua_State* L)
     lua_setmetatable(L, -2);
 
     return 1;
-}
-
-int chimera::runtime::lua_global_scope_newindex(lua_State* L)
-{
-    lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_SYSTEMNAMES);
-    lua_gettable(L, LUA_REGISTRYINDEX);
-    lua_pushvalue(L, 2);
-    lua_gettable(L, -2);
-    if(lua_isnoneornil(L, -1))
-    {
-        lua_settop(L, 3);
-        lua_rawset(L, -3);
-    }
-
-    lua_settop(L, 0);
-    return 0;
-}
-
-int chimera::runtime::lua_ignore_newindex(lua_State* L)
-{
-    lua_settop(L, 0);
-    return 0;
 }
 
 int chimera::runtime::lua_argv_len(lua_State* L)

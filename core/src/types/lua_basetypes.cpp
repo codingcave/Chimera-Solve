@@ -16,7 +16,7 @@
 //#include "interfaces/IConnectEventHandler.hpp"
 #include "interfaces/ILogger.hpp"
 #include "LoggingSystem.hpp"
-#include "ItemContainer.hpp"
+#include "ParameterValueCollection.hpp"
 #include "Module.hpp"
 #include "EntryPoint.hpp"
 #include "EntryPointSystem.hpp"
