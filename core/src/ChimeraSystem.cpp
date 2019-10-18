@@ -28,7 +28,7 @@ chimera::ChimeraSystem::ChimeraSystem()
     _typeSys = new ParameterTypeSystem();
     _typeSys->_chimeraSystem = this;
     _epSys = new EntryPointSystem();
-    _epSys->_chSys = this;
+    _epSys->_chimeraSystem = this;
 
     _epSys->addListener(this);
     _typeSys->addListener(this);
@@ -156,6 +156,19 @@ void chimera::ChimeraSystem::notifyItemAdded(StateSynchrony* sender, void const 
     else if(sender == _epSys)
     {
         // EntryPoint
+        //std::string* name = (std::string*)data;
+        EntryPoint* entrypoint = (EntryPoint*)item;
+        entrypoint->addListener(this);
+
+        if (entrypoint->isLoaded())
+        {
+            notifyItemLoaded(sender, item, data);
+        }
+
+        for(auto it = entrypoint->_loadedModules->begin(); it != entrypoint->_loadedModules->end(); it++)
+        {
+            notifyItemAdded(entrypoint, it->second, &it->first);
+        }
     }
     else
     {
@@ -187,7 +200,8 @@ void chimera::ChimeraSystem::notifyItemRemoved(StateSynchrony* sender, void cons
         chimera::EntryPoint* entrypoint = dynamic_cast<chimera::EntryPoint*>(sender);
         //std::string* name = (std::string*)data;
         chimera::Module* module = (chimera::Module*)item;
-        popModule(entrypoint, module);
+        //popModule(entrypoint, module);
+        closeModule(module);
     }
 }
 
@@ -196,19 +210,9 @@ void chimera::ChimeraSystem::notifyItemLoaded(StateSynchrony* sender, void const
     if(sender == _epSys)
     {
         // EntryPoint
-        //std::string* name = (std::string*)data;
         EntryPoint* entrypoint = (EntryPoint*)item;
-        entrypoint->addListener(this);
         std::string name = getEntryPointSystem()->findEntryPoint((const EntryPoint*)item);
         pushEntryPoint(name, entrypoint);
-        for(auto it = entrypoint->_loadedModules->begin(); it != entrypoint->_loadedModules->end(); it++)
-        {
-            it->second->addListener(this);
-            if(it->second->isLoaded())
-            {
-                pushModule(entrypoint, it->first, it->second);
-            }
-        }
     }
     else
     {
@@ -229,7 +233,7 @@ void chimera::ChimeraSystem::notifyItemUnloaded(StateSynchrony* sender, void con
     {
         // EntryPoint
         EntryPoint* entrypoint = (EntryPoint*)item;
-        entrypoint->removeListener(this);
+        //entrypoint->removeListener(this);
         popEntryPoint(*name, entrypoint);
     }
     else

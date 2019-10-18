@@ -137,7 +137,9 @@ void chimera::ParameterTypeSystem::deleteAllReferences(size_t type)
     for(auto it = _references->begin(); it != _references->end(); it++)
     {
         if(it->second.getType() == type) {
+            removeDependencyItem(it->second._data->value);
             deleteValue(_chimeraSystem->getLuaState(), it->second);
+            disposeReference(it->second._data->value);
             it->second._data->type = 0;
         }
     }
@@ -395,7 +397,7 @@ bool chimera::ParameterTypeSystem::pushValue(lua_State* const L, size_t type, vo
                 auto it = _references->find((void*)fw->getOrigin());
                 if(it != _references->end())
                 {
-                    addDependency(fw->_chSys->getLuaState(), value);
+                    addDependency(fw->_chimeraSystem->getLuaState(), value);
                 }
             }
             else

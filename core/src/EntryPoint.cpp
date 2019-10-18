@@ -26,11 +26,8 @@ chimera::EntryPoint::EntryPoint()
 chimera::EntryPoint::~EntryPoint()
 {
     unloadEntryPoint();
-    for(auto it = _loadedModules->begin(); it != _loadedModules->end(); it++)
-    {
-        it->second->removeListener(this);
-        itemRemoved(it->second, &(it->first));
-    }
+    auto name = _chimeraSystem->getEntryPointSystem()->findEntryPoint(this);
+    _chimeraSystem->getEntryPointSystem()->removeEntryPoint(name);
     delete _loadedModules;
 }
 
@@ -40,7 +37,7 @@ bool chimera::EntryPoint::addModule(const std::string& name, Module * const modu
     result = checkModule(module);
     if(result)
     {
-        module->_cmSys = _chSys;
+        module->_chimeraSystem = _chimeraSystem;
         _loadedModules->insert (std::make_pair(name, module));
         itemAdded(module, &name);
         module->addListener(this);
@@ -53,8 +50,9 @@ void chimera::EntryPoint::removeModule(const std::string& name)
     map_t_Module::iterator available = _loadedModules->find (name);
     if ( available != _loadedModules->end() ) // if loaded
     {
-        available->second->removeListener(this);
+        available->second->unloadModule();
         itemRemoved(available->second, &name);
+        //available->second->removeListener(this);
         _loadedModules->erase(name);
     }
 }
@@ -122,27 +120,28 @@ std::ostream& operator<< (std::ostream &out, const chimera::EntryPoint &d)
 
 chimera::ChimeraSystem* chimera::EntryPoint::getChimeraSystem() const
 {
-    return _chSys;
+    return _chimeraSystem;
 }
 
 void chimera::EntryPoint::load()
 {
-
+    // virtual, do nothing
 }
 
 void chimera::EntryPoint::unload()
 {
-
+    // virtual, do nothing
 }
 
 void const * const chimera::EntryPoint::getModuleLoadParams() const
 {
+    // virtual, do nothing
     return nullptr;
 }
 
 void chimera::EntryPoint::loadEntryPoint(ChimeraSystem * chimerasystem)
 {
-    _chSys = chimerasystem;
+    _chimeraSystem = chimerasystem;
     if(!isLoaded())
     {
         stateLoaded();
@@ -154,6 +153,11 @@ void chimera::EntryPoint::unloadEntryPoint()
 {
     if(isLoaded())
     {
+        for(auto it = _loadedModules->begin(); it != _loadedModules->end(); it++)
+        {
+            it->second->unloadModule();
+        }
+
         unload();
         stateUnloaded();
     }
@@ -181,7 +185,7 @@ void chimera::EntryPoint::notifyDelete(StateSynchrony* sender)
         {
             std::string name(it->first);
             sender->removeListener(this);
-            itemRemoved(sender, &name);
+            //itemRemoved(sender, &name);
             _loadedModules->erase(name);
             break;
         }

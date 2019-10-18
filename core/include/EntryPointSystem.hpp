@@ -25,7 +25,7 @@ namespace chimera {
             //void notifyLoad(StateSynchrony* sender, void const * const data) override;
             //void notifyUnload(StateSynchrony* sender, void const * const data) override;
             void notifyDelete(StateSynchrony* sender) override;
-            ChimeraSystem* _chSys;
+            ChimeraSystem* _chimeraSystem;
             EntryPointSystem();
             map_t_EntryPoint* _hooks;
     };

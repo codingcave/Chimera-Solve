@@ -32,7 +32,7 @@ namespace chimera {
             virtual void init(lua_State* L);
             virtual void const * const getModuleLoadParams() const;
         private:
-            ChimeraSystem* _chSys;
+            ChimeraSystem* _chimeraSystem;
             map_t_Module *_loadedModules;
             void loadEntryPoint(ChimeraSystem * chimerasystem);
             void unloadEntryPoint();

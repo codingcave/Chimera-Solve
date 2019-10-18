@@ -55,8 +55,8 @@ void chimera::Module::loadModule(EntryPoint const * const entryPoint, const std:
 {
     if(!isLoaded())
     {
-        if(_cmSys) _cmSys->getLoggingSystem()->debug("Loading Module `" + name + "`");
-        _cmSys = entryPoint->getChimeraSystem();
+        _chimeraSystem = entryPoint->getChimeraSystem();
+        if(_chimeraSystem) _chimeraSystem->getLoggingSystem()->debug("Loading Module `" + name + "`");
         load(entryPoint, params);
         stateLoaded(&name);
     }
@@ -78,7 +78,7 @@ size_t chimera::Module::getFlag(const std::string& flag) const
 
 chimera::ChimeraSystem* chimera::Module::getChimeraSystem() const
 {
-    return _cmSys;
+    return _chimeraSystem;
 }
 
 chimera::Module::iterator::iterator (map_t_Module::iterator it):

@@ -39,8 +39,8 @@ namespace chimera {
             //ChimeraSystem(ParameterTypeSystem* typeSys, EntryPointSystem* epSys, LoggingSystem* logSys);
             void pushEntryPoint(const std::string& name, EntryPoint* ep);
             void popEntryPoint(const std::string& name, EntryPoint* ep);
-            void pushModule(EntryPoint* ep, const std::string& name, Module const * const reg);
-            void popModule(EntryPoint* ep, Module const * const reg);
+            void pushModule(EntryPoint* ep, const std::string& name, Module const * const module);
+            void popModule(EntryPoint* ep, Module const * const module);
             void pushType(ParameterType const * const p);
             void popType(const ParameterType& type);
             void pushLuaValue(lua_State* const L, chimera::ParameterValue& param) const;

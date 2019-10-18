@@ -22,23 +22,23 @@
 #include "ChimeraSystem.hpp"
 
 chimera::LuaFunctionWrapper::LuaFunctionWrapper(const LuaFunctionWrapper& wrapper):
-    _chSys(wrapper._chSys),
+    _chimeraSystem(wrapper._chimeraSystem),
     _fn(wrapper._fn),
     _origin(wrapper._origin)
 {
     //ctor
 }
 
-chimera::LuaFunctionWrapper::LuaFunctionWrapper(ChimeraSystem* sys):
-    _chSys(sys),
+chimera::LuaFunctionWrapper::LuaFunctionWrapper(ChimeraSystem* chimeraSystem):
+    _chimeraSystem(chimeraSystem),
     _fn(nullptr),
     _origin(this)
 {
     // ctor
 }
 
-chimera::LuaFunctionWrapper::LuaFunctionWrapper(ChimeraSystem* sys, fn_luafnwrapper fn):
-    _chSys(sys),
+chimera::LuaFunctionWrapper::LuaFunctionWrapper(ChimeraSystem* chimeraSystem, fn_luafnwrapper fn):
+    _chimeraSystem(chimeraSystem),
     _fn(fn),
     _origin((void*)fn)
 {
@@ -69,8 +69,8 @@ chimera::vec_t_LuaItem chimera::LuaFunctionWrapper::operator()(vec_t_LuaItem& pa
     }
     else
     {
-        if(_chSys) {
-            lua_State* L = _chSys->getLuaState();
+        if(_chimeraSystem) {
+            lua_State* L = _chimeraSystem->getLuaState();
             if(lua_checkstack(L, params.size() + 1)) {
                 int pos1 = lua_gettop(L);
                 lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_FUNCTIONS);
@@ -79,13 +79,13 @@ chimera::vec_t_LuaItem chimera::LuaFunctionWrapper::operator()(vec_t_LuaItem& pa
                 lua_rawget(L, -2);
                 lua_remove(L, -2);
                 for(auto it = params.begin(); it != params.end(); it++)
-                    _chSys->getTypeSystem()->pushValue(L, {it->getType(), it->getValue()});
+                    _chimeraSystem->getTypeSystem()->pushValue(L, {it->getType(), it->getValue()});
                 lua_call(L, params.size(), LUA_MULTRET);
                 int pos2 = lua_gettop(L);
                 vec_t_LuaItem result;
                 for(int i = pos1 + 1; i <= pos2; i++)
                 {
-                    result.push_back(_chSys->getTypeSystem()->getValue(L, i));
+                    result.push_back(_chimeraSystem->getTypeSystem()->getValue(L, i));
                 }
 
                 if(pos2 > pos1)

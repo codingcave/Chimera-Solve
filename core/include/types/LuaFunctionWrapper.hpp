@@ -18,7 +18,7 @@ namespace chimera {
             LuaFunctionWrapper(ChimeraSystem* sys);
             LuaFunctionWrapper(ChimeraSystem* sys, fn_luafnwrapper fn);
             void const * const getOrigin() const;
-            ChimeraSystem* _chSys;
+            ChimeraSystem* _chimeraSystem;
             fn_luafnwrapper _fn;
             void* _origin;
 

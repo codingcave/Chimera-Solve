@@ -22,7 +22,7 @@
 chimera::EntryPointSystem::EntryPointSystem()
 {
     _hooks = new map_t_EntryPoint();
-    _chSys = nullptr;
+    _chimeraSystem = nullptr;
     stateLoaded();
 }
 
@@ -45,7 +45,7 @@ void chimera::EntryPointSystem::addEntryPoint(const std::string& name, EntryPoin
         _hooks->insert(std::make_pair(name, ep));
         itemAdded(ep, &name);
         ep->addListener(this);
-        ep->loadEntryPoint(_chSys);
+        ep->loadEntryPoint(_chimeraSystem);
     }
     else
     {
@@ -65,6 +65,13 @@ void chimera::EntryPointSystem::removeEntryPoint(const std::string& name)
     {
         _hooks->erase(name);
         available->second->unloadEntryPoint();
+
+        map_t_Module::iterator it;
+        while((it = available->second->_loadedModules->begin()) != available->second->_loadedModules->end())
+        {
+            available->second->removeModule(it->first);
+        }
+
         itemRemoved(available->second, &name);
         available->second->removeListener(this);
     }

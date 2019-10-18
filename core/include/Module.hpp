@@ -10,6 +10,7 @@ namespace chimera {
     {
         public:
             friend class EntryPoint;
+            friend class EntryPointSystem;
             friend class ChimeraSystem;
             class iterator;
             Module();
@@ -33,7 +34,7 @@ namespace chimera {
             void registerMethod(const std::string& name, chimera::fn_instancefnwrapper method);
         private:
             std::unordered_map<std::string, fn_instancefnwrapper> const * const methods() const;
-            ChimeraSystem* _cmSys;
+            ChimeraSystem* _chimeraSystem;
             std::unordered_map<std::string, chimera::fn_instancefnwrapper>* _instanceMethods;
 
             void loadModule(EntryPoint const * const entryPoint, const std::string& name, void const * const params);

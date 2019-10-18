@@ -133,7 +133,7 @@ int chimera::lua_EntryPoint_call(lua_State* L)
                 if(!lua_rawget(L, -2))
                 {
                     chimera::EntryPoint* ep = *((chimera::EntryPoint**)lua_touserdata(L, 1));
-                    chimera::Module* module = ep->_chSys->includeModule(ep, name);
+                    chimera::Module* module = ep->_chimeraSystem->includeModule(ep, name);
                     if(module)
                     {
                         module->loadModule(ep, name, ep->getModuleLoadParams());

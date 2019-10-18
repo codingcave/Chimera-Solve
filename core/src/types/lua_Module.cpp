@@ -136,11 +136,13 @@ return;
             if(luaL_getmetafield(_L, -1, "__loaded"))
             {
                 _typeSys->removeParameter(module);
+                //_typeSys->removeDependencyItem(module);
 
                 lua_pushlstring(_L, name.c_str(), name.size());
                 int utype = lua_rawget(_L, -2);
                 if(utype) {
                     chimera::Module **lmod = (chimera::Module **)lua_touserdata(_L, -1);
+
                     *lmod = nullptr;
 
                     lua_pushlstring(_L, name.c_str(), name.size());
