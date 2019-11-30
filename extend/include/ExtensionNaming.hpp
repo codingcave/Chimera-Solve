@@ -24,9 +24,9 @@ namespace chimera {
             const char * const Type_Matrix = "Matrix";
             const char * const Type_MatrixRow = "MatrixRow";
 
-            const char * const Flag_Observable = "observable";
-            const char * const Flag_Observer = "observe-single";
-            const char * const Flag_MultiObserver = "observe-multi";
+            const char * const Attribute_Observable = "observable";
+            const char * const Attribute_Observer = "observe-single";
+            const char * const Attribute_MultiObserver = "observe-multi";
         }
     }
 }

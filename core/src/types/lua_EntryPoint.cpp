@@ -5,14 +5,13 @@
 #include <unordered_set>
 #include "lua.hpp"
 
-#include "StateSynchrony.hpp"
+#include "def.hpp"
 #include "Naming.hpp"
-//#include "interfaces/EventHandler/IEntryPointEventHandler.hpp"
+#include "StateSynchrony.hpp"
 #include "interfaces/ILogger.hpp"
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "types/lua_static.hpp"
 #include "ParameterTypeSystem.hpp"
@@ -25,100 +24,106 @@
 
 void chimera::ChimeraSystem::pushEntryPoint(const std::string& name, EntryPoint* ep)
 {
-    int top = lua_gettop(_L);
-    ep->init(_L);
+    lua_State* L = this->getLuaState();
+    int top = lua_gettop(L);
+    ep->init();
 
     // save entrypoint also in references
-    lua_pushstring(_L, chimera::registrynames::LUA_REGISTRY_CHIMERA_REFERENCES);
-    lua_rawget(_L, LUA_REGISTRYINDEX);
+    lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_REFERENCES);
+    lua_rawget(L, LUA_REGISTRYINDEX);
     // get system names
-    lua_pushstring(_L, chimera::registrynames::LUA_REGISTRY_CHIMERA_SYSTEMNAMES);
-    lua_rawget(_L, LUA_REGISTRYINDEX);
+    lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_SYSTEMNAMES);
+    lua_rawget(L, LUA_REGISTRYINDEX);
     // if new EntryPoint conflicts with existing name
-    lua_pushstring(_L, name.c_str());
-    if(!lua_rawget(_L, -2))
+    lua_pushstring(L, name.c_str());
+    if(!lua_rawget(L, -2))
     {
         // pop nil
-        lua_pop(_L, 1);
+        lua_pop(L, 1);
         // push new EntryPoint
-        lua_pushstring(_L, name.c_str());
-        EntryPoint **lep = (EntryPoint **)lua_newuserdata(_L, sizeof(EntryPoint *));
+        lua_pushstring(L, name.c_str());
+        EntryPoint **lep = (EntryPoint **)lua_newuserdata(L, sizeof(EntryPoint *));
         *lep = ep;
 
         // metatable
-        lua_newtable(_L);
-        lua_pushcfunction (_L, chimera::lua_ignore_newindex);
-        lua_setfield(_L, -2, "__newindex");
-        lua_pushcfunction (_L, chimera::lua_EntryPoint_call);
-        lua_setfield(_L, -2, "__call");
-        lua_pushcfunction (_L, chimera::lua_EntryPoint_len);
-        lua_setfield(_L, -2, "__len");
-        lua_pushcfunction (_L, chimera::lua_EntryPoint_tostring);
-        lua_setfield(_L, -2, "__tostring");
-        lua_pushstring(_L, chimera::luanames::LUA_NAME_ENTRYPOINT);
-        lua_setfield(_L, -2, "__name");
-        lua_pushinteger(_L, chimera::systemtypes::PID_ENTRYPOINT);
-        lua_setfield(_L, -2, "__type");
-        lua_pushlstring(_L, name.c_str(), name.size());
-        lua_setfield(_L, -2, "__ep");
-        lua_pushlightuserdata(_L, ep);
-        lua_setfield(_L, -2, "__ptr");
-        lua_newtable(_L);
-        lua_setfield(_L, -2, "__loaded");
+        lua_newtable(L);
+        lua_pushcfunction (L, chimera::lua_ignore_newindex);
+        lua_setfield(L, -2, "__newindex");
+        lua_pushcfunction (L, chimera::lua_EntryPoint_call);
+        lua_setfield(L, -2, "__call");
+        lua_pushcfunction (L, chimera::lua_EntryPoint_len);
+        lua_setfield(L, -2, "__len");
+        lua_pushcfunction (L, chimera::lua_EntryPoint_tostring);
+        lua_setfield(L, -2, "__tostring");
+        lua_pushstring(L, chimera::luanames::LUA_NAME_ENTRYPOINT);
+        lua_setfield(L, -2, "__name");
+        lua_pushinteger(L, chimera::systemtypes::PID_ENTRYPOINT);
+        lua_setfield(L, -2, "__type");
+        lua_pushlstring(L, name.c_str(), name.size());
+        lua_setfield(L, -2, "__ep");
+        lua_pushlightuserdata(L, ep);
+        lua_setfield(L, -2, "__ptr");
 
         // index table with all associated Lua values inEntryPoint
-        lua_pushstring(_L, "__index");
-        lua_newtable(_L);
+        lua_pushstring(L, "__index");
+        lua_newtable(L);
 
         for(auto it = ep->beginItems(); it != ep->endItems(); it++)
         {
-            lua_pushlstring(_L, it->first.c_str(), it->first.size());
-            pushLuaValue(_L, it->second.getType(), it->second.getValue());
-            lua_rawset(_L, -3);
+            lua_pushlstring(L, it->first.c_str(), it->first.size());
+            _typeSys->pushValue(L, it->second.getType(), it->second.getValue());
+            lua_rawset(L, -3);
         }
-        lua_rawset(_L, -3);
+        lua_rawset(L, -3);
 
         // set individual meta table
-        lua_setmetatable(_L, -2);
+        lua_setmetatable(L, -2);
         // set entrypoint also in references
-        lua_pushvalue(_L, -1);
-        lua_rawsetp(_L, -5, ep);
+        lua_pushvalue(L, -1);
+        lua_rawsetp(L, -5, ep);
         // name value pair in system names
-        lua_rawset(_L, -3);
+        lua_rawset(L, -3);
+
+        _typeSys->createReference(chimera::systemtypes::PID_ENTRYPOINT, ep);
+        _typeSys->addDependency(this, ep);
     }
-    lua_settop(_L, top);
+    lua_settop(L, top);
 }
 
-void chimera::ChimeraSystem::popEntryPoint(const std::string& name, EntryPoint* ep)
+void chimera::ChimeraSystem::popEntryPoint(EntryPoint* ep)
 {
-return;
-/*
-    int top = lua_gettop(_L);
-    lua_pushstring(_L, chimera::registrynames::LUA_REGISTRY_CHIMERA_REFERENCES);
-    lua_rawget(_L, LUA_REGISTRYINDEX);
-    // if new EntryPoint conflicts with existing name
-    if(lua_rawgetp(_L, -1, ep))
+    lua_State* L = this->getLuaState();
+    const std::string name = _epSys->findEntryPoint(ep);
+    if(name.size() > 0)
     {
-        if(luaL_getmetafield(_L, -1, "__ep") == LUA_TSTRING)
+        int top = lua_gettop(L);
+        lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_REFERENCES);
+        lua_rawget(L, LUA_REGISTRYINDEX);
+        // if EntryPoint exists
+        if(lua_rawgetp(L, -1, ep))
         {
-            std::string givenName = lua_tostring(_L, -1);
-            lua_pushstring(_L, chimera::registrynames::LUA_REGISTRY_CHIMERA_SYSTEMNAMES);
-            lua_rawget(_L, LUA_REGISTRYINDEX);
-            lua_pushvalue(_L, -2);
-            lua_pushnil(_L);
-            lua_pushvalue(_L, -2);
-            lua_pushnil(_L);
-            lua_rawset(_L, -5);
-            lua_rawset(_L, -6);
-            lua_pop(_L, 2);
-        }
+            _typeSys->removeParameter(ep);
+            lua_pushnil(L);
+            lua_rawsetp(L, -3, ep);
 
-        _typeSys->removeParameter(ep);
-        EntryPoint **lep = (EntryPoint **)lua_touserdata(_L, -1);
-        *lep = nullptr;
+            lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_SYSTEMNAMES);
+            lua_rawget(L, LUA_REGISTRYINDEX);
+            lua_pushstring(L, name.c_str());
+            lua_pushnil(L);
+            lua_rawset(L, -3);
+
+            chimera::EntryPoint **lep = (chimera::EntryPoint**)lua_touserdata(L, -2);
+            *lep = nullptr;
+
+            lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_METATABLES);
+            lua_gettable(L, LUA_REGISTRYINDEX);
+            lua_rawgeti(L, -1, 0);
+            lua_setmetatable(L, -4);
+
+            _typeSys->releaseDependency(this, ep);
+        }
+        lua_settop(L, top);
     }
-    lua_settop(_L, top);
-*/
 }
 
 int chimera::lua_EntryPoint_call(lua_State* L)
@@ -127,30 +132,27 @@ int chimera::lua_EntryPoint_call(lua_State* L)
     {
         if(lua_isstring(L, 2))
         {
+            ChimeraSystem* chimeraSystem = (ChimeraSystem*)(*((void**)lua_getextraspace(L)));
+            chimera::EntryPoint* ep = *((chimera::EntryPoint**)lua_touserdata(L, 1));
+            const chimera::Module* module;
             const char *name = lua_tostring(L, 2);
+            module = ep->getModule(name);
 
-            if(luaL_getmetafield(L, 1, "__loaded"))
+            if(module == nullptr)
             {
-                lua_pushvalue(L, 2);
-                if(!lua_rawget(L, -2))
-                {
-                    chimera::EntryPoint* ep = *((chimera::EntryPoint**)lua_touserdata(L, 1));
-                    chimera::Module* module = ep->_chimeraSystem->includeModule(ep, name);
-                    if(module)
-                    {
-                        module->loadModule(ep, name, ep->getModuleLoadParams());
-                        lua_getfield(L, 3, name);
-                        return 1;
-                    }
-                }
-                else
+                module = chimeraSystem->includeModule(ep, name);
+            }
+
+            if(module)
+            {
+                ep->loadModule(name);
+
+                lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_REFERENCES);
+                lua_rawget(L, LUA_REGISTRYINDEX);
+                if(lua_rawgetp(L, -1, module))
                 {
                     return 1;
                 }
-            }
-            else
-            {
-
             }
         }
         else
@@ -162,15 +164,23 @@ int chimera::lua_EntryPoint_call(lua_State* L)
     {
         //LoggingSystem::Error("Cannot load module. Too many arguments.");
     }
-    lua_pushnil(L);
-    return 1;
+
+    return 0;
 }
 
 int chimera::lua_EntryPoint_len(lua_State* L)
 {
+    ChimeraSystem* chimeraSystem = (ChimeraSystem*)(*((void**)lua_getextraspace(L)));
     EntryPoint* ep = *((EntryPoint**)lua_touserdata(L, 1));
-    lua_pushinteger(L, ep->size());
-    return 1;
+    if(chimeraSystem->getTypeSystem()->isReferenced(ep))
+    {
+        lua_pushinteger(L, ep->size());
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 int chimera::lua_EntryPoint_tostring(lua_State* L)

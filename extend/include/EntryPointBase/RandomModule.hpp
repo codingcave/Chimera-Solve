@@ -10,10 +10,10 @@ namespace chimera {
                 RandomModule();
                 virtual ~RandomModule();
                 virtual const size_t getType() const = 0;
-                virtual void* getInstance(chimera::vec_t_LuaItem& parameters) const override;
+                virtual void* getInstance(EntryPoint const * const entrypoint, chimera::vec_t_LuaItem& parameters) const override;
                 // TODO (kekstoaster#3#): Replace std::default_random_engin with generic engine
                 virtual AbstractRandom* getRandomInstance(AbstractRandomGenerator* generator, chimera::vec_t_LuaItem& parameters) const = 0;
-                virtual void load(EntryPoint const * const entryPoint, void const * const params) override;
+                virtual bool load(EntryPoint const * const entryPoint, void const * const params) override;
             protected:
             private:
                 AbstractRandomGenerator* _generator;

@@ -5,6 +5,7 @@
 #include <vector>
 #include <boost/numeric/ublas/vector.hpp>
 
+#include "def.hpp"
 #include "Naming.hpp"
 #include "ExtensionNaming.hpp"
 #include "StateSynchrony.hpp"
@@ -12,7 +13,6 @@
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "ParameterValueCollection.hpp"
@@ -20,6 +20,7 @@
 #include "EntryPoint.hpp"
 #include "EntryPointSystem.hpp"
 #include "ChimeraSystem.hpp"
+#include "ChimeraContext.hpp"
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/SystemDynamicModule.hpp"
 #include "EntryPointBase/TemplateOdeSystem.hpp"
@@ -46,7 +47,7 @@ KuramotoModule::KuramotoModule()
     //registerMethod("test", rk_test);
 }
 
-void* KuramotoModule::getInstance(chimera::vec_t_LuaItem& parameters) const
+void* KuramotoModule::getInstance(chimera::EntryPoint const * const entrypoint, chimera::vec_t_LuaItem& parameters) const
 {
     bool inOmega = false;
     bool inN = false;
@@ -89,7 +90,7 @@ void* KuramotoModule::getInstance(chimera::vec_t_LuaItem& parameters) const
         return nullptr;
     }
 
-    return new KuramotoOscillator(getChimeraSystem()->getTypeSystem(), N, omega);
+    return new KuramotoOscillator(getContext(), N, omega);
 }
 
 const std::string KuramotoModule::getGUID() const
@@ -97,20 +98,15 @@ const std::string KuramotoModule::getGUID() const
     return "Kuramoto";
 }
 
-void KuramotoModule::destroyInstance(void* instance) const
+void KuramotoModule::destroyInstance(chimera::EntryPoint const * const entrypoint, void* instance) const
 {
     delete ((KuramotoOscillator*)instance);
 }
 
-const std::string KuramotoModule::getVersion() const
-{
-    return "1.0.0";
-}
-
-KuramotoOscillator::KuramotoOscillator(chimera::ParameterTypeSystem* ps, int N, double omega):
+KuramotoOscillator::KuramotoOscillator(chimera::ChimeraContext* context, int N, double omega):
+    _context(context),
     _N(N),
-    _omega(omega),
-    _ps(ps)
+    _omega(omega)
 {
 
 }
@@ -128,7 +124,7 @@ std::unordered_map<std::string, size_t> KuramotoOscillator::getFeatures() const
     std::unordered_map<std::string, size_t> features;
     features[chimera::simulation::Naming::Feature_time_type] = chimera::systemtypes::PID_NUMBER;
     static const std::string vectorRealMetaName = (std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
-    features[chimera::simulation::Naming::Feature_state_type] = _ps->getParameterID(vectorRealMetaName);
+    features[chimera::simulation::Naming::Feature_state_type] = _context->getParameterID(vectorRealMetaName);
     features[chimera::simulation::Naming::Feature_size] = _N + 1;
     return features;
 }

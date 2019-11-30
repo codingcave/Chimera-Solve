@@ -15,9 +15,8 @@ class TimedObserverModule:
         TimedObserverModule();
         virtual ~TimedObserverModule();
         virtual const std::string getGUID() const override;
-        virtual const std::string getVersion() const override;
         virtual chimera::simulation::AbstractEventManager* getEventInstance(chimera::vec_t_LuaItem& parameters) const override;
-        virtual void destroyInstance(void * const instance) const override;
+        virtual void destroyInstance(chimera::EntryPoint const * const entrypoint, void * const instance) const override;
 };
 
 class TimedObserver:

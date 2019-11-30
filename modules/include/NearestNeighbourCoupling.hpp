@@ -8,7 +8,6 @@ class NearestNeighbourCouplingModule:
     public:
         NearestNeighbourCouplingModule();
         virtual ~NearestNeighbourCouplingModule();
-        virtual const std::string getVersion() const override;
         virtual AbstractCoupling* getCoupling(chimera::vec_t_LuaItem& parameters) const override;
         virtual const std::string getGUID() const override;
     protected:

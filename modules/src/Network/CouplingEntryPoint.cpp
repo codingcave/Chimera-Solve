@@ -6,6 +6,7 @@
 #include <list>
 #include <boost/numeric/ublas/vector.hpp>
 
+#include "def.hpp"
 #include "Naming.hpp"
 #include "ExtensionNaming.hpp"
 #include "StateSynchrony.hpp"
@@ -13,7 +14,6 @@
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "extendTypes.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
@@ -45,18 +45,13 @@ const std::string CouplingEntryPoint::getGUID() const
     return "coupling";
 }
 
-const std::string CouplingEntryPoint::getVersion() const
-{
-    return "1.0.0";
-}
-
 bool CouplingEntryPoint::checkModule(chimera::Module const * const module) const
 {
     const CouplingModule* cm = dynamic_cast<const CouplingModule*>(module);
     return cm != nullptr;
 }
 
-void CouplingEntryPoint::init(lua_State* L)
+void CouplingEntryPoint::init()
 {
 
 }

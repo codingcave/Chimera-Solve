@@ -5,11 +5,11 @@
 #include <random>
 #include <list>
 
+#include "def.hpp"
 #include "ExtensionNaming.hpp"
 #include "StateSynchrony.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "ParameterValueCollection.hpp"
@@ -38,11 +38,6 @@ chimera::runtime::RandomEntryPoint::~RandomEntryPoint()
 const std::string chimera::runtime::RandomEntryPoint::getGUID() const
 {
     return chimera::simulation::Naming::EntryPoint_random;
-}
-
-const std::string chimera::runtime::RandomEntryPoint::getVersion() const
-{
-    return "1.0.0";
 }
 
 bool chimera::runtime::RandomEntryPoint::checkModule(chimera::Module const * const module) const

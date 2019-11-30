@@ -5,20 +5,20 @@
 #include <vector>
 #include "lua.hpp"
 
-#include "StateSynchrony.hpp"
-#include "Naming.hpp"
-#include "types/lua_basetypes.hpp"
-#include "ParameterValue.hpp"
-#include "ParameterType.hpp"
 #include "def.hpp"
-#include "types/LuaFunctionWrapper.hpp"
+#include "Naming.hpp"
+#include "StateSynchrony.hpp"
+//#include "types/lua_basetypes.hpp"
+#include "ParameterType.hpp"
+#include "ParameterValue.hpp"
 #include "ParameterTypeSystem.hpp"
-#include "interfaces/ILogger.hpp"
-#include "LoggingSystem.hpp"
-#include "ParameterValueCollection.hpp"
-#include "Module.hpp"
-#include "EntryPoint.hpp"
-#include "EntryPointSystem.hpp"
+#include "types/LuaFunctionWrapper.hpp"
+//#include "interfaces/ILogger.hpp"
+//#include "LoggingSystem.hpp"
+//#include "ParameterValueCollection.hpp"
+//#include "Module.hpp"
+//#include "EntryPoint.hpp"
+//#include "EntryPointSystem.hpp"
 #include "ChimeraSystem.hpp"
 
 chimera::LuaFunctionWrapper::LuaFunctionWrapper(const LuaFunctionWrapper& wrapper):
@@ -27,6 +27,7 @@ chimera::LuaFunctionWrapper::LuaFunctionWrapper(const LuaFunctionWrapper& wrappe
     _origin(wrapper._origin)
 {
     //ctor
+    wrapper._chimeraSystem->getTypeSystem()->addDependency(this, wrapper._origin);
 }
 
 chimera::LuaFunctionWrapper::LuaFunctionWrapper(ChimeraSystem* chimeraSystem):
@@ -40,25 +41,22 @@ chimera::LuaFunctionWrapper::LuaFunctionWrapper(ChimeraSystem* chimeraSystem):
 chimera::LuaFunctionWrapper::LuaFunctionWrapper(ChimeraSystem* chimeraSystem, fn_luafnwrapper fn):
     _chimeraSystem(chimeraSystem),
     _fn(fn),
-    _origin((void*)fn)
+    _origin(this)
 {
     //ctor
 }
 
 chimera::LuaFunctionWrapper::~LuaFunctionWrapper()
 {
-    // Delete function from global functions
-    //dtor
+    if(this != _origin)
+    {
+        _chimeraSystem->getTypeSystem()->removeDependencyItem(this);
+    }
 }
 
 bool chimera::LuaFunctionWrapper::intern() const
 {
     return _fn != nullptr;
-}
-
-void const * const chimera::LuaFunctionWrapper::getOrigin() const
-{
-    return _origin;
 }
 
 chimera::vec_t_LuaItem chimera::LuaFunctionWrapper::operator()(vec_t_LuaItem& params) const
@@ -69,7 +67,8 @@ chimera::vec_t_LuaItem chimera::LuaFunctionWrapper::operator()(vec_t_LuaItem& pa
     }
     else
     {
-        if(_chimeraSystem) {
+        if(_chimeraSystem)
+        {
             lua_State* L = _chimeraSystem->getLuaState();
             if(lua_checkstack(L, params.size() + 1)) {
                 int pos1 = lua_gettop(L);
@@ -79,7 +78,9 @@ chimera::vec_t_LuaItem chimera::LuaFunctionWrapper::operator()(vec_t_LuaItem& pa
                 lua_rawget(L, -2);
                 lua_remove(L, -2);
                 for(auto it = params.begin(); it != params.end(); it++)
-                    _chimeraSystem->getTypeSystem()->pushValue(L, {it->getType(), it->getValue()});
+                {
+                    _chimeraSystem->getTypeSystem()->pushValue(L, it->getType(), it->getValue());
+                }
                 lua_call(L, params.size(), LUA_MULTRET);
                 int pos2 = lua_gettop(L);
                 vec_t_LuaItem result;
@@ -88,10 +89,7 @@ chimera::vec_t_LuaItem chimera::LuaFunctionWrapper::operator()(vec_t_LuaItem& pa
                     result.push_back(_chimeraSystem->getTypeSystem()->getValue(L, i));
                 }
 
-                if(pos2 > pos1)
-                {
-                    lua_pop(L, pos2 - pos1);
-                }
+                lua_settop(L, pos1);
                 return result;
             } else {
                 //LoggingSystem::Error("cannot allocate enough memory for that many parameters.");

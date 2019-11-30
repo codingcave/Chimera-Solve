@@ -7,6 +7,7 @@
 #include <boost/numeric/ublas/vector.hpp>
 #include <complex>
 
+#include "def.hpp"
 #include "Naming.hpp"
 #include "ExtensionNaming.hpp"
 #include "StateSynchrony.hpp"
@@ -14,7 +15,6 @@
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "extendTypes.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
@@ -23,6 +23,7 @@
 #include "EntryPoint.hpp"
 #include "EntryPointSystem.hpp"
 #include "ChimeraSystem.hpp"
+#include "ChimeraContext.hpp"
 #include "EntryPointBase/SystemDynamicModule.hpp"
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/TemplateOdeSystem.hpp"
@@ -34,17 +35,17 @@
 #include "Network/MultiNetwork_double_vecComplex.hpp"
 
 MultiNetwork_double_vecComplex::MultiNetwork_double_vecComplex(
-    chimera::ParameterTypeSystem* ps,
+    chimera::ChimeraContext* context,
     chimera::Module* unitModule,
     std::vector<chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<std::complex<double> > >*>& units,
     TemplateCoupling<double, boost::numeric::ublas::vector<std::complex<double> > >* coupling):
-        _ps(ps)
+        _context(context)
 {
     _unitSystems = new std::vector<chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<std::complex<double> > >*>(units);
     _unitModule = unitModule;
     _number = units.size();
     _coupling = coupling;
-    _ps->addDependency(this, coupling);
+    _context->addDependency(this, coupling);
     auto unitFeatures = ((*_unitSystems)[0])->getFeatures();
     auto unitSize = unitFeatures.find(chimera::simulation::Naming::Feature_size);
     _tmp = nullptr;
@@ -60,6 +61,7 @@ MultiNetwork_double_vecComplex::~MultiNetwork_double_vecComplex()
     {
         delete ptr;
     }
+    _context->removeDependencyItem(this);
     delete _unitSystems;
     if(_tmp) delete _tmp;
 }
@@ -86,7 +88,7 @@ std::unordered_map<std::string, size_t> MultiNetwork_double_vecComplex::getFeatu
     std::unordered_map<std::string, size_t> features;
     static const std::string vectorComplexMetaName = (std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Complex));
     features[chimera::simulation::Naming::Feature_time_type] = chimera::systemtypes::PID_NUMBER;
-    features[chimera::simulation::Naming::Feature_state_type] = _ps->getParameterID(vectorComplexMetaName);
+    features[chimera::simulation::Naming::Feature_state_type] = _context->getParameterID(vectorComplexMetaName);
     features[chimera::simulation::Naming::Feature_size] = _number;
 
     auto unitFeatures = ((*_unitSystems)[0])->getFeatures();

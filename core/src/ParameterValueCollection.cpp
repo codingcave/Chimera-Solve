@@ -3,10 +3,11 @@
 #include <unordered_set>
 #include <vector>
 
+#include "def.hpp"
 #include "StateSynchrony.hpp"
+#include "ChimeraContext.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "ParameterValueCollection.hpp"
@@ -18,20 +19,20 @@ chimera::ParameterValueCollection::ParameterValueCollection()
 
 chimera::ParameterValueCollection::~ParameterValueCollection()
 {
-    //truncate();
     _items->clear();
     delete _items;
 }
 
 void chimera::ParameterValueCollection::setValue(const std::string& name, ParameterValue& value)
 {
+    // delete old value if it exists
     auto it = _items->find(name);
     if(it != _items->end())
     {
         it->second.dispose();
     }
-    if (value.getType() != 0) {
-        value.bind(getChimeraSystem());
+    if (value.getType() != 0 && _context != nullptr) {
+        value.bind(_context->_chimeraSystem);
         _items->insert (std::make_pair(name,value));
     }
 }
@@ -39,12 +40,13 @@ void chimera::ParameterValueCollection::setValue(const std::string& name, Parame
 chimera::ParameterValue chimera::ParameterValueCollection::operator[](const std::string& name) const
 {
     map_t_LuaItem::const_iterator available = _items->find (name);
-
+    // return value if it exists
     if ( available != _items->end() )
     {
         return available->second;
     }
-    return ParameterValue(getChimeraSystem(), 0, nullptr);
+    // return nil otherwise
+    return ParameterValue(_context->_chimeraSystem, 0, nullptr);
 }
 
 chimera::map_t_LuaItem::const_iterator chimera::ParameterValueCollection::beginItems() const

@@ -1,22 +1,13 @@
 #include <iostream>
-#include <map>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
-#include "StateSynchrony.hpp"
-#include "interfaces/ILogger.hpp"
-#include "LoggingSystem.hpp"
-#include "ParameterValue.hpp"
-#include "ParameterType.hpp"
 #include "def.hpp"
-#include "types/LuaFunctionWrapper.hpp"
-#include "ParameterTypeSystem.hpp"
+#include "StateSynchrony.hpp"
+#include "ParameterValue.hpp"
 #include "ParameterValueCollection.hpp"
 #include "Module.hpp"
-#include "EntryPoint.hpp"
-#include "EntryPointSystem.hpp"
-#include "ChimeraSystem.hpp"
 
 chimera::Module::Module()
 {
@@ -26,7 +17,12 @@ chimera::Module::Module()
 chimera::Module::~Module()
 {
     delete _instanceMethods;
-    unloadModule();
+    // copy all context pointers, because the original list gets altered during unloadModule
+    std::unordered_set<StateSynchrony*> loadStates = std::unordered_set<StateSynchrony*>(*_loadStates);
+    for(auto it = loadStates.begin(); it != loadStates.end(); it++)
+    {
+        unloadModule(((EntryPoint*)*it));
+    }
 }
 
 void chimera::Module::registerMethod(const std::string& name, chimera::fn_instancefnwrapper method)
@@ -34,51 +30,69 @@ void chimera::Module::registerMethod(const std::string& name, chimera::fn_instan
     (*_instanceMethods)[name] = method;
 }
 
-std::unordered_map<std::string, chimera::fn_instancefnwrapper> const * const chimera::Module::methods() const
+chimera::fn_instancefnwrapper chimera::Module::getMethod(const std::string& name) const
 {
-    return _instanceMethods;
+    auto available = _instanceMethods->find(name);
+    if(available != _instanceMethods->end())
+    {
+        return available->second;
+    }
+    else
+    {
+        return nullptr;
+    }
 }
 
-void chimera::Module::load(EntryPoint const * const entryPoint, void const * const params)
+void chimera::Module::init(EntryPoint const * const entryPoint)
 {
-
+    // virtual - do nothing
     return;
 }
 
-void chimera::Module::unload()
+bool chimera::Module::load(EntryPoint const * const entryPoint, void const * const params)
 {
+    // virtual - do nothing
+    return true;
+}
 
+void chimera::Module::unload(EntryPoint const * const entryPoint)
+{
+    // virtual - do nothing
     return;
 }
 
 void chimera::Module::loadModule(EntryPoint const * const entryPoint, const std::string& name, void const * const params)
 {
-    if(!isLoaded())
+    // only add new context
+    if(!isLoaded((StateSynchrony*)entryPoint))
     {
-        _chimeraSystem = entryPoint->getChimeraSystem();
-        if(_chimeraSystem) _chimeraSystem->getLoggingSystem()->debug("Loading Module `" + name + "`");
-        load(entryPoint, params);
-        stateLoaded(&name);
+        // if virtual function returns falls, cancel the loading process
+        if(load(entryPoint, params)) {
+            stateLoaded((StateSynchrony*)entryPoint, &name);
+        }
     }
 }
 
-void chimera::Module::unloadModule()
+void chimera::Module::unloadModule(EntryPoint const * const entryPoint)
 {
-    if(isLoaded())
+    // if context was loaded
+    if(isLoaded((StateSynchrony*)entryPoint))
     {
-        unload();
-        stateUnloaded();
+        unload(entryPoint);
+        stateUnloaded((StateSynchrony*)entryPoint);
     }
 }
 
-size_t chimera::Module::getFlag(const std::string& flag) const
+size_t chimera::Module::getAttribute(const std::string& attr) const
 {
+    // virtual - always return 0: Attribute not set.
     return 0;
 }
 
-chimera::ChimeraSystem* chimera::Module::getChimeraSystem() const
+std::ostream& operator<< (std::ostream &out, const chimera::Module &d)
 {
-    return _chimeraSystem;
+    out << d.getGUID();
+    return out;
 }
 
 chimera::Module::iterator::iterator (map_t_Module::iterator it):

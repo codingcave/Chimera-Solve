@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <boost/numeric/ublas/vector.hpp>
 
+#include "def.hpp"
 #include "Naming.hpp"
 #include "ExtensionNaming.hpp"
 #include "StateSynchrony.hpp"
@@ -14,7 +15,6 @@
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "extendTypes.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
@@ -23,6 +23,7 @@
 #include "EntryPoint.hpp"
 #include "EntryPointSystem.hpp"
 #include "ChimeraSystem.hpp"
+#include "ChimeraContext.hpp"
 #include "interfaces/IEventListener.hpp"
 #include "interfaces/IEventListenerProvider.hpp"
 //#include "event/Observer.hpp"
@@ -59,11 +60,6 @@ RotationalCoupling2DModule::~RotationalCoupling2DModule()
     //dtor
 }
 
-const std::string RotationalCoupling2DModule::getVersion() const
-{
-    return "1.0.0";
-}
-
 const std::string RotationalCoupling2DModule::getGUID() const
 {
     return "Nearest-Neighbour coupling";
@@ -84,7 +80,7 @@ AbstractCoupling* RotationalCoupling2DModule::getCoupling(chimera::vec_t_LuaItem
         bool inMatrix = false;
 
         const std::string vectorVectorRealMetaName = std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER);
-        size_t type = getChimeraSystem()->getTypeSystem()->getParameterID(vectorVectorRealMetaName);
+        size_t type = getContext()->getParameterID(vectorVectorRealMetaName);
 
         chimera::map_t_LuaItem* paramMap = (chimera::map_t_LuaItem*)parameters[0].getValue();
         for(auto p : *paramMap)
@@ -115,7 +111,7 @@ AbstractCoupling* RotationalCoupling2DModule::getCoupling(chimera::vec_t_LuaItem
             return nullptr;
         }
         auto result = new RotationalCoupling2D(epsilon, sigma, phi, (boost::numeric::ublas::vector<boost::numeric::ublas::vector<double> >*)vd->value);
-        getChimeraSystem()->getTypeSystem()->addDependency(result, vd);
+        getContext()->addDependency(result, vd);
         return result;
     }
     /*

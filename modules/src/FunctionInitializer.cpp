@@ -5,6 +5,7 @@
 #include <vector>
 #include <boost/numeric/ublas/vector.hpp>
 
+#include "def.hpp"
 #include "Naming.hpp"
 #include "ExtensionNaming.hpp"
 #include "StateSynchrony.hpp"
@@ -12,7 +13,6 @@
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "ParameterValueCollection.hpp"
@@ -20,6 +20,7 @@
 #include "EntryPoint.hpp"
 #include "EntryPointSystem.hpp"
 #include "ChimeraSystem.hpp"
+#include "ChimeraContext.hpp"
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/AbstractInitializer.hpp"
 #include "EntryPointBase/AbstractRandom.hpp"
@@ -56,14 +57,9 @@ const std::string FunctionInitializerModule::getGUID() const
     return "Function Initializer";
 }
 
-void FunctionInitializerModule::destroyInstance(void * const instance) const
+void FunctionInitializerModule::destroyInstance(chimera::EntryPoint const * const entrypoint, void * const instance) const
 {
     delete (chimera::simulation::AbstractInitializer*)instance;
-}
-
-const std::string FunctionInitializerModule::getVersion() const
-{
-    return "1.0.0";
 }
 
 chimera::simulation::AbstractInitializer* FunctionInitializerModule::getInitializerInstance(chimera::vec_t_LuaItem& parameters) const
@@ -73,22 +69,22 @@ chimera::simulation::AbstractInitializer* FunctionInitializerModule::getInitiali
         chimera::map_t_LuaItem* paramMap = (chimera::map_t_LuaItem*)parameters[0].getValue();
         for(auto p : *paramMap)
         {
-            if(p.first == "func" && p.second.getType() == chimera::systemtypes::PID_LUAFUNC)
+            if(p.first == "func" && p.second.isCallable())
             {
-                return new FunctionInitializer(getChimeraSystem()->getTypeSystem(), p.second);
+                return new FunctionInitializer(getContext(), p.second);
             }
         }
     }
-    else if(parameters.size() == 1 && parameters[0].getType() == chimera::systemtypes::PID_LUAFUNC)
+    else if(parameters.size() == 1 && parameters[0].isCallable())
     {
-        return new FunctionInitializer(getChimeraSystem()->getTypeSystem(), parameters[0]);
+        return new FunctionInitializer(getContext(), parameters[0]);
     }
     return nullptr;
 }
 
-FunctionInitializer::FunctionInitializer(chimera::ParameterTypeSystem* ps, const chimera::ParameterValue& functionValue)
+FunctionInitializer::FunctionInitializer(chimera::ChimeraContext* context, const chimera::ParameterValue& functionValue)
 {
-    _ps = ps;
+    _context = context;
     _functionValue = new chimera::ParameterValue(functionValue);
 }
 
@@ -99,11 +95,11 @@ FunctionInitializer::~FunctionInitializer()
 
 void FunctionInitializer::initialize(chimera::simulation::AbstractSystemDynamic* system, void* state)
 {
-    static const size_t pid_complex = _ps->getParameterID(std::string(chimera::simulation::Naming::Type_Complex));
-    static const size_t pid_vecReal = _ps->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
-    static const size_t pid_vecvecReal = _ps->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
-    static const size_t pid_vecComplex = _ps->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Complex));
-    static const size_t pid_vecvecComplex = _ps->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Complex));
+    static const size_t pid_complex = _context->getParameterID(std::string(chimera::simulation::Naming::Type_Complex));
+    static const size_t pid_vecReal = _context->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
+    static const size_t pid_vecvecReal = _context->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
+    static const size_t pid_vecComplex = _context->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Complex));
+    static const size_t pid_vecvecComplex = _context->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Complex));
 
     std::unordered_map<std::string, size_t> features = system->getFeatures();
     auto stateType = features.find(chimera::simulation::Naming::Feature_state_type);

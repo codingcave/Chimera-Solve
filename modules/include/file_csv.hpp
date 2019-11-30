@@ -18,9 +18,8 @@ class CsvFileModule:
     public:
         CsvFileModule();
         virtual ~CsvFileModule();
-        virtual void destroyInstance(void * const instance) const override;
+        virtual void destroyInstance(chimera::EntryPoint const * const entrypoint, void * const instance) const override;
         virtual chimera::simulation::IEventListenerProvider* getOutputInstance(chimera::vec_t_LuaItem& parameters) const override;
-        virtual const std::string getVersion() const override;
         virtual const std::string getGUID() const override;
     protected:
     private:
@@ -30,7 +29,7 @@ class CsvFileWriter:
     public chimera::simulation::IEventListenerProvider
 {
     public:
-        CsvFileWriter(chimera::ParameterTypeSystem* ps, const std::string& path);
+        CsvFileWriter(chimera::ChimeraContext* context, const std::string& path);
         virtual ~CsvFileWriter();
         void open();
         void close();
@@ -39,7 +38,7 @@ class CsvFileWriter:
         //virtual void notifyStep(void const * const sender, size_t timeType, void* time, size_t stateType, void* state) override;
     protected:
     private:
-        chimera::ParameterTypeSystem* _ps;
+        chimera::ChimeraContext* _context;
         std::ofstream* _file;
         const std::string _path;
 

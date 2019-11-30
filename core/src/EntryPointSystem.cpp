@@ -1,37 +1,31 @@
 #include <iostream>
-#include <map>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
-#include "StateSynchrony.hpp"
-#include "types/lua_basetypes.hpp"
-#include "interfaces/ILogger.hpp"
-#include "LoggingSystem.hpp"
-#include "ParameterValue.hpp"
-#include "ParameterType.hpp"
 #include "def.hpp"
-#include "types/LuaFunctionWrapper.hpp"
-#include "ParameterTypeSystem.hpp"
+#include "StateSynchrony.hpp"
+#include "ParameterType.hpp"
+#include "ParameterValue.hpp"
 #include "ParameterValueCollection.hpp"
 #include "Module.hpp"
 #include "EntryPoint.hpp"
 #include "EntryPointSystem.hpp"
 #include "ChimeraSystem.hpp"
 
-chimera::EntryPointSystem::EntryPointSystem()
+chimera::EntryPointSystem::EntryPointSystem(ChimeraSystem* chimeraSystem)
 {
     _hooks = new map_t_EntryPoint();
-    _chimeraSystem = nullptr;
-    stateLoaded();
+    _context = chimeraSystem->createContext(this);
+    stateLoaded(chimeraSystem);
 }
 
 chimera::EntryPointSystem::~EntryPointSystem()
 {
-    for(auto it = _hooks->begin(); it != _hooks->end(); it++)
+    map_t_EntryPoint::iterator it;
+    while((it = _hooks->begin()) != _hooks->end())
     {
-        it->second->removeListener(this);
-        itemRemoved(it->second, &(it->first));
+        removeEntryPoint(it->first);
     }
     delete _hooks;
 }
@@ -45,7 +39,7 @@ void chimera::EntryPointSystem::addEntryPoint(const std::string& name, EntryPoin
         _hooks->insert(std::make_pair(name, ep));
         itemAdded(ep, &name);
         ep->addListener(this);
-        ep->loadEntryPoint(_chimeraSystem);
+        ep->loadEntryPoint();
     }
     else
     {
@@ -63,15 +57,15 @@ void chimera::EntryPointSystem::removeEntryPoint(const std::string& name)
 
     if (available != _hooks->end())
     {
-        _hooks->erase(name);
         available->second->unloadEntryPoint();
 
-        map_t_Module::iterator it;
-        while((it = available->second->_loadedModules->begin()) != available->second->_loadedModules->end())
+        map_t_Module::iterator it = available->second->_modules->begin();
+        while((it = available->second->_modules->begin()) != available->second->_modules->end())
         {
             available->second->removeModule(it->first);
         }
 
+        _hooks->erase(name);
         itemRemoved(available->second, &name);
         available->second->removeListener(this);
     }
@@ -89,18 +83,6 @@ const std::string chimera::EntryPointSystem::findEntryPoint(EntryPoint const * c
     return "";
 }
 
-chimera::EntryPoint::iterator chimera::EntryPointSystem::begin()
-{
-    EntryPoint::iterator it(_hooks->begin());
-    return it;
-}
-
-chimera::EntryPoint::iterator chimera::EntryPointSystem::end()
-{
-    EntryPoint::iterator it(_hooks->end());
-    return it;
-}
-
 chimera::EntryPoint* const chimera::EntryPointSystem::getEntryPoint(const std::string& name)
 {
     map_t_EntryPoint::const_iterator available = _hooks->find (name);
@@ -112,18 +94,15 @@ chimera::EntryPoint* const chimera::EntryPointSystem::getEntryPoint(const std::s
     return nullptr;
 }
 
-/*
-void chimera::EntryPointSystem::notifyUnload(StateSynchrony* sender, void const * const data)
+chimera::EntryPoint::iterator chimera::EntryPointSystem::begin()
 {
-    for(auto it = _hooks->begin(); it != _hooks->end(); it++)
-    {
-        if(it->second == sender)
-        {
-            itemRemoved(it->second, &it->first);
-            break;
-        }
-    }
-}*/
+    return EntryPoint::iterator(_hooks->begin());
+}
+
+chimera::EntryPoint::iterator chimera::EntryPointSystem::end()
+{
+    return EntryPoint::iterator(_hooks->end());
+}
 
 void chimera::EntryPointSystem::notifyDelete(StateSynchrony* sender)
 {
@@ -131,16 +110,13 @@ void chimera::EntryPointSystem::notifyDelete(StateSynchrony* sender)
     {
         if(it->second == sender)
         {
-            _hooks->erase(it);
-            itemRemoved(it->second, &it->first);
+            removeEntryPoint(it->first);
             break;
         }
     }
 }
 
-
 const std::string chimera::EntryPointSystem::getGUID() const
 {
     return "EntryPointSystem";
 }
-

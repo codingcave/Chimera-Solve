@@ -7,6 +7,7 @@
 #include <cmath>
 #include "lua.hpp"
 
+#include "def.hpp"
 #include "StateSynchrony.hpp"
 #include "Naming.hpp"
 #include "RuntimeNames.hpp"
@@ -14,7 +15,6 @@
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "extendTypes.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"

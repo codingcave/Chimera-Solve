@@ -27,7 +27,6 @@ namespace chimera {
     {
         const char * const LUA_REGISTRY_CHIMERA_FUNCTIONS = "chimera:reg:luafunctions";
         const char * const LUA_REGISTRY_CHIMERA_REFERENCES = "chimera:reg:references";
-        const char * const LUA_REGISTRY_CHIMERA_INSTANCE = "chimera:reg:chimerasystem";
         const char * const LUA_REGISTRY_CHIMERA_SYSTEMNAMES = "chimera:reg:systemnames";
         const char * const LUA_REGISTRY_CHIMERA_METATABLES = "chimera:reg:metatables";
     }

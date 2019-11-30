@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <boost/numeric/ublas/vector.hpp>
 
+#include "def.hpp"
 #include "Naming.hpp"
 #include "ExtensionNaming.hpp"
 #include "StateSynchrony.hpp"
@@ -14,7 +15,6 @@
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "extendTypes.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
@@ -57,11 +57,6 @@ KuramotoCouplingModule::KuramotoCouplingModule()
 KuramotoCouplingModule::~KuramotoCouplingModule()
 {
     //dtor
-}
-
-const std::string KuramotoCouplingModule::getVersion() const
-{
-    return "1.0.0";
 }
 
 const std::string KuramotoCouplingModule::getGUID() const

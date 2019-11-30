@@ -5,11 +5,11 @@
 #include <list>
 #include "lua.hpp"
 
+#include "def.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
-#include "ParameterValueCollection.hpp"
 #include "StateSynchrony.hpp"
+#include "ParameterValueCollection.hpp"
 #include "Module.hpp"
 #include "interfaces/IEventListener.hpp"
 #include "interfaces/IEventListenerProvider.hpp"
@@ -31,7 +31,7 @@ chimera::simulation::IntegratorModule::~IntegratorModule()
 
 }
 
-void* chimera::simulation::IntegratorModule::getInstance(chimera::vec_t_LuaItem& parameters) const
+void* chimera::simulation::IntegratorModule::getInstance(chimera::EntryPoint const * const entrypoint, chimera::vec_t_LuaItem& parameters) const
 {
     return (void*)getIntegratorInstance(parameters);
 }

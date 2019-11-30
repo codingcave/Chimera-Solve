@@ -8,9 +8,8 @@ class CsvToolsModule:
         CsvToolsModule();
         //virtual const std::string getEntrypoint() const override;
         virtual const std::string getGUID() const override;
-        virtual void* getInstance(chimera::vec_t_LuaItem& parameters) const override;
-        virtual void destroyInstance(void * const instance) const override;
-        virtual const std::string getVersion() const override;
+        virtual void* getInstance(chimera::EntryPoint const * const entrypoint, chimera::vec_t_LuaItem& parameters) const override;
+        virtual void destroyInstance(chimera::EntryPoint const * const entrypoint, void * const instance) const override;
 };
 
 class CsvTools
@@ -25,10 +24,9 @@ class CsvTools
         std::string _delimiter;
 };
 
-//typedef vec_t_LuaItem (*fn_instancefnwrapper)
-chimera::vec_t_LuaItem fn_CsvTools_load(chimera::Module const * const module, void* instance, const chimera::vec_t_LuaItem& params);
-chimera::vec_t_LuaItem fn_CsvTools_save(chimera::Module const * const module, void* instance, const chimera::vec_t_LuaItem& params);
-chimera::vec_t_LuaItem fn_CsvTools_read(chimera::Module const * const module, void* instance, const chimera::vec_t_LuaItem& params);
-chimera::vec_t_LuaItem fn_CsvTools_write(chimera::Module const * const module, void* instance, const chimera::vec_t_LuaItem& params);
+chimera::vec_t_LuaItem fn_CsvTools_load(chimera::EntryPoint const * const entrypoint, chimera::Module const * const module, void* instance, const chimera::vec_t_LuaItem& params);
+chimera::vec_t_LuaItem fn_CsvTools_save(chimera::EntryPoint const * const entrypoint, chimera::Module const * const module, void* instance, const chimera::vec_t_LuaItem& params);
+chimera::vec_t_LuaItem fn_CsvTools_read(chimera::EntryPoint const * const entrypoint, chimera::Module const * const module, void* instance, const chimera::vec_t_LuaItem& params);
+chimera::vec_t_LuaItem fn_CsvTools_write(chimera::EntryPoint const * const entrypoint, chimera::Module const * const module, void* instance, const chimera::vec_t_LuaItem& params);
 
 #endif // CSVTOOLS_H

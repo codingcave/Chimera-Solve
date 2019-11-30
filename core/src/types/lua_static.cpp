@@ -7,19 +7,10 @@
 #include <list>
 #include "lua.hpp"
 
-#include "StateSynchrony.hpp"
-#include "Naming.hpp"
-#include "interfaces/ILogger.hpp"
-#include "LoggingSystem.hpp"
-#include "ParameterValue.hpp"
-#include "ParameterType.hpp"
 #include "def.hpp"
-#include "types/LuaFunctionWrapper.hpp"
+#include "Naming.hpp"
+#include "StateSynchrony.hpp"
 #include "ParameterTypeSystem.hpp"
-#include "ParameterValueCollection.hpp"
-#include "Module.hpp"
-#include "EntryPoint.hpp"
-#include "EntryPointSystem.hpp"
 #include "ChimeraSystem.hpp"
 #include "types/lua_static.hpp"
 
@@ -51,18 +42,16 @@ int chimera::lua_UserData_gc(lua_State* L)
         int type = lua_tointeger(L, 2);
         void* value = *((void**)lua_touserdata(L, 1));
 
-        lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
-        lua_gettable(L, LUA_REGISTRYINDEX);
-        chimera::ChimeraSystem* chSys = (chimera::ChimeraSystem*)lua_touserdata(L, -1);
+        ChimeraSystem* chimeraSystem = (ChimeraSystem*)(*((void**)lua_getextraspace(L)));
         if(value)
         {
-            if(chSys->getTypeSystem()->isReferenced(value))
+            if(chimeraSystem->getTypeSystem()->isReferenced(value))
             {
-                chSys->getTypeSystem()->releaseDependency(L, value);
+                chimeraSystem->getTypeSystem()->releaseDependency(L, value);
             }
             else
             {
-                chSys->getTypeSystem()->deleteValue(L, type, value);
+                chimeraSystem->getTypeSystem()->deleteValue(L, type, value);
             }
         }
     }

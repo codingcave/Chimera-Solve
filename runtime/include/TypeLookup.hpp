@@ -14,8 +14,8 @@ namespace chimera {
                 virtual const std::string getGUID() const override;
                 size_t findType(size_t baseType, size_t innerType) const;
             protected:
-                virtual void notifyItemAdded(StateSynchrony* sender, void const * const item, void const * const data) override;
-                virtual void notifyItemRemoved(StateSynchrony* sender, void const * const item, void const * const data) override;
+                virtual void notifyItemAdded(StateSynchrony* sender, void* item, void const * const data) override;
+                virtual void notifyItemRemoved(StateSynchrony* sender, void* item, void const * const data) override;
             private:
                 ParameterTypeSystem* _typeSys;
                 void addTypeLookup(size_t baseType) const;

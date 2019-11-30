@@ -7,6 +7,7 @@
 //#include <complex>
 //#include "lua.hpp"
 
+#include "def.hpp"
 #include "Naming.hpp"
 #include "RuntimeNames.hpp"
 #include "StateSynchrony.hpp"
@@ -14,7 +15,6 @@
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "TypeLookup.hpp"
@@ -70,7 +70,7 @@ void chimera::runtime::TypeLookup::addTypeLookup(size_t baseType) const
     }
 }
 
-void chimera::runtime::TypeLookup::notifyItemAdded(StateSynchrony* sender, void const * const item, void const * const data)
+void chimera::runtime::TypeLookup::notifyItemAdded(StateSynchrony* sender, void* item, void const * const data)
 {
     if(sender == _typeSys)
     {
@@ -83,7 +83,7 @@ void chimera::runtime::TypeLookup::notifyItemAdded(StateSynchrony* sender, void 
     }
 }
 
-void chimera::runtime::TypeLookup::notifyItemRemoved(StateSynchrony* sender, void const * const item, void const * const data)
+void chimera::runtime::TypeLookup::notifyItemRemoved(StateSynchrony* sender, void* item, void const * const data)
 {
     if(sender == _typeSys)
     {

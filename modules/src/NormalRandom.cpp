@@ -6,6 +6,7 @@
 //#include <chrono>
 #include <random>
 
+#include "def.hpp"
 #include "Naming.hpp"
 #include "ExtensionNaming.hpp"
 #include "StateSynchrony.hpp"
@@ -13,7 +14,6 @@
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "ParameterValueCollection.hpp"
@@ -21,6 +21,7 @@
 #include "EntryPoint.hpp"
 #include "EntryPointSystem.hpp"
 #include "ChimeraSystem.hpp"
+#include "ChimeraContext.hpp"
 #include "EntryPointBase/AbstractRandomGenerator.hpp"
 #include "EntryPointBase/AbstractRandom.hpp"
 #include "EntryPointBase/RandomModule.hpp"
@@ -54,14 +55,9 @@ const std::string NormalRandomModule::getGUID() const
     return "Normal Distribution";
 }
 
-void NormalRandomModule::destroyInstance(void* instance) const
+void NormalRandomModule::destroyInstance(chimera::EntryPoint const * const entrypoint, void* instance) const
 {
     delete ((NormalRandomModule*)instance);
-}
-
-const std::string NormalRandomModule::getVersion() const
-{
-    return "1.0.0";
 }
 
 const size_t NormalRandomModule::getType() const
@@ -92,7 +88,7 @@ chimera::simulation::AbstractRandom* NormalRandomModule::getRandomInstance(chime
         }
         if(inSigma && sigma > 0)
         {
-            return new NormalDistribution(generator, getChimeraSystem()->getTypeSystem(), mean, sigma);
+            return new NormalDistribution(generator, getContext(), mean, sigma);
         }
     }
     else
@@ -117,22 +113,24 @@ chimera::simulation::AbstractRandom* NormalRandomModule::getRandomInstance(chime
             }
             if(sigma > 0)
             {
-                return new NormalDistribution(generator, getChimeraSystem()->getTypeSystem(), mean, sigma);
+                return new NormalDistribution(generator, getContext(), mean, sigma);
             }
         }
     }
     return nullptr;
 }
 
-NormalDistribution::NormalDistribution(chimera::simulation::AbstractRandomGenerator* generator, chimera::ParameterTypeSystem* ps, double mean, double sigma)
+NormalDistribution::NormalDistribution(chimera::simulation::AbstractRandomGenerator* generator, chimera::ChimeraContext* context, double mean, double sigma)
 {
     _normDist = new std::normal_distribution<double>(mean, sigma);
     _generator = generator;
-    ps->addDependency(this, generator);
+    _context = context;
+    context->addDependency(this, generator);
 }
 
 NormalDistribution::~NormalDistribution()
 {
+    _context->removeDependencyItem(this);
     delete _normDist;
 }
 

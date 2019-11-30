@@ -5,6 +5,7 @@
 #include <vector>
 #include <boost/numeric/ublas/vector.hpp>
 
+#include "def.hpp"
 #include "Naming.hpp"
 #include "ExtensionNaming.hpp"
 #include "StateSynchrony.hpp"
@@ -12,7 +13,6 @@
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "ParameterValueCollection.hpp"
@@ -20,6 +20,7 @@
 #include "EntryPoint.hpp"
 #include "EntryPointSystem.hpp"
 #include "ChimeraSystem.hpp"
+#include "ChimeraContext.hpp"
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/SystemDynamicModule.hpp"
 #include "EntryPointBase/TemplateOdeSystem.hpp"
@@ -46,7 +47,7 @@ HarmonicOscillatorModule::HarmonicOscillatorModule()
     //registerMethod("test", rk_test);
 }
 
-void* HarmonicOscillatorModule::getInstance(chimera::vec_t_LuaItem& parameters) const
+void* HarmonicOscillatorModule::getInstance(chimera::EntryPoint const * const entrypoint, chimera::vec_t_LuaItem& parameters) const
 {
     bool inA = false;
     bool inB = false;
@@ -89,7 +90,7 @@ void* HarmonicOscillatorModule::getInstance(chimera::vec_t_LuaItem& parameters) 
         return nullptr;
     }
 
-    return new HarmonicOscillator(getChimeraSystem()->getTypeSystem(), a, b);
+    return new HarmonicOscillator(getContext(), a, b);
 }
 
 const std::string HarmonicOscillatorModule::getGUID() const
@@ -97,20 +98,15 @@ const std::string HarmonicOscillatorModule::getGUID() const
     return "Harmonic Oscillator";
 }
 
-void HarmonicOscillatorModule::destroyInstance(void* instance) const
+void HarmonicOscillatorModule::destroyInstance(chimera::EntryPoint const * const entrypoint, void* instance) const
 {
     delete ((HarmonicOscillator*)instance);
 }
 
-const std::string HarmonicOscillatorModule::getVersion() const
-{
-    return "1.0.0";
-}
-
-HarmonicOscillator::HarmonicOscillator(chimera::ParameterTypeSystem* ps, double a, double b):
+HarmonicOscillator::HarmonicOscillator(chimera::ChimeraContext* context, double a, double b):
+    _context(context),
     _a(a),
-    _b(b),
-    _ps(ps)
+    _b(b)
 {
 
 }
@@ -126,7 +122,7 @@ std::unordered_map<std::string, size_t> HarmonicOscillator::getFeatures() const
     std::unordered_map<std::string, size_t> features;
     features[chimera::simulation::Naming::Feature_time_type] = chimera::systemtypes::PID_NUMBER;
     static const std::string vectorRealMetaName = (std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
-    features[chimera::simulation::Naming::Feature_state_type] = _ps->getParameterID(vectorRealMetaName);
+    features[chimera::simulation::Naming::Feature_state_type] = _context->getParameterID(vectorRealMetaName);
     features[chimera::simulation::Naming::Feature_size] = 2;
     return features;
 }

@@ -8,15 +8,15 @@
 #include <cmath>
 #include "lua.hpp"
 
-#include "StateSynchrony.hpp"
+#include "def.hpp"
 #include "Naming.hpp"
 #include "ExtensionNaming.hpp"
 //#include "RuntimeNames.hpp"
+#include "StateSynchrony.hpp"
 #include "interfaces/ILogger.hpp"
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "extendTypes.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
@@ -39,10 +39,8 @@ static size_t complex_pid = 0;
 int chimera::runtime::types::luat_vector_complex_init(lua_State* const L)
 {
     vector_complex_pid = lua_tointeger(L, 2);
-    lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
-    lua_rawget(L, LUA_REGISTRYINDEX);
-    ChimeraSystem* chSys = (ChimeraSystem*)lua_touserdata(L, -1);
-    lua_pop(L, 2);
+    ChimeraRuntime* chSys = (ChimeraRuntime*)(*((void**)lua_getextraspace(L)));
+    lua_pop(L, 1);
     //complex_pid = chSys->getTypeSystem()->getParameterID(chimera::simulation::Naming::Type_Complex);
     complex_pid = chSys->getTypeSystem()->getParameterTag(vector_complex_pid);
 

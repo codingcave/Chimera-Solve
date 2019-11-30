@@ -4,9 +4,9 @@
 #include <vector>
 #include <list>
 
+#include "def.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "interfaces/IEventListener.hpp"
 #include "interfaces/IEventListenerProvider.hpp"
 #include "event/Observer.hpp"

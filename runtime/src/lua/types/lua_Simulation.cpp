@@ -6,9 +6,10 @@
 #include <list>
 #include "lua.hpp"
 
+#include "def.hpp"
 #include "Naming.hpp"
-#include "RuntimeNames.hpp"
 #include "ExtensionNaming.hpp"
+#include "RuntimeNames.hpp"
 //#include "interfaces/IConnectEventHandler.hpp"
 //#include "lua/lua_static.hpp"
 #include "StateSynchrony.hpp"
@@ -16,7 +17,6 @@
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "TypeLookup.hpp"
@@ -72,13 +72,13 @@ int chimera::runtime::lua_Simulation_add_event(lua_State* L)
         int type = lua_tointeger(L, -1);
         lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
         lua_gettable(L, LUA_REGISTRYINDEX);
-        chimera::ChimeraSystem* chSys = (chimera::ChimeraSystem*)lua_touserdata(L, -1);
+        chimera::ChimeraSystem* chimeraSystem = (chimera::ChimeraSystem*)lua_touserdata(L, -1);
         lua_pop(L, 1);
 
-        chimera::EntryPoint* ep = chSys->getEntryPointSystem()->getEntryPoint(chimera::simulation::Naming::EntryPoint_observer);
+        chimera::EntryPoint* ep = chimeraSystem->getEntryPointSystem()->getEntryPoint(chimera::simulation::Naming::EntryPoint_observer);
         tagtype = (size_t)ep;
 
-        if(chSys->getTypeSystem()->getParameterBase(type) == basetype && chSys->getTypeSystem()->getParameterTag(type) == tagtype)
+        if(chimeraSystem->getTypeSystem()->getParameterBase(type) == basetype && chimeraSystem->getTypeSystem()->getParameterTag(type) == tagtype)
         {
             Simulation* sim = *((Simulation**)lua_touserdata(L, lua_upvalueindex(1)));
             chimera::simulation::AbstractEventProvider* provider = *((chimera::simulation::AbstractEventProvider**)lua_touserdata(L, 1));
@@ -102,13 +102,13 @@ int chimera::runtime::lua_Simulation_register_eventlistener(lua_State* L)
         int type = lua_tointeger(L, -1);
         lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
         lua_gettable(L, LUA_REGISTRYINDEX);
-        chimera::ChimeraSystem* chSys = (chimera::ChimeraSystem*)lua_touserdata(L, -1);
+        chimera::ChimeraSystem* chimeraSystem = (chimera::ChimeraSystem*)lua_touserdata(L, -1);
         lua_pop(L, 1);
 
-        chimera::EntryPoint* ep = chSys->getEntryPointSystem()->getEntryPoint(chimera::simulation::Naming::EntryPoint_output);
+        chimera::EntryPoint* ep = chimeraSystem->getEntryPointSystem()->getEntryPoint(chimera::simulation::Naming::EntryPoint_output);
         tagtype = (size_t)ep;
 
-        if(chSys->getTypeSystem()->getParameterBase(type) == basetype && chSys->getTypeSystem()->getParameterTag(type) == tagtype)
+        if(chimeraSystem->getTypeSystem()->getParameterBase(type) == basetype && chimeraSystem->getTypeSystem()->getParameterTag(type) == tagtype)
         {
             if(luaL_getmetafield(L, 1, "__modptr"))
             {
@@ -177,7 +177,7 @@ int chimera::runtime::lua_Simulation_start(lua_State* L)
 {
     lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
     lua_gettable(L, LUA_REGISTRYINDEX);
-    ChimeraRuntime* chSys = (ChimeraRuntime*)lua_touserdata(L, -1);
+    ChimeraRuntime* chimeraSystem = (ChimeraRuntime*)lua_touserdata(L, -1);
     lua_pop(L, 1);
     lua_State* NL = (lua_State*)lua_touserdata(L, lua_upvalueindex(1));
     Simulation* sim = *((Simulation**)lua_touserdata(L, lua_upvalueindex(2)));
@@ -186,7 +186,7 @@ int chimera::runtime::lua_Simulation_start(lua_State* L)
         vec_t_LuaItem items;
         for(int i = 1; i <= lua_gettop(L); i++)
         {
-            items.push_back(chSys->getTypeSystem()->getValue(L, i));
+            items.push_back(chimeraSystem->getTypeSystem()->getValue(L, i));
         }
         sim->getIntegrator()->start(items);
 
@@ -195,7 +195,7 @@ int chimera::runtime::lua_Simulation_start(lua_State* L)
 //        lp->_rL = L;
 
         //lua_pushnumber(L, sim->getStep());
-        chSys->pushLuaValue(L, sim->getIntegrator()->getTimeType(), sim->getIntegrator()->currentTime());
+        chimeraSystem->pushLuaValue(L, sim->getIntegrator()->getTimeType(), sim->getIntegrator()->currentTime());
         return 1;
     }
     else
@@ -224,10 +224,10 @@ int chimera::runtime::lua_Simulation_current(lua_State* L)
 {
     lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
     lua_gettable(L, LUA_REGISTRYINDEX);
-    ChimeraRuntime* chSys = (ChimeraRuntime*)lua_touserdata(L, -1);
+    ChimeraRuntime* chimeraSystem = (ChimeraRuntime*)lua_touserdata(L, -1);
     Simulation* sim = *((Simulation**)lua_touserdata(L, lua_upvalueindex(1)));
-    chSys->pushLuaValue(L, sim->getIntegrator()->getTimeType(), sim->getIntegrator()->currentTime());
-    chSys->pushLuaValue(L, sim->getIntegrator()->getStateType(), sim->getIntegrator()->currentState());
+    chimeraSystem->pushLuaValue(L, sim->getIntegrator()->getTimeType(), sim->getIntegrator()->currentTime());
+    chimeraSystem->pushLuaValue(L, sim->getIntegrator()->getStateType(), sim->getIntegrator()->currentState());
     return 2;
 }
 
@@ -238,9 +238,9 @@ int chimera::runtime::lua_Simulation_step(lua_State* L)
         sim->nextStep();
         lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
         lua_gettable(L, LUA_REGISTRYINDEX);
-        ChimeraRuntime* chSys = (ChimeraRuntime*)lua_touserdata(L, -1);
+        ChimeraRuntime* chimeraSystem = (ChimeraRuntime*)lua_touserdata(L, -1);
         lua_pop(L, 1);
-        chSys->pushLuaValue(L, sim->getIntegrator()->getTimeType(), sim->getIntegrator()->currentTime());
+        chimeraSystem->pushLuaValue(L, sim->getIntegrator()->getTimeType(), sim->getIntegrator()->currentTime());
         sim->notifyAll();
         return 1;
     }
@@ -273,12 +273,12 @@ int chimera::runtime::lua_Simulation_run(lua_State* L)
 
             lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
             lua_gettable(L, LUA_REGISTRYINDEX);
-            ChimeraRuntime* chSys = (ChimeraRuntime*)lua_touserdata(L, -1);
+            ChimeraRuntime* chimeraSystem = (ChimeraRuntime*)lua_touserdata(L, -1);
             lua_pop(L, 1);
 
-            chSys->pushLuaValue(L, sim->getIntegrator()->getTimeType(), sim->getIntegrator()->currentTime());
+            chimeraSystem->pushLuaValue(L, sim->getIntegrator()->getTimeType(), sim->getIntegrator()->currentTime());
 
-            chSys->pushLuaValue(L, sim->getIntegrator()->getStateType(), sim->getIntegrator()->currentState());
+            chimeraSystem->pushLuaValue(L, sim->getIntegrator()->getStateType(), sim->getIntegrator()->currentState());
 
             lua_pcall(L, 2, 0, 0);
 

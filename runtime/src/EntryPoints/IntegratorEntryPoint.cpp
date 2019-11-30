@@ -7,11 +7,11 @@
 
 //#include "interfaces/EventHandler/IParameterTypeEventHandler.hpp"
 //#include "RuntimeNames.hpp"
+#include "def.hpp"
 #include "ExtensionNaming.hpp"
 #include "StateSynchrony.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "ParameterValueCollection.hpp"
@@ -42,18 +42,13 @@ const std::string chimera::runtime::IntegratorEntryPoint::getGUID() const
     return chimera::simulation::Naming::EntryPoint_integrator;
 }
 
-const std::string chimera::runtime::IntegratorEntryPoint::getVersion() const
-{
-    return "1.0.0";
-}
-
 bool chimera::runtime::IntegratorEntryPoint::checkModule(chimera::Module const * const module) const
 {
     const chimera::simulation::IntegratorModule* ireg = dynamic_cast<const chimera::simulation::IntegratorModule*>(module);
     return ireg != nullptr;
 }
 
-void chimera::runtime::IntegratorEntryPoint::init(lua_State* L)
+void chimera::runtime::IntegratorEntryPoint::init()
 {
     return;
 }

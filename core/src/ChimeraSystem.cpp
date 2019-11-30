@@ -6,6 +6,7 @@
 #include <utility>
 //#include "lua.hpp"
 
+#include "def.hpp"
 #include "Naming.hpp"
 #include "StateSynchrony.hpp"
 #include "types/lua_basetypes.hpp"
@@ -13,42 +14,30 @@
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "ParameterValueCollection.hpp"
 #include "Module.hpp"
 #include "EntryPoint.hpp"
 #include "EntryPointSystem.hpp"
+#include "ChimeraContext.hpp"
 #include "ChimeraSystem.hpp"
 
 chimera::ChimeraSystem::ChimeraSystem()
 {
     _loggingSys = new LoggingSystem();
-    _typeSys = new ParameterTypeSystem();
-    _typeSys->_chimeraSystem = this;
-    _epSys = new EntryPointSystem();
-    _epSys->_chimeraSystem = this;
-
+    _typeSys = new ParameterTypeSystem(this);
+    _epSys = new EntryPointSystem(this);
+    _context = createContext(this);
     _epSys->addListener(this);
     _typeSys->addListener(this);
 
     init();
 }
 
-/*
-chimera::ChimeraSystem::ChimeraSystem(ParameterTypeSystem* typeSys, EntryPointSystem* epSys, LoggingSystem* logSys)
-{
-    _loggingSys = logSys;
-    _typeSys = typeSys;
-    _epSys = epSys;
-
-    init();
-}
-*/
-
 chimera::ChimeraSystem::~ChimeraSystem()
 {
+    delete _context;
     delete _loggingSys;
     if(_typeSys != nullptr) {
         delete _typeSys;
@@ -56,6 +45,11 @@ chimera::ChimeraSystem::~ChimeraSystem()
     if(_epSys != nullptr) {
         delete _epSys;
     }
+}
+
+chimera::ChimeraContext* chimera::ChimeraSystem::createContext(StateSynchrony* referrer)
+{
+    return new ChimeraContext(this, referrer);
 }
 
 chimera::LoggingSystem* chimera::ChimeraSystem::getLoggingSystem()
@@ -89,55 +83,9 @@ chimera::Module* chimera::ChimeraSystem::includeModule(chimera::EntryPoint* entr
     return nullptr;
 }
 
-size_t chimera::ChimeraSystem::registerParameter(const std::string& name, const struct T_ParameterDef& pdef, size_t base, size_t tag)
-{
-    return getTypeSystem()->registerParameter(name, this, pdef, base, tag);
-}
-
-size_t chimera::ChimeraSystem::registerParameter(const std::string& name, const struct T_ParameterDef& pdef)
-{
-    return getTypeSystem()->registerParameter(name, this, pdef);
-}
-
-size_t chimera::ChimeraSystem::registerParameter(const std::string& name, const struct T_ParameterDef& pdef, size_t base, size_t tag, const std::unordered_map<std::string, size_t>& flags)
-{
-    return getTypeSystem()->registerParameter(name, this, pdef, base, tag, flags);
-}
-
-size_t chimera::ChimeraSystem::registerParameter(const std::string& name, const struct T_ParameterDef& pdef, const std::unordered_map<std::string, size_t>& flags)
-{
-    return getTypeSystem()->registerParameter(name, this, pdef, flags);
-}
-
-/*
-void chimera::ChimeraSystem::pushLuaValue(lua_State* const L, chimera::ParameterValue& param) const
-{
-    _typeSys->pushValue(L, param.getType(), param.getValue());
-}
-
-void chimera::ChimeraSystem::pushLuaValue(lua_State* const L, size_t type, void* value) const
-{
-    _typeSys->pushValue(L, type, value);
-}
-
-void chimera::ChimeraSystem::pushLuaValue(lua_State* const L, const std::string& type, void* value) const
-{
-    _typeSys->pushValue(L, _typeSys->getParameterID(type), value);
-}
-*/
-
-void chimera::ChimeraSystem::deleteLuaValue(lua_State* const L, ParameterValue& value) const
-{
-    _typeSys->deleteValue(L, value);
-}
-
-void chimera::ChimeraSystem::deleteLuaValue(lua_State* const L, size_t type, void* value) const
-{
-    _typeSys->deleteValue(L, type, value);
-}
-
 chimera::Module* chimera::ChimeraSystem::openModule(chimera::EntryPoint const * const entrypoint, const std::string& name)
 {
+    // virtual - do nothing
     return nullptr;
 }
 
@@ -146,66 +94,89 @@ void chimera::ChimeraSystem::closeModule(Module* module)
     // virtual - do nothing
 }
 
-void chimera::ChimeraSystem::notifyItemAdded(StateSynchrony* sender, void const * const item, void const * const data)
+void chimera::ChimeraSystem::notifyItemAdded(StateSynchrony* sender, void* item, void const * const data)
 {
     if(sender == _typeSys)
     {
         // ParameterType
         pushType((ParameterType*)item);
     }
-    else if(sender == _epSys)
-    {
-        // EntryPoint
-        //std::string* name = (std::string*)data;
-        EntryPoint* entrypoint = (EntryPoint*)item;
-        entrypoint->addListener(this);
-
-        if (entrypoint->isLoaded())
-        {
-            notifyItemLoaded(sender, item, data);
-        }
-
-        for(auto it = entrypoint->_loadedModules->begin(); it != entrypoint->_loadedModules->end(); it++)
-        {
-            notifyItemAdded(entrypoint, it->second, &it->first);
-        }
-    }
     else
     {
-        // Module
-        chimera::EntryPoint* entrypoint = dynamic_cast<chimera::EntryPoint*>(sender);
-        std::string* name = (std::string*)data;
-        chimera::Module* module = (chimera::Module*)item;
-        if(module->isLoaded())
+        StateSynchrony* s = (StateSynchrony*)item;
+        if(s->_context != nullptr)
         {
-            pushModule(entrypoint, *name, module);
+            delete s->_context;
+        }
+        s->_context = createContext(s);
+
+        if(sender == _epSys)
+        {
+            // EntryPoint
+            //std::string* name = (std::string*)data;
+            EntryPoint* entrypoint = (EntryPoint*)item;
+            entrypoint->addListener(this);
+
+            if (entrypoint->isLoaded(this))
+            {
+                notifyItemLoaded(sender, item, data);
+            }
+
+            for(auto it = entrypoint->_modules->begin(); it != entrypoint->_modules->end(); it++)
+            {
+                notifyItemAdded(entrypoint, it->second, &it->first);
+            }
+        }
+        else
+        {
+            // Module
+            chimera::EntryPoint* entrypoint = dynamic_cast<chimera::EntryPoint*>(sender);
+            std::string* name = (std::string*)data;
+            chimera::Module* module = (chimera::Module*)item;
+            module->init(entrypoint);
+            if(module->isLoaded(entrypoint))
+            {
+                pushModule(entrypoint, *name, module);
+            }
         }
     }
 }
 
-void chimera::ChimeraSystem::notifyItemRemoved(StateSynchrony* sender, void const * const item, void const * const data)
+void chimera::ChimeraSystem::notifyItemRemoved(StateSynchrony* sender, void* item, void const * const data)
 {
     if(sender == _typeSys)
     {
         // ParameterType
         popType(*((ParameterType*)item));
     }
-    else if(sender == _epSys)
-    {
-        // EntryPoint
-    }
     else
     {
-        // Module
-        chimera::EntryPoint* entrypoint = dynamic_cast<chimera::EntryPoint*>(sender);
-        //std::string* name = (std::string*)data;
-        chimera::Module* module = (chimera::Module*)item;
-        //popModule(entrypoint, module);
-        closeModule(module);
+        StateSynchrony* s = (StateSynchrony*)item;
+        if(s->_context != nullptr)
+        {
+            delete s->_context;
+            s->_context = nullptr;
+        }
+
+        if(sender == _epSys)
+        {
+            // EntryPoint
+            EntryPoint* entrypoint = (EntryPoint*)item;
+            entrypoint->removeListener(this);
+        }
+        else
+        {
+            // Module
+            chimera::EntryPoint* entrypoint = dynamic_cast<chimera::EntryPoint*>(sender);
+            //std::string* name = (std::string*)data;
+            chimera::Module* module = (chimera::Module*)item;
+            //popModule(entrypoint, module);
+            closeModule(module);
+        }
     }
 }
 
-void chimera::ChimeraSystem::notifyItemLoaded(StateSynchrony* sender, void const * const item, void const * const data)
+void chimera::ChimeraSystem::notifyItemLoaded(StateSynchrony* sender, void* item, void const * const data)
 {
     if(sender == _epSys)
     {
@@ -226,21 +197,20 @@ void chimera::ChimeraSystem::notifyItemLoaded(StateSynchrony* sender, void const
     }
 }
 
-void chimera::ChimeraSystem::notifyItemUnloaded(StateSynchrony* sender, void const * const item, void const * const data)
+void chimera::ChimeraSystem::notifyItemUnloaded(StateSynchrony* sender, void* item, void const * const data)
 {
-    std::string* name = (std::string*)data;
     if(sender == _epSys)
     {
         // EntryPoint
         EntryPoint* entrypoint = (EntryPoint*)item;
         //entrypoint->removeListener(this);
-        popEntryPoint(*name, entrypoint);
+        popEntryPoint(entrypoint);
     }
     else
     {
         // Module
         chimera::EntryPoint* entrypoint = dynamic_cast<chimera::EntryPoint*>(sender);
-        const chimera::Module* module = (const chimera::Module*)item;
+        chimera::Module* module = (chimera::Module*)item;
         popModule(entrypoint, module);
     }
 }

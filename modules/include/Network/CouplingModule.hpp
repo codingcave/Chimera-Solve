@@ -11,8 +11,9 @@ class CouplingModule
         virtual AbstractCoupling* getCoupling(chimera::vec_t_LuaItem& parameters) const = 0;
     protected:
     private:
-        virtual void* getInstance(chimera::vec_t_LuaItem& parameters) const override;
-        virtual void destroyInstance(void * const instance) const override;
+
+        virtual void* getInstance(chimera::EntryPoint const * const entrypoint, chimera::vec_t_LuaItem& parameters) const override;
+        virtual void destroyInstance(chimera::EntryPoint const * const entrypoint, void * const instance) const override;
 };
 
 #endif // COUPLINGMODULE_H

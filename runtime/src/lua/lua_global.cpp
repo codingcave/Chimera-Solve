@@ -7,6 +7,7 @@
 #include <vector>
 #include "lua.hpp"
 
+#include "def.hpp"
 #include "RuntimeNames.hpp"
 #include "ExtensionNaming.hpp"
 #include "Naming.hpp"
@@ -16,7 +17,6 @@
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "ParameterValueCollection.hpp"
@@ -119,20 +119,18 @@ int chimera::runtime::lua_global_exit(lua_State* L)
 int chimera::runtime::lua_global_simulation(lua_State* L)
 {
     chimera::simulation::AbstractIntegrator* instance;
-    chimera::ChimeraSystem* chSys;
+    chimera::ChimeraSystem* chimeraSystem;
     chimera::simulation::AbstractTemporalIntegrator* tempInt = nullptr;
 
     if(lua_gettop(L) > 0)
     {
-        lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
-        lua_gettable(L, LUA_REGISTRYINDEX);
-        chSys = (chimera::ChimeraSystem*)lua_touserdata(L, -1);
+        chimeraSystem = (ChimeraSystem*)(*((void**)lua_getextraspace(L)));
 
         if(lua_isuserdata(L, 1) &&
            luaL_getmetafield(L, 1, "__type") == LUA_TNUMBER &&
-           chSys->getTypeSystem()->getParameterBase(lua_tonumber(L, -1)) == chimera::systemtypes::PID_INSTANCE &&
+           chimeraSystem->getTypeSystem()->getParameterBase(lua_tonumber(L, -1)) == chimera::systemtypes::PID_INSTANCE &&
            luaL_getmetafield(L, 1, "__epptr") == LUA_TLIGHTUSERDATA &&
-           chSys->getEntryPointSystem()->getEntryPoint(chimera::simulation::Naming::EntryPoint_integrator) == lua_touserdata(L, -1))
+           chimeraSystem->getEntryPointSystem()->getEntryPoint(chimera::simulation::Naming::EntryPoint_integrator) == lua_touserdata(L, -1))
         {
             instance = *((chimera::simulation::AbstractIntegrator**)lua_touserdata(L, 1));
             tempInt = dynamic_cast<chimera::simulation::AbstractTemporalIntegrator*>(instance);
@@ -140,11 +138,11 @@ int chimera::runtime::lua_global_simulation(lua_State* L)
                 return 0;
             }
 
-            lua_pop(L, 3);
+            lua_pop(L, 2);
             vec_t_LuaItem items;
             for(int i = 2; i <= lua_gettop(L); i++)
             {
-                items.push_back(chSys->getTypeSystem()->getValue(L, i));
+                items.push_back(chimeraSystem->getTypeSystem()->getValue(L, i));
             }
             instance->initialize(items);
         } else {
@@ -164,7 +162,7 @@ int chimera::runtime::lua_global_simulation(lua_State* L)
     // case for all simulation types
     if (tempInt) {
         *sim = new TemporalSimulation(tempInt);
-        chSys->getTypeSystem()->addDependency(*sim, tempInt);
+        chimeraSystem->getTypeSystem()->addDependency(*sim, tempInt);
         lua_pushliteral(L, "temporal");
         lua_setfield(L, -3, "__simtype");
         lua_pushlightuserdata(NL, (void*)*sim);
@@ -176,7 +174,7 @@ int chimera::runtime::lua_global_simulation(lua_State* L)
     lua_setfield(L, -2, "__newindex");
     lua_pushstring(L, chimera::simulation::Naming::Type_Simulation);
     lua_setfield(L, -2, "__name");
-    lua_pushinteger(L, chSys->getTypeSystem()->getParameterID(chimera::simulation::Naming::Type_Simulation));
+    lua_pushinteger(L, chimeraSystem->getTypeSystem()->getParameterID(chimera::simulation::Naming::Type_Simulation));
     lua_setfield(L, -2, "__type");
     lua_pushcfunction (L, lua_Simulation_tostring);
     lua_setfield(L, -2, "__tostring");

@@ -5,12 +5,12 @@
 #include <list>
 #include "lua.hpp"
 
+#include "def.hpp"
 #include "ExtensionNaming.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
-#include "ParameterValueCollection.hpp"
 #include "StateSynchrony.hpp"
+#include "ParameterValueCollection.hpp"
 #include "Module.hpp"
 #include "interfaces/IEventListener.hpp"
 #include "event/Observer.hpp"
@@ -28,14 +28,14 @@ chimera::simulation::OutputModule::~OutputModule()
     //dtor
 }
 
-void* chimera::simulation::OutputModule::getInstance(vec_t_LuaItem& parameters) const
+void* chimera::simulation::OutputModule::getInstance(chimera::EntryPoint const * const entrypoint, vec_t_LuaItem& parameters) const
 {
     return (void*)getOutputInstance(parameters);
 }
 
-size_t chimera::simulation::OutputModule::getFlag(const std::string& flag) const
+size_t chimera::simulation::OutputModule::getAttribute(const std::string& attr) const
 {
-    if (flag == chimera::simulation::Naming::Flag_Observer)
+    if (attr == chimera::simulation::Naming::Attribute_Observer)
     {
         return 1;
     }

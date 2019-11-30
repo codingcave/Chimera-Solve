@@ -7,15 +7,15 @@
 //#include <complex>
 #include "lua.hpp"
 
-#include "StateSynchrony.hpp"
+#include "def.hpp"
 #include "Naming.hpp"
-//#include "RuntimeNames.hpp"
 #include "ExtensionNaming.hpp"
+//#include "RuntimeNames.hpp"
+#include "StateSynchrony.hpp"
 #include "interfaces/ILogger.hpp"
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "extendTypes.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
@@ -38,12 +38,9 @@ int chimera::runtime::types::luat_vector_init(lua_State* const L)
     int type = lua_tointeger(L, 2);
     lua_pop(L, 1);
 
-    lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
-    lua_gettable(L, LUA_REGISTRYINDEX);
-    ChimeraSystem* chSys = (ChimeraSystem*)lua_touserdata(L, -1);
-    lua_pop(L, 1);
+    ChimeraRuntime* chimeraSystem = (ChimeraRuntime*)(*((void**)lua_getextraspace(L)));
 
-    if(chSys->getTypeSystem()->getParameterBase(type) == 0 && vector_pid == 0) {
+    if(chimeraSystem->getTypeSystem()->getParameterBase(type) == 0 && vector_pid == 0) {
         vector_pid = type;
     }
 
@@ -161,13 +158,10 @@ int chimera::runtime::types::lua_vector_tostring(lua_State* const L)
     std::string text(chimera::simulation::Naming::Type_Vector);
     if(luaL_getmetafield(L, 1, "__type"))
     {
-        lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
-        lua_gettable(L, LUA_REGISTRYINDEX);
-        ChimeraSystem* chSys = (ChimeraSystem*)lua_touserdata(L, -1);
-        lua_pop(L, 1);
-        int itemtype = chSys->getTypeSystem()->getParameterTag(lua_tointeger(L, -1));
+        ChimeraRuntime* chimeraSystem = (ChimeraRuntime*)(*((void**)lua_getextraspace(L)));
+        int itemtype = chimeraSystem->getTypeSystem()->getParameterTag(lua_tointeger(L, -1));
         text += "<";
-        text += chSys->getTypeSystem()->getParameterName(itemtype);
+        text += chimeraSystem->getTypeSystem()->getParameterName(itemtype);
         text += ">";
     }
     text += "(";
@@ -275,14 +269,11 @@ int chimera::runtime::types::lua_vector_newindex(lua_State* const L)
 
 int chimera::runtime::types::lua_vector_eq(lua_State* const L)
 {
-    lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
-    lua_gettable(L, LUA_REGISTRYINDEX);
-    ChimeraSystem* chSys = (ChimeraSystem*)lua_touserdata(L, -1);
-    lua_pop(L, 1);
+    ChimeraRuntime* chimeraSystem = (ChimeraRuntime*)(*((void**)lua_getextraspace(L)));
 
     if(luaL_getmetafield(L, 1, "__type"))
     {
-        if(chSys->getTypeSystem()->getParameterBase(lua_tointeger(L, -1)) != vector_pid)
+        if(chimeraSystem->getTypeSystem()->getParameterBase(lua_tointeger(L, -1)) != vector_pid)
         {
             lua_pushboolean(L, false);
             return 1;
@@ -297,7 +288,7 @@ int chimera::runtime::types::lua_vector_eq(lua_State* const L)
 
     if(luaL_getmetafield(L, 2, "__type"))
     {
-        if(chSys->getTypeSystem()->getParameterBase(lua_tointeger(L, -1)) != vector_pid)
+        if(chimeraSystem->getTypeSystem()->getParameterBase(lua_tointeger(L, -1)) != vector_pid)
         {
             lua_pushboolean(L, false);
             return 1;
@@ -345,13 +336,10 @@ int chimera::runtime::types::lua_vector_eq(lua_State* const L)
 
 bool chimera::runtime::types::lua_vector_newempty(lua_State* const L, int n)
 {
-    lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
-    lua_gettable(L, LUA_REGISTRYINDEX);
-    ChimeraRuntime* chSys = (ChimeraRuntime*)lua_touserdata(L, -1);
-    lua_pop(L, 1);
+    ChimeraRuntime* chimeraSystem = (ChimeraRuntime*)(*((void**)lua_getextraspace(L)));
 
-    size_t innerType = chSys->getTypeSystem()->getParameterType(L, -1);
-    size_t metaType = chSys->getTypeLookup()->findType(vector_pid, innerType);
+    size_t innerType = chimeraSystem->getTypeSystem()->getParameterType(L, -1);
+    size_t metaType = chimeraSystem->getTypeLookup()->findType(vector_pid, innerType);
 
     if(metaType != 0)
     {
@@ -422,14 +410,11 @@ bool chimera::runtime::types::lua_vector_arith2(lua_State* const L, int op)
     bool arg2 = false;
     int length;
 
-    lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
-    lua_gettable(L, LUA_REGISTRYINDEX);
-    ChimeraSystem* chSys = (ChimeraSystem*)lua_touserdata(L, -1);
-    lua_pop(L, 1);
+    ChimeraRuntime* chimeraSystem = (ChimeraRuntime*)(*((void**)lua_getextraspace(L)));
 
     if(luaL_getmetafield(L, 1, "__type"))
     {
-        if(chSys->getTypeSystem()->getParameterBase(lua_tointeger(L, -1)) != vector_pid)
+        if(chimeraSystem->getTypeSystem()->getParameterBase(lua_tointeger(L, -1)) != vector_pid)
         {
             arg1 = true;
         }
@@ -442,7 +427,7 @@ bool chimera::runtime::types::lua_vector_arith2(lua_State* const L, int op)
 
     if(luaL_getmetafield(L, 2, "__type"))
     {
-        if(chSys->getTypeSystem()->getParameterBase(lua_tointeger(L, -1)) != vector_pid)
+        if(chimeraSystem->getTypeSystem()->getParameterBase(lua_tointeger(L, -1)) != vector_pid)
         {
             arg2 = true;
         }
@@ -759,13 +744,9 @@ int chimera::runtime::types::lua_vector_set(lua_State* const L)
         if(luaL_getmetafield(L, lua_upvalueindex(1), "__type"))
         {
             int type = lua_tointeger(L, -1);
+            ChimeraRuntime* chimeraSystem = (ChimeraRuntime*)(*((void**)lua_getextraspace(L)));
 
-            lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
-            lua_gettable(L, LUA_REGISTRYINDEX);
-            ChimeraSystem* chSys = (ChimeraSystem*)lua_touserdata(L, -1);
-            lua_pop(L, 1);
-
-            if(chSys->getTypeSystem()->getParameterType(L, 3) != chSys->getTypeSystem()->getParameterTag(type))
+            if(chimeraSystem->getTypeSystem()->getParameterType(L, 3) != chimeraSystem->getTypeSystem()->getParameterTag(type))
             {
 #warning LOG (kekstoaster#1#): Invalid type argument `3`.
                 //LoggingSystem::Error("Invalid type argument `3`.");

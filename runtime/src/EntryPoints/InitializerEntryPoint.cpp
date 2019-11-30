@@ -5,11 +5,11 @@
 #include <list>
 #include "lua.hpp"
 
+#include "def.hpp"
 #include "ExtensionNaming.hpp"
 #include "StateSynchrony.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "ParameterValueCollection.hpp"
@@ -38,11 +38,6 @@ chimera::runtime::InitializerEntryPoint::~InitializerEntryPoint()
 const std::string chimera::runtime::InitializerEntryPoint::getGUID() const
 {
     return chimera::simulation::Naming::EntryPoint_initilizer;
-}
-
-const std::string chimera::runtime::InitializerEntryPoint::getVersion() const
-{
-    return "1.0.0";
 }
 
 bool chimera::runtime::InitializerEntryPoint::checkModule(chimera::Module const * const module) const

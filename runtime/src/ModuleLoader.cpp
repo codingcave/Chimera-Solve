@@ -7,6 +7,7 @@
 #include <boost/filesystem/path.hpp>
 #include <dlfcn.h>
 
+#include "def.hpp"
 #include "RuntimeNames.hpp"
 #include "StateSynchrony.hpp"
 #include "interfaces/ILogger.hpp"
@@ -14,7 +15,6 @@
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "ParameterValueCollection.hpp"
@@ -124,7 +124,7 @@ void chimera::runtime::ModuleLoader::unload(const std::string& name)
         auto item = available->second;
         // free Registry space
         //delete ((*_moduleReg)[name]);
-        (*_moduleReg)[name]->unload();
+        //(*_moduleReg)[name]->unload();
         item.unload((*_moduleReg)[name]);
         // close library file
         //lib_handle = ((*_modulePtr)[name]).lib;

@@ -1,12 +1,14 @@
 #ifndef COMMON_DEFINITIONS_H
 #define COMMON_DEFINITIONS_H
 
-namespace chimera {
+namespace chimera
+{
     class ParameterValue;
     class EntryPoint;
     class Module;
 
-    namespace systemtypes {
+    namespace systemtypes
+    {
         const size_t PID_NIL = 0;
         const size_t PID_NUMBER = 1;
         const size_t PID_BOOLEAN = 2;
@@ -27,13 +29,9 @@ namespace chimera {
 
     typedef std::vector<ParameterValue> vec_t_LuaItem;
     typedef std::unordered_map<std::string, ParameterValue> map_t_LuaItem;
+    typedef void* (*fn_typecast)(size_t type, void * const value);
     typedef vec_t_LuaItem (*fn_luafnwrapper)(const vec_t_LuaItem& params);
-    typedef vec_t_LuaItem (*fn_instancefnwrapper)(chimera::Module const * const, void* instance, const vec_t_LuaItem& params);
-
-    struct KeyValue {
-        const std::string* key;
-        void* value;
-    };
+    typedef vec_t_LuaItem (*fn_instancefnwrapper)(chimera::EntryPoint const * const entrypoint, chimera::Module const * const, void* instance, const vec_t_LuaItem& params);
 }
 
 #endif // COMMON_DEFINITIONS_H

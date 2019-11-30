@@ -6,9 +6,10 @@
 #include <list>
 #include "lua.hpp"
 
+#include "def.hpp"
 #include "Naming.hpp"
-#include "RuntimeNames.hpp"
 #include "ExtensionNaming.hpp"
+#include "RuntimeNames.hpp"
 //#include "interfaces/IConnectEventHandler.hpp"
 //#include "lua/lua_static.hpp"
 #include "StateSynchrony.hpp"
@@ -16,7 +17,6 @@
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "TypeLookup.hpp"

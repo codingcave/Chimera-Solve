@@ -4,11 +4,11 @@
 #include <vector>
 #include <list>
 
+#include "def.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
-#include "ParameterValueCollection.hpp"
 #include "StateSynchrony.hpp"
+#include "ParameterValueCollection.hpp"
 #include "Module.hpp"
 #include "EntryPointBase/SystemDynamicModule.hpp"
 

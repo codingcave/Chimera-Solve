@@ -5,13 +5,13 @@
 #include <unordered_set>
 #include "lua.hpp"
 
+#include "def.hpp"
+#include "Naming.hpp"
 #include "StateSynchrony.hpp"
 #include "interfaces/ILogger.hpp"
 #include "LoggingSystem.hpp"
-#include "Naming.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "types/lua_static.hpp"
 #include "ParameterTypeSystem.hpp"
@@ -22,164 +22,143 @@
 #include "types/lua_Module.hpp"
 #include "ChimeraSystem.hpp"
 
-/*
-
-void chimera::ChimeraSystem::notifyUnload(const std::string& name, EntryPoint *ep, Module * const reg)
+void chimera::ChimeraSystem::pushModule(EntryPoint* ep, const std::string& name, Module* module)
 {
-    //reg->truncate();
-    // delete all instances??
-    /*
-    lua_pushstring(_L, "simulation:system_names");
-    lua_gettable(_L, LUA_REGISTRYINDEX);
-    lua_pushstring(_L, ep->getName().c_str());
-    lua_rawget(_L, -2);
-    luaL_getmetafield(_L, -1, "__loaded");
-    lua_pushlstring(_L, name.c_str(), name.size());
-    lua_pushnil(_L);
-    lua_rawset(_L, -3);
-    lua_pop(_L, 3);
-    _loader->Unload(name);
-    * /
-}
-
-*/
-
-void chimera::ChimeraSystem::pushModule(EntryPoint* ep, const std::string& name, Module const * const module)
-{
-    int top = lua_gettop(_L);
+    lua_State* L = this->getLuaState();
+    int top = lua_gettop(L);
     std::string instanceTypeName("$");
     instanceTypeName += name;
 
-    lua_pushstring(_L, chimera::registrynames::LUA_REGISTRY_CHIMERA_REFERENCES);
-    lua_rawget(_L, LUA_REGISTRYINDEX);
-    if(lua_rawgetp(_L, -1, ep))
+    lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_REFERENCES);
+    lua_rawget(L, LUA_REGISTRYINDEX);
+    if(lua_rawgetp(L, -1, ep))
     {
-        luaL_getmetafield(_L, -1, "__loaded");
+        _typeSys->createReference(chimera::systemtypes::PID_MODULE, module);
+        _typeSys->addDependency(this, module);
+
+        //luaL_getmetafield(L, -1, "__loaded");
 
         int instType = _typeSys->registerParameter(instanceTypeName, module, {nullptr, instance_pushValue, instance_deleteValue, nullptr}, chimera::systemtypes::PID_INSTANCE, (size_t)ep);
 
-        const Module **lmod = (const Module **)lua_newuserdata(_L, sizeof(Module *));
+        const Module **lmod = (const Module **)lua_newuserdata(L, sizeof(Module *));
         *lmod = module;
-        int modPos = lua_absindex(_L, -1);
+        int modPos = lua_absindex(L, -1);
         // module metatable
-        lua_newtable (_L);
-        lua_pushcfunction (_L, chimera::lua_ignore_newindex);
-        lua_setfield(_L, -2, "__newindex");
-        lua_pushcfunction (_L, chimera::lua_Module_call);
-        lua_setfield(_L, -2, "__call");
-        lua_pushcfunction (_L, chimera::lua_Module_tostring);
-        lua_setfield(_L, -2, "__tostring");
-        lua_pushstring(_L, chimera::luanames::LUA_NAME_MODULE);
-        lua_setfield(_L, -2, "__name");
-        lua_pushinteger(_L, chimera::systemtypes::PID_MODULE);
-        lua_setfield(_L, -2, "__type");
-        lua_pushlightuserdata(_L, ep);
-        lua_setfield(_L, -2, "__epptr");
-        lua_pushlstring(_L, name.c_str(), name.size());
-        lua_setfield(_L, -2, "__module");
-        lua_pushinteger(_L, instType);
-        lua_setfield(_L, -2, "__itype");
-        lua_pushlstring(_L, "__index", 7);
-        lua_newtable(_L);
+        lua_newtable(L);
+        lua_pushcfunction (L, chimera::lua_ignore_newindex);
+        lua_setfield(L, -2, "__newindex");
+        lua_pushcfunction (L, chimera::lua_Module_call);
+        lua_setfield(L, -2, "__call");
+        lua_pushcfunction (L, chimera::lua_Module_tostring);
+        lua_setfield(L, -2, "__tostring");
+        lua_pushstring(L, chimera::luanames::LUA_NAME_MODULE);
+        lua_setfield(L, -2, "__name");
+        lua_pushinteger(L, chimera::systemtypes::PID_MODULE);
+        lua_setfield(L, -2, "__type");
+        lua_pushlightuserdata(L, ep);
+        lua_setfield(L, -2, "__epptr");
+        lua_pushlstring(L, name.c_str(), name.size());
+        lua_setfield(L, -2, "__module");
+        lua_pushinteger(L, instType);
+        lua_setfield(L, -2, "__itype");
+        lua_pushlstring(L, "__index", 7);
+        lua_newtable(L);
         for(auto it = module->beginItems(); it != module->endItems(); it++)
         {
-            lua_pushlstring(_L, it->first.c_str(), it->first.size());
-            pushLuaValue(_L, it->second.getType(), it->second.getValue());
-            lua_rawset(_L, -3);
+            lua_pushlstring(L, it->first.c_str(), it->first.size());
+            _typeSys->pushValue(L, it->second.getType(), it->second.getValue());
+            lua_rawset(L, -3);
         }
 
-        lua_rawset(_L, -3);
-        lua_setmetatable(_L, -2);
-        lua_pushlightuserdata(_L, (void*)module);
-        lua_pushvalue(_L, -2);
-        lua_rawset(_L, -6);
+        lua_rawset(L, -3);
+        lua_setmetatable(L, -2);
+        lua_pushlightuserdata(L, (void*)module);
+        lua_pushvalue(L, -2);
+        lua_rawset(L, -5);
 
-        lua_pushstring(_L, chimera::registrynames::LUA_REGISTRY_CHIMERA_METATABLES);
-        lua_rawget(_L, LUA_REGISTRYINDEX);
-        lua_rawgeti(_L, -1, instType);
+        lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_METATABLES);
+        lua_rawget(L, LUA_REGISTRYINDEX);
+        lua_rawgeti(L, -1, instType);
 
-        lua_pushcfunction (_L, chimera::lua_Instance_tostring);
-        lua_setfield(_L, -2, "__tostring");
-        lua_pushcfunction (_L, chimera::lua_ignore_newindex);
-        lua_setfield(_L, -2, "__newindex");
-        lua_pushcfunction (_L, chimera::lua_Instance_index);
-        lua_setfield(_L, -2, "__index");
-        lua_pushstring(_L, chimera::luanames::LUA_NAME_INSTANCE);
-        lua_setfield(_L, -2, "__name");
-        lua_pushlightuserdata(_L, ep);
-        lua_setfield(_L, -2, "__epptr");
-        lua_pushlightuserdata(_L, (void*)module);
-        lua_setfield(_L, -2, "__modptr");
-        lua_pushlstring(_L, name.c_str(), name.size());
-        lua_setfield(_L, -2, "__module");
-        lua_pushcfunction(_L, chimera::lua_UserData_gc);
-        lua_setfield(_L, -2, "__gc");
-        lua_pushlstring(_L, name.c_str(), name.size());
-        lua_pushvalue(_L, modPos);
-        lua_rawset(_L, top + 3);
+        lua_pushcfunction (L, chimera::lua_Instance_tostring);
+        lua_setfield(L, -2, "__tostring");
+        lua_pushcfunction (L, chimera::lua_ignore_newindex);
+        lua_setfield(L, -2, "__newindex");
+        lua_pushcfunction (L, chimera::lua_Instance_index);
+        lua_setfield(L, -2, "__index");
+        lua_pushstring(L, chimera::luanames::LUA_NAME_INSTANCE);
+        lua_setfield(L, -2, "__name");
+        lua_pushlightuserdata(L, ep);
+        lua_setfield(L, -2, "__epptr");
+        lua_pushlightuserdata(L, (void*)module);
+        lua_setfield(L, -2, "__modptr");
+        lua_pushlstring(L, name.c_str(), name.size());
+        lua_setfield(L, -2, "__module");
+        lua_pushcfunction(L, chimera::lua_UserData_gc);
+        lua_setfield(L, -2, "__gc");
     }
 
-    lua_settop(_L, top);
+    lua_settop(L, top);
 }
 
-void chimera::ChimeraSystem::popModule(EntryPoint* ep, Module const * const module)
+void chimera::ChimeraSystem::popModule(EntryPoint* ep, Module* module)
 {
-return;
-/*
+    lua_State* L = this->getLuaState();
     const std::string name = ep->findModule(module);
     if(name.size() > 0)
     {
-        int top = lua_gettop(_L);
-        lua_pushstring(_L, chimera::registrynames::LUA_REGISTRY_CHIMERA_REFERENCES);
-        lua_rawget(_L, LUA_REGISTRYINDEX);
-        if(lua_rawgetp(_L, -1, ep))
+        int top = lua_gettop(L);
+        lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_REFERENCES);
+        lua_rawget(L, LUA_REGISTRYINDEX);
+        if(lua_rawgetp(L, -1, ep))
         {
-            if(luaL_getmetafield(_L, -1, "__loaded"))
+            _typeSys->removeParameter(module);
+            //_typeSys->removeDependencyItem(module);
+
+            if(lua_rawgetp(L, -2, module))
             {
-                _typeSys->removeParameter(module);
-                //_typeSys->removeDependencyItem(module);
+                chimera::Module **lmod = (chimera::Module **)lua_touserdata(L, -1);
+                *lmod = nullptr;
+                lua_pushnil(L);
+                lua_rawsetp(L, -4, module);
 
-                lua_pushlstring(_L, name.c_str(), name.size());
-                int utype = lua_rawget(_L, -2);
-                if(utype) {
-                    chimera::Module **lmod = (chimera::Module **)lua_touserdata(_L, -1);
-
-                    *lmod = nullptr;
-
-                    lua_pushlstring(_L, name.c_str(), name.size());
-                    lua_pushnil(_L);
-                    lua_rawset(_L, -4);
-                }
+                lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_METATABLES);
+                lua_gettable(L, LUA_REGISTRYINDEX);
+                lua_rawgeti(L, -1, 0);
+                lua_setmetatable(L, -3);
             }
         }
+        lua_settop(L, top);
 
-        lua_pushlightuserdata(_L, (void*)module);
-        lua_pushnil(_L);
-        lua_rawset(_L, top + 1);
-        lua_settop(_L, top);
+        _typeSys->releaseDependency(this, module);
     }
-*/
 }
 
 int chimera::lua_Module_call(lua_State* L)
 {
-    const Module *mod = *((const Module **)lua_touserdata(L, 1));
-    luaL_getmetafield(L, 1, "__itype");
-
-    int type = lua_tointeger(L, -1);
-    lua_pop(L, 1);
-    vec_t_LuaItem items;
-
-    for(int i = 2; i <= lua_gettop(L); i++)
+    ChimeraSystem* chimeraSystem = (ChimeraSystem*)(*((void**)lua_getextraspace(L)));
+    Module *mod = *((Module **)lua_touserdata(L, 1));
+    if(chimeraSystem->getTypeSystem()->isReferenced(mod))
     {
-        items.push_back(mod->getChimeraSystem()->getTypeSystem()->getValue(L, i));
-    }
+        luaL_getmetafield(L, 1, "__itype");
 
-    void* value = mod->getInstance(items);
-    if(value)
-    {
-        mod->getChimeraSystem()->getTypeSystem()->pushValue(L, {type, value});
-        return 1;
+        int type = lua_tointeger(L, -1);
+        luaL_getmetafield(L, 1, "__epptr");
+        const EntryPoint* lep = (const EntryPoint*)lua_touserdata(L, -1);
+        lua_pop(L, 2);
+        vec_t_LuaItem items;
+
+        for(int i = 2; i <= lua_gettop(L); i++)
+        {
+            items.push_back(chimeraSystem->getTypeSystem()->getValue(L, i));
+        }
+
+        void* value = mod->getInstance(lep, items);
+        if(value)
+        {
+            chimeraSystem->getTypeSystem()->pushValue(L, type, value);
+            return 1;
+        }
     }
     return 0;
 }
@@ -229,68 +208,82 @@ int chimera::lua_Instance_tostring(lua_State* L)
 
 int chimera::lua_Instance_forwardMethod(lua_State* L)
 {
+    ChimeraSystem* chimeraSystem = (ChimeraSystem*)(*((void**)lua_getextraspace(L)));
     luaL_getmetafield(L, lua_upvalueindex(1), "__modptr");
-    const Module* mod = (const Module *)lua_touserdata(L, -1);
-    void* instance = *((void**)lua_touserdata(L, lua_upvalueindex(1)));
-    fn_instancefnwrapper method = (fn_instancefnwrapper)lua_touserdata(L, lua_upvalueindex(2));
-    lua_pop(L, 1);
-
-    vec_t_LuaItem params;
-    for(int i = 1; i <= lua_gettop(L); ++i)
+    Module* module = (Module *)lua_touserdata(L, -1);
+    if(chimeraSystem->getTypeSystem()->isReferenced(module))
     {
-        params.push_back(mod->getChimeraSystem()->getTypeSystem()->getValue(L, i));
+        luaL_getmetafield(L, lua_upvalueindex(1), "__epptr");
+        const EntryPoint* ep = (const EntryPoint*)lua_touserdata(L, -1);
+        void* instance = *((void**)lua_touserdata(L, lua_upvalueindex(1)));
+        fn_instancefnwrapper method = (fn_instancefnwrapper)lua_touserdata(L, lua_upvalueindex(2));
+        lua_pop(L, 1);
+
+        vec_t_LuaItem params;
+        for(int i = 1; i <= lua_gettop(L); ++i)
+        {
+            params.push_back(chimeraSystem->getTypeSystem()->getValue(L, i));
+        }
+        lua_settop(L, 0);
+
+        vec_t_LuaItem result = (*method)(ep, module, instance, params);
+
+        for(auto it = result.begin(); it != result.end(); it++)
+        {
+            chimeraSystem->getTypeSystem()->pushValue(L, it->getType(), it->getValue());
+        }
+
+        return result.size();
     }
-    lua_settop(L, 0);
-
-    vec_t_LuaItem result = (*method)(mod, instance, params);
-
-    for(auto it = result.begin(); it != result.end(); it++)
-    {
-        mod->getChimeraSystem()->getTypeSystem()->pushValue(L, {it->getType(), it->getValue()});
-    }
-
-    return result.size();
+    return 0;
 }
 
 int chimera::lua_Instance_index(lua_State* L)
 {
+    ChimeraSystem* chimeraSystem = (ChimeraSystem*)(*((void**)lua_getextraspace(L)));
     luaL_getmetafield(L, 1, "__modptr");
-    const Module* mod = (const Module *)lua_touserdata(L, -1);
-    //int regInd = lua_absindex(L, -1);
-    std::string item(lua_tostring(L, 2));
-
-    map_t_InstanceMethods::const_iterator available = mod->methods()->find (item);
-    if(available != mod->methods()->end())
+    Module* module = (Module *)lua_touserdata(L, -1);
+    if(chimeraSystem->getTypeSystem()->isReferenced(module))
     {
-        lua_pushvalue(L, 1);
-        lua_pushlightuserdata(L, (void*)available->second);
-        lua_pushcclosure(L, lua_Instance_forwardMethod, 2);
-        return 1;
+        std::string item(lua_tostring(L, 2));
+
+        auto fnPtr = module->getMethod(item);
+        if(fnPtr)
+        {
+            lua_pushvalue(L, 1);
+            lua_pushlightuserdata(L, (void*)fnPtr);
+            lua_pushcclosure(L, lua_Instance_forwardMethod, 2);
+            return 1;
+        }
     }
     return 0;
 }
 
 int chimera::instance_pushValue(lua_State* const L)
 {
-    const void *value = (const void *)lua_touserdata(L, 2);
-    const void **item = (const void **)lua_newuserdata(L, sizeof(void *));
+    void *value = (void *)lua_touserdata(L, 2);
+    void **item = (void **)lua_newuserdata(L, sizeof(void *));
     *item = value;
     return 1;
 }
 
 int chimera::instance_deleteValue(lua_State* const L)
 {
+    ChimeraSystem* chimeraSystem = (ChimeraSystem*)(*((void**)lua_getextraspace(L)));
     void *value = (void *)lua_touserdata(L, 2);
-    lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_METATABLES);
-    lua_rawget(L, LUA_REGISTRYINDEX);
-    lua_pushvalue(L, 1);
-    if(lua_rawget(L, -2))
+    if(luaL_getmetafield(L, 1, "__modptr"))
     {
-        lua_pushstring(L, "__modptr");
-        lua_rawget(L, -2);
-        const Module *lmod = (const Module *)lua_touserdata(L, -1);
-        lmod->destroyInstance(value);
-        lmod->getChimeraSystem()->getTypeSystem()->removeDependencyItem(value);
+        Module* module = (Module *)lua_touserdata(L, -1);
+        if(chimeraSystem->getTypeSystem()->isReferenced(module))
+        {
+            EntryPoint* ep = nullptr;
+            if(luaL_getmetafield(L, 1, "__epptr"))
+            {
+                ep = (EntryPoint*)lua_touserdata(L, -1);
+            }
+            module->destroyInstance(ep, value);
+            chimeraSystem->getTypeSystem()->removeDependencyItem(value);
+        }
     }
     return 0;
 }

@@ -6,6 +6,7 @@
 //#include <chrono>
 #include <random>
 
+#include "def.hpp"
 #include "Naming.hpp"
 #include "ExtensionNaming.hpp"
 #include "StateSynchrony.hpp"
@@ -13,7 +14,6 @@
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "ParameterValueCollection.hpp"
@@ -21,6 +21,7 @@
 #include "EntryPoint.hpp"
 #include "EntryPointSystem.hpp"
 #include "ChimeraSystem.hpp"
+#include "ChimeraContext.hpp"
 #include "EntryPointBase/AbstractRandomGenerator.hpp"
 #include "EntryPointBase/AbstractRandom.hpp"
 #include "EntryPointBase/RandomModule.hpp"
@@ -54,14 +55,9 @@ const std::string UniformRandomModule::getGUID() const
     return "Uniform Distribution";
 }
 
-void UniformRandomModule::destroyInstance(void* instance) const
+void UniformRandomModule::destroyInstance(chimera::EntryPoint const * const entrypoint, void* instance) const
 {
     delete ((UniformDistribution*)instance);
-}
-
-const std::string UniformRandomModule::getVersion() const
-{
-    return "1.0.0";
 }
 
 const size_t UniformRandomModule::getType() const
@@ -92,7 +88,7 @@ chimera::simulation::AbstractRandom* UniformRandomModule::getRandomInstance(chim
         }
         if(inMax && min < max)
         {
-            return new UniformDistribution(generator, getChimeraSystem()->getTypeSystem(), min, max);
+            return new UniformDistribution(generator, getContext(), min, max);
         }
     }
     else
@@ -122,17 +118,17 @@ chimera::simulation::AbstractRandom* UniformRandomModule::getRandomInstance(chim
             }
             if(min < max)
             {
-                return new UniformDistribution(generator, getChimeraSystem()->getTypeSystem(), min, max);
+                return new UniformDistribution(generator, getContext(), min, max);
             }
         }
     }
     return nullptr;
 }
 
-UniformDistribution::UniformDistribution(chimera::simulation::AbstractRandomGenerator* generator, chimera::ParameterTypeSystem* ps, double a, double b)
+UniformDistribution::UniformDistribution(chimera::simulation::AbstractRandomGenerator* generator, chimera::ChimeraContext* context, double a, double b)
 {
     _uniRealDist = new std::uniform_real_distribution<double>(a, b);
-    ps->addDependency(this, generator);
+    context->addDependency(this, generator);
     _generator = generator;
 }
 

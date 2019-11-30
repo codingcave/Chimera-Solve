@@ -1,5 +1,8 @@
 #ifndef ICONNECTEVENTHANDLER_H
 #define ICONNECTEVENTHANDLER_H
+
+// TODO: DELETE
+
 /*
 
 typedef struct lua_State lua_State;

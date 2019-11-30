@@ -8,6 +8,7 @@
 #include <boost/numeric/ublas/vector.hpp>
 //#include "lua.hpp"
 
+#include "def.hpp"
 #include "Naming.hpp"
 #include "ExtensionNaming.hpp"
 #include "StateSynchrony.hpp"
@@ -15,7 +16,6 @@
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "extendTypes.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
@@ -24,6 +24,7 @@
 #include "EntryPoint.hpp"
 #include "EntryPointSystem.hpp"
 #include "ChimeraSystem.hpp"
+#include "ChimeraContext.hpp"
 #include "interfaces/IEventListener.hpp"
 #include "interfaces/IEventListenerProvider.hpp"
 #include "event/Observer.hpp"
@@ -43,12 +44,12 @@
 namespace ublas = boost::numeric::ublas;
 
 RungeKutta_double_vecDouble::RungeKutta_double_vecDouble(
-        chimera::ParameterTypeSystem* ps,
+        chimera::ChimeraContext* context,
         chimera::EntryPoint* init,
         chimera::simulation::TemplateOdeSystem<double, ublas::vector<double> > * system,
         double dt
     ):
-    _ps(ps),
+    _context(context),
     _init((size_t)init)
 {
     //ctor
@@ -56,8 +57,8 @@ RungeKutta_double_vecDouble::RungeKutta_double_vecDouble(
     _rk = new odeint::runge_kutta4<ublas::vector<double> >();
     _dt = dt;
     _system = new RungeKuttaSystem<double, boost::numeric::ublas::vector<double> >(system);
-    ps->addDependency(this, system);
-    ps->addDependency(this, init);
+    _context->addDependency(this, system);
+    _context->addDependency(this, init);
     _time = 0;
     int length = system->getFeatures()[chimera::simulation::Naming::Feature_size];
     _state = new ublas::vector<double>(length);
@@ -65,6 +66,7 @@ RungeKutta_double_vecDouble::RungeKutta_double_vecDouble(
 
 RungeKutta_double_vecDouble::~RungeKutta_double_vecDouble()
 {
+    _context->removeDependencyItem(this);
     delete _rk;
     delete _state;
     delete _system;
@@ -78,7 +80,7 @@ size_t RungeKutta_double_vecDouble::getTimeType() const
 size_t RungeKutta_double_vecDouble::getStateType() const
 {
     static const std::string vectorRealMetaName = std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER);
-    return _ps->getParameterID(vectorRealMetaName);
+    return _context->getParameterID(vectorRealMetaName);
 }
 
 //double * RungeKutta::getTime()
@@ -91,7 +93,7 @@ void * RungeKutta_double_vecDouble::currentTime()
 void * RungeKutta_double_vecDouble::currentState()
 {
     auto state = new struct chimera::simulation::T_VectorDef({_state->size(), true, false, _state});
-    _ps->addDependency(state, this);
+    _context->addDependency(state, this);
     return state;
 }
 
@@ -119,7 +121,7 @@ void RungeKutta_double_vecDouble::initialize(chimera::vec_t_LuaItem args)
                     }
                 }
             }
-            else if(args[1].getType() == chimera::systemtypes::PID_INSTANCE && _ps->getParameterTag(args[1].getType() == _init))
+            else if(args[1].getType() == chimera::systemtypes::PID_INSTANCE && _context->getParameterTag(args[1].getType() == _init))
             {
                 chimera::simulation::AbstractInitializer* init = (chimera::simulation::AbstractInitializer*)args[1].getValue();
                 init->initialize((chimera::simulation::AbstractSystemDynamic*)_system->getSystem(), _state);
@@ -138,7 +140,7 @@ void RungeKutta_double_vecDouble::initialize(chimera::vec_t_LuaItem args)
                         (*_state)[i] = (*newState)[i];
                     }
                 }
-            } else if(args[0].getType() == chimera::systemtypes::PID_INSTANCE && _ps->getParameterTag(args[0].getType() == _init)) {
+            } else if(args[0].getType() == chimera::systemtypes::PID_INSTANCE && _context->getParameterTag(args[0].getType() == _init)) {
                 chimera::simulation::AbstractInitializer* init = (chimera::simulation::AbstractInitializer*)args[0].getValue();
                 init->initialize((chimera::simulation::AbstractSystemDynamic*)_system->getSystem(), _state);
             }

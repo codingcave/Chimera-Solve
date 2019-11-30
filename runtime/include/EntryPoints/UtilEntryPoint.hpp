@@ -11,7 +11,6 @@ namespace chimera {
                 UtilEntryPoint();
                 virtual ~UtilEntryPoint();
                 virtual const std::string getGUID() const override;
-                virtual const std::string getVersion() const override;
         };
 
     }

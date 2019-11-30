@@ -8,7 +8,6 @@ class RotationalCoupling2DModule:
     public:
         RotationalCoupling2DModule();
         virtual ~RotationalCoupling2DModule();
-        virtual const std::string getVersion() const override;
         virtual AbstractCoupling* getCoupling(chimera::vec_t_LuaItem& parameters) const override;
         virtual const std::string getGUID() const override;
     protected:

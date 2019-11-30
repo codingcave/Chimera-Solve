@@ -6,13 +6,13 @@
 #include <vector>
 #include <list>
 
+#include "def.hpp"
 #include "ExtensionNaming.hpp"
 #include "StateSynchrony.hpp"
 #include "interfaces/ILogger.hpp"
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "ParameterValueCollection.hpp"
@@ -30,17 +30,17 @@
 #include "event/NotificationManager.hpp"
 #include "EntryPointBase/ObserverModule.hpp"
 
-static chimera::vec_t_LuaItem instance_function_on(chimera::Module const * const module, void* instance, const chimera::vec_t_LuaItem& params)
+static chimera::vec_t_LuaItem instance_function_on(chimera::EntryPoint const * const entrypoint, chimera::Module const * const module, void* instance, const chimera::vec_t_LuaItem& params)
 {
     chimera::simulation::AbstractEventManager* evm = (chimera::simulation::AbstractEventManager*)instance;
     if(params.size() == 2)
     {
         if (params[0].getType() == chimera::systemtypes::PID_STRING) {
-            if(params[1].getFlag(chimera::simulation::Naming::Flag_MultiObserver))
+            if(params[1].getAttribute(chimera::simulation::Naming::Attribute_MultiObserver))
             {
                 chimera::simulation::IEventListenerProvider* provider = (chimera::simulation::IEventListenerProvider*)params[1].getValue();
                 evm->addListener(params[0], provider);
-            } else if(params[1].getFlag(chimera::simulation::Naming::Flag_Observer))
+            } else if(params[1].getAttribute(chimera::simulation::Naming::Attribute_Observer))
             {
                 chimera::simulation::IEventListener* listener = (chimera::simulation::IEventListener*)params[1].getValue();
                 evm->addListener(params[0], listener);
@@ -51,13 +51,13 @@ static chimera::vec_t_LuaItem instance_function_on(chimera::Module const * const
     return chimera::vec_t_LuaItem();
 }
 
-static chimera::vec_t_LuaItem instance_function_observe(chimera::Module const * const, void* instance, const chimera::vec_t_LuaItem& params)
+static chimera::vec_t_LuaItem instance_function_observe(chimera::EntryPoint const * const entrypoint, chimera::Module const * const, void* instance, const chimera::vec_t_LuaItem& params)
 {
     if (params.size() > 0) {
         chimera::simulation::AbstractEventManager* evm = (chimera::simulation::AbstractEventManager*)instance;
         chimera::simulation::NotificationManager* nm;
 
-        if(params[0].getFlag(chimera::simulation::Naming::Flag_Observable))
+        if(params[0].getAttribute(chimera::simulation::Naming::Attribute_Observable))
         {
             nm = (chimera::simulation::NotificationManager*)params[0].getValue();
             evm->assignObservation(nm);
@@ -78,15 +78,15 @@ chimera::simulation::ObserverModule::~ObserverModule()
 
 }
 
-void* chimera::simulation::ObserverModule::getInstance(chimera::vec_t_LuaItem& parameters) const
+void* chimera::simulation::ObserverModule::getInstance(chimera::EntryPoint const * const entrypoint, chimera::vec_t_LuaItem& parameters) const
 {
     return (void*)getEventInstance(parameters);
 }
 
-size_t chimera::simulation::ObserverModule::getFlag(const std::string& flag) const
+size_t chimera::simulation::ObserverModule::getAttribute(const std::string& attr) const
 {
-    if (flag == chimera::simulation::Naming::Flag_Observable ||
-        flag == chimera::simulation::Naming::Flag_MultiObserver)
+    if (attr == chimera::simulation::Naming::Attribute_Observable ||
+        attr == chimera::simulation::Naming::Attribute_MultiObserver)
     {
         return 1;
     }

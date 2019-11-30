@@ -7,11 +7,11 @@
 
 //#include "interfaces/EventHandler/IParameterTypeEventHandler.hpp"
 //#include "RuntimeNames.hpp"
+#include "def.hpp"
 #include "ExtensionNaming.hpp"
 #include "StateSynchrony.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "ParameterValueCollection.hpp"
@@ -42,11 +42,6 @@ const std::string chimera::runtime::OutputEntryPoint::getGUID() const
     return chimera::simulation::Naming::EntryPoint_output;
 }
 
-const std::string chimera::runtime::OutputEntryPoint::getVersion() const
-{
-    return "1.0.0";
-}
-
 bool chimera::runtime::OutputEntryPoint::checkModule(chimera::Module const * const module) const
 {
     const chimera::simulation::OutputModule* ireg = dynamic_cast<const chimera::simulation::OutputModule*>(module);
@@ -56,7 +51,7 @@ bool chimera::runtime::OutputEntryPoint::checkModule(chimera::Module const * con
     return mireg != nullptr;
 }
 
-void chimera::runtime::OutputEntryPoint::init(lua_State* L)
+void chimera::runtime::OutputEntryPoint::init()
 {
 
 }

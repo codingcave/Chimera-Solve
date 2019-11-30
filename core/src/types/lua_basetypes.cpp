@@ -5,22 +5,15 @@
 #include <vector>
 #include "lua.hpp"
 
-#include "StateSynchrony.hpp"
+#include "def.hpp"
 #include "Naming.hpp"
-#include "types/lua_basetypes.hpp"
+#include "StateSynchrony.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
-//#include "interfaces/IConnectEventHandler.hpp"
-#include "interfaces/ILogger.hpp"
-#include "LoggingSystem.hpp"
-#include "ParameterValueCollection.hpp"
-#include "Module.hpp"
-#include "EntryPoint.hpp"
-#include "EntryPointSystem.hpp"
 #include "ChimeraSystem.hpp"
+#include "types/lua_basetypes.hpp"
 
 int chimera::luat_UserData_push(lua_State* const L)
 {
@@ -67,10 +60,7 @@ int chimera::luat_real_delete(lua_State* const L)
 int chimera::luat_table_push(lua_State* const L)
 {
     const void *value = (const void *)lua_touserdata(L, 2);
-    lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
-    lua_gettable(L, LUA_REGISTRYINDEX);
-    ChimeraSystem* chSys = (ChimeraSystem*)lua_touserdata(L, -1);
-    lua_pop(L, 1);
+    ChimeraSystem* chimeraSystem = (ChimeraSystem*)(*((void**)lua_getextraspace(L)));
 
     map_t_LuaItem* table = (map_t_LuaItem*)value;
 
@@ -78,7 +68,7 @@ int chimera::luat_table_push(lua_State* const L)
     for(auto item : *table)
     {
         lua_pushstring(L, item.first.c_str());
-        chSys->getTypeSystem()->pushValue(L, {item.second.getType(), item.second.getValue()});
+        chimeraSystem->getTypeSystem()->pushValue(L, item.second.getType(), item.second.getValue());
         lua_rawset(L, -3);
     }
     return 1;
@@ -111,7 +101,6 @@ int chimera::luat_pointer_push(lua_State* const L)
     return 1;
 }
 
-
 int chimera::luat_function_push(lua_State* const L)
 {
     const void *value = (const void *)lua_touserdata(L, 2);
@@ -121,21 +110,18 @@ int chimera::luat_function_push(lua_State* const L)
 
 int chimera::luat_luafunction_call(lua_State* L)
 {
-    lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
-    lua_gettable(L, LUA_REGISTRYINDEX);
-    ChimeraSystem* chSys = (ChimeraSystem*)lua_touserdata(L, -1);
-    lua_pop(L, 1);
+    ChimeraSystem* chimeraSystem = (ChimeraSystem*)(*((void**)lua_getextraspace(L)));
     LuaFunctionWrapper* obj = *((LuaFunctionWrapper**)lua_touserdata(L, 1));
     vec_t_LuaItem items;
     for(int i = 2; i <= lua_gettop(L); i++)
     {
-        items.push_back(chSys->getTypeSystem()->getValue(L, i));
+        items.push_back(chimeraSystem->getTypeSystem()->getValue(L, i));
     }
 
     vec_t_LuaItem result = (*obj)(items);
     for(auto it : result)
     {
-        chSys->getTypeSystem()->pushValue(L, {it.getType(), it.getValue()});
+        chimeraSystem->getTypeSystem()->pushValue(L, it.getType(), it.getValue());
     }
     return result.size();
 }
@@ -156,7 +142,7 @@ int chimera::luat_luafunction_push(lua_State* const L)
     const LuaFunctionWrapper *value = (const LuaFunctionWrapper *)lua_touserdata(L, 2);
     lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_FUNCTIONS);
     lua_rawget(L, LUA_REGISTRYINDEX);
-    lua_pushlightuserdata(L, (void*)value->getOrigin());
+    lua_pushlightuserdata(L, (void*)value->_origin);
 
     //LuaFunctionWrapper* obj = (LuaFunctionWrapper*)value;
     if(!lua_rawget(L, -2))
@@ -164,7 +150,7 @@ int chimera::luat_luafunction_push(lua_State* const L)
         lua_pop(L, 1);
         LuaFunctionWrapper **item = (LuaFunctionWrapper**)lua_newuserdata(L, sizeof(LuaFunctionWrapper *));
         *item = (LuaFunctionWrapper*)value;
-        lua_pushlightuserdata(L, (void*)value->getOrigin());
+        lua_pushlightuserdata(L, (void*)value->_origin);
         lua_pushvalue(L, -2);
         lua_rawset(L, -4);
     }
@@ -177,7 +163,7 @@ int chimera::luat_luafunction_delete(lua_State* const L)
     if(fw->intern()) {
         lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_FUNCTIONS);
         lua_rawget(L, LUA_REGISTRYINDEX);
-        lua_pushlightuserdata(L, (void*)fw->getOrigin());
+        lua_pushlightuserdata(L, (void*)fw->_origin);
         lua_pushnil(L);
         lua_rawset(L, -3);
     }

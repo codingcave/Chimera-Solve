@@ -6,14 +6,14 @@
 //#include <complex>
 #include "lua.hpp"
 
-#include "StateSynchrony.hpp"
+#include "def.hpp"
 #include "Naming.hpp"
 #include "RuntimeNames.hpp"
+#include "StateSynchrony.hpp"
 #include "interfaces/ILogger.hpp"
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "TypeLookup.hpp"
@@ -87,12 +87,10 @@ int chimera::runtime::types::lua_matrix_new(lua_State* const L)
         return 0;
     }
 
-    lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
-    lua_gettable(L, LUA_REGISTRYINDEX);
-    chimera::runtime::ChimeraRuntime* chSys = (chimera::runtime::ChimeraRuntime*)lua_touserdata(L, -1);
+    ChimeraRuntime* chimeraSystem = (ChimeraRuntime*)(*((void**)lua_getextraspace(L)));
 
-    size_t innerType = chSys->getTypeSystem()->getParameterType(L, 4);
-    size_t metaType = chSys->getTypeLookup()->findType(meta_pid_matrix, innerType);
+    size_t innerType = chimeraSystem->getTypeSystem()->getParameterType(L, 4);
+    size_t metaType = chimeraSystem->getTypeLookup()->findType(meta_pid_matrix, innerType);
 
     if(metaType != 0)
     {

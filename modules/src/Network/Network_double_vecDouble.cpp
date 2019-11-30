@@ -6,6 +6,7 @@
 #include <list>
 #include <boost/numeric/ublas/vector.hpp>
 
+#include "def.hpp"
 #include "Naming.hpp"
 #include "ExtensionNaming.hpp"
 #include "StateSynchrony.hpp"
@@ -13,7 +14,6 @@
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "extendTypes.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
@@ -22,6 +22,7 @@
 #include "EntryPoint.hpp"
 #include "EntryPointSystem.hpp"
 #include "ChimeraSystem.hpp"
+#include "ChimeraContext.hpp"
 #include "EntryPointBase/SystemDynamicModule.hpp"
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/TemplateOdeSystem.hpp"
@@ -32,14 +33,14 @@
 #include "Network/CouplingEntryPoint.hpp"
 #include "Network/Network_double_vecDouble.hpp"
 
-Network_double_vecDouble::Network_double_vecDouble(chimera::ParameterTypeSystem* ps, chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >* unit, const int& number, TemplateCoupling<double, boost::numeric::ublas::vector<double> >* coupling):
-    _ps(ps)
+Network_double_vecDouble::Network_double_vecDouble(chimera::ChimeraContext* context, chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >* unit, const int& number, TemplateCoupling<double, boost::numeric::ublas::vector<double> >* coupling):
+    _context(context)
 {
     _unitSys = unit;
     _number = number;
     _coupling = coupling;
-    ps->addDependency(this, unit);
-    ps->addDependency(this, coupling);
+    _context->addDependency(this, unit);
+    _context->addDependency(this, coupling);
     auto unitFeatures = _unitSys->getFeatures();
     auto unitSize = unitFeatures.find(chimera::simulation::Naming::Feature_size);
     _tmp = nullptr;
@@ -52,6 +53,7 @@ Network_double_vecDouble::Network_double_vecDouble(chimera::ParameterTypeSystem*
 
 Network_double_vecDouble::~Network_double_vecDouble()
 {
+    _context->removeDependencyItem(this);
     if(_tmp) delete _tmp;
 }
 
@@ -78,7 +80,7 @@ std::unordered_map<std::string, size_t> Network_double_vecDouble::getFeatures() 
     std::unordered_map<std::string, size_t> features;
     static const std::string vectorRealMetaName = (std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
     features[chimera::simulation::Naming::Feature_time_type] = chimera::systemtypes::PID_NUMBER;
-    features[chimera::simulation::Naming::Feature_state_type] = _ps->getParameterID(vectorRealMetaName);
+    features[chimera::simulation::Naming::Feature_state_type] = _context->getParameterID(vectorRealMetaName);
     features[chimera::simulation::Naming::Feature_size] = _number;
 
     auto unitFeatures = _unitSys->getFeatures();

@@ -8,6 +8,7 @@
 #include <complex>
 #include "lua.hpp"
 
+#include "def.hpp"
 #include "Naming.hpp"
 #include "RuntimeNames.hpp"
 #include "ExtensionNaming.hpp"
@@ -16,7 +17,6 @@
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "TypeLookup.hpp"
@@ -25,6 +25,7 @@
 #include "EntryPoint.hpp"
 #include "EntryPointSystem.hpp"
 #include "ChimeraSystem.hpp"
+#include "ChimeraContext.hpp"
 #include "types/lua_static.hpp"
 #include "lua/lua_math.hpp"
 #include "lua/types/lua_complex.hpp"
@@ -130,9 +131,9 @@ chimera::runtime::ChimeraRuntime::ChimeraRuntime(const std::string& filename, st
     getEntryPointSystem()->addEntryPoint(chimera::simulation::Naming::EntryPoint_util, _util);
 
     // TODO (kekstoaster#1#): replace string with const
-    _pid_vector = registerParameter(chimera::simulation::Naming::Type_Vector, {types::luat_vector_init, nullptr, nullptr, nullptr});
-    _pid_matrix = registerParameter(chimera::simulation::Naming::Type_Matrix, {types::luat_matrix_init, nullptr, nullptr, nullptr});
-    _pid_matrixrow = registerParameter(chimera::simulation::Naming::Type_MatrixRow, {types::luat_matrixrow_init, nullptr, types::luat_matrixrow_delete, nullptr});
+    _pid_vector = getContext()->registerParameter(chimera::simulation::Naming::Type_Vector, {types::luat_vector_init, nullptr, nullptr, nullptr});
+    _pid_matrix = getContext()->registerParameter(chimera::simulation::Naming::Type_Matrix, {types::luat_matrix_init, nullptr, nullptr, nullptr});
+    _pid_matrixrow = getContext()->registerParameter(chimera::simulation::Naming::Type_MatrixRow, {types::luat_matrixrow_init, nullptr, types::luat_matrixrow_delete, nullptr});
 
     _lookup->addTypeLookup(_pid_vector);
     _lookup->addTypeLookup(_pid_matrix);
@@ -197,7 +198,7 @@ chimera::runtime::ChimeraRuntime::ChimeraRuntime(const std::string& filename, st
     //push_random_library(L);
     //lua_rawset(L, -3);
 
-    _pid_complex = registerParameter(chimera::simulation::Naming::Type_Complex, {types::luat_complex_init, chimera::luat_UserData_push, types::luat_complex_delete, nullptr});
+    _pid_complex = getContext()->registerParameter(chimera::simulation::Naming::Type_Complex, {types::luat_complex_init, chimera::luat_UserData_push, types::luat_complex_delete, nullptr});
     lua_pushstring(L, Naming::Lua_global_math);
     push_math_library(L, _pid_complex);
     lua_rawset(L, -3);
@@ -254,10 +255,10 @@ chimera::runtime::ChimeraRuntime::ChimeraRuntime(const std::string& filename, st
     lua_setmetatable(L, -2);  // set meta table for argv
     lua_rawset(L, -3);  // set argv
 
-    std::unordered_map<std::string, size_t> simulationFlags;
-    simulationFlags[chimera::simulation::Naming::Flag_Observable] = 1;
+    std::unordered_map<std::string, size_t> simulationAttributes;
+    simulationAttributes[chimera::simulation::Naming::Attribute_Observable] = 1;
 
-    registerParameter(chimera::simulation::Naming::Type_Simulation, {nullptr, nullptr, luat_Simulation_delete, nullptr}, simulationFlags);
+    getContext()->registerParameter(chimera::simulation::Naming::Type_Simulation, {nullptr, nullptr, luat_Simulation_delete, nullptr}, simulationAttributes);
 
     lua_settop(L, 0);
 }
@@ -304,7 +305,7 @@ size_t chimera::runtime::ChimeraRuntime::registerVector(const size_t& subtype, c
             std::string name(chimera::simulation::Naming::Type_Vector);
             name += "#";
             name += getTypeSystem()->getParameterName(subtype);
-            return registerParameter(name, pdef, _pid_vector, subtype);
+            return getContext()->registerParameter(name, pdef, _pid_vector, subtype);
         }
 #warning LOG (kekstoaster#1#): Vector type already exists
     }
@@ -326,8 +327,8 @@ size_t chimera::runtime::ChimeraRuntime::registerMatrix(const size_t& subtype, c
             nameMatrixrow += "#";
             nameMatrixrow += getTypeSystem()->getParameterName(subtype);
 
-            int mId = registerParameter(nameMatrix, pdef, _pid_matrix, subtype);
-            registerParameter(nameMatrixrow, {nullptr, nullptr, types::luat_matrixrow_delete, nullptr}, _pid_matrixrow, subtype);
+            int mId = getContext()->registerParameter(nameMatrix, pdef, _pid_matrix, subtype);
+            getContext()->registerParameter(nameMatrixrow, {nullptr, nullptr, types::luat_matrixrow_delete, nullptr}, _pid_matrixrow, subtype);
             return mId;
         }
 #warning LOG (kekstoaster#1#): Matrix type already exists

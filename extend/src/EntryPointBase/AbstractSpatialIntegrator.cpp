@@ -3,9 +3,9 @@
 #include <vector>
 #include <list>
 
+#include "def.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/AbstractIntegrator.hpp"
 #include "EntryPointBase/AbstractSpatialIntegrator.hpp"

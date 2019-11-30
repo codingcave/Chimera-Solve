@@ -7,6 +7,7 @@
 #include <boost/numeric/ublas/vector.hpp>
 #include "lua.hpp"
 
+#include "def.hpp"
 #include "Naming.hpp"
 #include "extendTypes.hpp"
 #include "ExtensionNaming.hpp"
@@ -15,7 +16,6 @@
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "ParameterValueCollection.hpp"
@@ -23,6 +23,7 @@
 #include "EntryPoint.hpp"
 #include "EntryPointSystem.hpp"
 #include "ChimeraSystem.hpp"
+#include "ChimeraContext.hpp"
 #include "interfaces/IEventListener.hpp"
 #include "interfaces/IEventListenerProvider.hpp"
 #include "event/Observer.hpp"
@@ -90,12 +91,7 @@ CsvFileModule::~CsvFileModule()
     //dtor
 }
 
-const std::string CsvFileModule::getVersion() const
-{
-    return "1.0.0";
-}
-
-void CsvFileModule::destroyInstance(void * const instance) const
+void CsvFileModule::destroyInstance(chimera::EntryPoint const * const entrypoint, void * const instance) const
 {
     //delete (CsvFileWriter*)instance;
     //delete (TemplateIntegrator
@@ -114,13 +110,13 @@ chimera::simulation::IEventListenerProvider* CsvFileModule::getOutputInstance(ch
             if(pathItem != paramMap->end())
             {
                 std::string* path = (std::string*)pathItem->second.getValue();
-                return new CsvFileWriter(getChimeraSystem()->getTypeSystem(), *path);
+                return new CsvFileWriter(getContext(), *path);
             }
         }
         else if(parameters[0].getType() == chimera::systemtypes::PID_STRING)
         {
             std::string* path = (std::string*)parameters[0].getValue();
-            return new CsvFileWriter(getChimeraSystem()->getTypeSystem(), *path);
+            return new CsvFileWriter(getContext(), *path);
         }
     }
     return nullptr;
@@ -131,8 +127,8 @@ const std::string CsvFileModule::getGUID() const
     return "file:CSV";
 }
 
-CsvFileWriter::CsvFileWriter(chimera::ParameterTypeSystem* ps, const std::string& path):
-    _ps(ps),
+CsvFileWriter::CsvFileWriter(chimera::ChimeraContext* context, const std::string& path):
+    _context(context),
     _path(path)
 {
     _file = nullptr;
@@ -166,10 +162,10 @@ const std::string CsvFileWriter::getPath() const
 
 chimera::simulation::IEventListener* CsvFileWriter::provideListener(size_t id, void const * const args)
 {
-    static const size_t pid_vecReal = _ps->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
-    static const size_t pid_vecvecReal = _ps->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
-    static const size_t pid_vecComplex = _ps->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Complex));
-    static const size_t pid_vecvecComplex = _ps->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Complex));
+    static const size_t pid_vecReal = _context->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
+    static const size_t pid_vecvecReal = _context->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
+    static const size_t pid_vecComplex = _context->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Complex));
+    static const size_t pid_vecvecComplex = _context->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Complex));
 
     switch(id){
     case 1: // StateEventListener

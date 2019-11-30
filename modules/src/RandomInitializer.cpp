@@ -5,6 +5,7 @@
 #include <vector>
 #include <boost/numeric/ublas/vector.hpp>
 
+#include "def.hpp"
 #include "Naming.hpp"
 #include "ExtensionNaming.hpp"
 #include "StateSynchrony.hpp"
@@ -12,7 +13,6 @@
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "ParameterValueCollection.hpp"
@@ -20,6 +20,7 @@
 #include "EntryPoint.hpp"
 #include "EntryPointSystem.hpp"
 #include "ChimeraSystem.hpp"
+#include "ChimeraContext.hpp"
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/AbstractInitializer.hpp"
 #include "EntryPointBase/AbstractRandom.hpp"
@@ -56,19 +57,14 @@ const std::string RandomInitializerModule::getGUID() const
     return "Random Initializer";
 }
 
-void RandomInitializerModule::destroyInstance(void * const instance) const
+void RandomInitializerModule::destroyInstance(chimera::EntryPoint const * const entrypoint, void * const instance) const
 {
     delete (chimera::simulation::AbstractInitializer*)instance;
 }
 
-const std::string RandomInitializerModule::getVersion() const
-{
-    return "1.0.0";
-}
-
 chimera::simulation::AbstractInitializer* RandomInitializerModule::getInitializerInstance(chimera::vec_t_LuaItem& parameters) const
 {
-    size_t randomEntryPoint = (size_t)getChimeraSystem()->getEntryPointSystem()->getEntryPoint(chimera::simulation::Naming::EntryPoint_random);
+    size_t randomEntryPoint = (size_t)getContext()->getEntryPoint(chimera::simulation::Naming::EntryPoint_random);
     if(randomEntryPoint != 0)
     {
         if(parameters.size() == 1 && parameters[0].getType() == chimera::systemtypes::PID_TABLE)
@@ -76,36 +72,36 @@ chimera::simulation::AbstractInitializer* RandomInitializerModule::getInitialize
             chimera::map_t_LuaItem* paramMap = (chimera::map_t_LuaItem*)parameters[0].getValue();
             for(auto p : *paramMap)
             {
-                if(p.first == "engine" && getChimeraSystem()->getTypeSystem()->getParameterBase(p.second.getType()) == chimera::systemtypes::PID_INSTANCE && getChimeraSystem()->getTypeSystem()->getParameterTag(p.second.getType()) == randomEntryPoint)
+                if(p.first == "engine" && getContext()->getParameterBase(p.second.getType()) == chimera::systemtypes::PID_INSTANCE && getContext()->getParameterTag(p.second.getType()) == randomEntryPoint)
                 {
-                    return new RandomInitializer(getChimeraSystem()->getTypeSystem(), (chimera::simulation::AbstractRandom*)p.second.getValue());
+                    return new RandomInitializer(getContext(), (chimera::simulation::AbstractRandom*)p.second.getValue());
                 }
             }
         }
-        else if(parameters.size() == 1 && getChimeraSystem()->getTypeSystem()->getParameterBase(parameters[0].getType()) == chimera::systemtypes::PID_INSTANCE && getChimeraSystem()->getTypeSystem()->getParameterTag(parameters[0].getType()) == randomEntryPoint)
+        else if(parameters.size() == 1 && getContext()->getParameterBase(parameters[0].getType()) == chimera::systemtypes::PID_INSTANCE && getContext()->getParameterTag(parameters[0].getType()) == randomEntryPoint)
         {
-            return new RandomInitializer(getChimeraSystem()->getTypeSystem(), (chimera::simulation::AbstractRandom*)parameters[0].getValue());
+            return new RandomInitializer(getContext(), (chimera::simulation::AbstractRandom*)parameters[0].getValue());
         }
     }
     return nullptr;
 }
 
-RandomInitializer::RandomInitializer(chimera::ParameterTypeSystem* ps, chimera::simulation::AbstractRandom* random)
+RandomInitializer::RandomInitializer(chimera::ChimeraContext* context, chimera::simulation::AbstractRandom* random)
 {
-    _ps = ps;
+    _context = context;
     _random = random;
-    _ps->addDependency(this, random);
+    _context->addDependency(this, random);
 }
 
 RandomInitializer::~RandomInitializer()
 {
-
+    _context->removeDependencyItem(this);
 }
 
 void RandomInitializer::initialize(chimera::simulation::AbstractSystemDynamic* system, void* state)
 {
-    static const size_t pid_vecReal = _ps->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
-    static const size_t pid_vecvecReal = _ps->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
+    static const size_t pid_vecReal = _context->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
+    static const size_t pid_vecvecReal = _context->getParameterID(std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
 
     std::unordered_map<std::string, size_t> features = system->getFeatures();
     auto stateType = features.find(chimera::simulation::Naming::Feature_state_type);

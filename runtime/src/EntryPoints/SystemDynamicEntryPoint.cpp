@@ -7,11 +7,11 @@
 
 //#include "interfaces/EventHandler/IParameterTypeEventHandler.hpp"
 //#include "RuntimeNames.hpp"
+#include "def.hpp"
 #include "ExtensionNaming.hpp"
 #include "StateSynchrony.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "ParameterValueCollection.hpp"
@@ -41,18 +41,13 @@ const std::string chimera::runtime::SystemDynamicEntryPoint::getGUID() const
     return chimera::simulation::Naming::EntryPoint_dynamics;
 }
 
-const std::string chimera::runtime::SystemDynamicEntryPoint::getVersion() const
-{
-    return "1.0.0";
-}
-
 bool chimera::runtime::SystemDynamicEntryPoint::checkModule(chimera::Module const * const module) const
 {
     const chimera::simulation::SystemDynamicModule* ireg = dynamic_cast<const chimera::simulation::SystemDynamicModule*>(module);
     return ireg != nullptr;
 }
 
-void chimera::runtime::SystemDynamicEntryPoint::init(lua_State* L)
+void chimera::runtime::SystemDynamicEntryPoint::init()
 {
     //setValue("use", {ParameterTypeSystem::getParameterID(Naming::Type_function), (void*)lua_sysdyn_use});
 }

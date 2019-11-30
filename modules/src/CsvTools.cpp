@@ -10,6 +10,7 @@
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/tokenizer.hpp>
 
+#include "def.hpp"
 #include "Naming.hpp"
 #include "ExtensionNaming.hpp"
 #include "extendTypes.hpp"
@@ -18,7 +19,6 @@
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "ParameterValueCollection.hpp"
@@ -26,6 +26,7 @@
 #include "EntryPoint.hpp"
 #include "EntryPointSystem.hpp"
 #include "ChimeraSystem.hpp"
+#include "ChimeraContext.hpp"
 #include "CsvTools.hpp"
 
 namespace ublas = boost::numeric::ublas;
@@ -54,7 +55,7 @@ CsvToolsModule::CsvToolsModule()
     registerMethod("write", fn_CsvTools_write);
 }
 
-void* CsvToolsModule::getInstance(chimera::vec_t_LuaItem& parameters) const
+void* CsvToolsModule::getInstance(chimera::EntryPoint const * const entrypoint, chimera::vec_t_LuaItem& parameters) const
 {
     bool inFile = false;
     std::string file;
@@ -93,14 +94,9 @@ const std::string CsvToolsModule::getGUID() const
     return "CsvTools";
 }
 
-void CsvToolsModule::destroyInstance(void* instance) const
+void CsvToolsModule::destroyInstance(chimera::EntryPoint const * const entrypoint, void* instance) const
 {
     delete ((CsvTools*)instance);
-}
-
-const std::string CsvToolsModule::getVersion() const
-{
-    return "1.0.0";
 }
 
 CsvTools::CsvTools(std::string filename, std::string delimiter)
@@ -119,7 +115,7 @@ std::string CsvTools::getFilename() const
     return _filename;
 }
 
-chimera::vec_t_LuaItem fn_CsvTools_load(chimera::Module const * const module, void* instance, const chimera::vec_t_LuaItem& params)
+chimera::vec_t_LuaItem fn_CsvTools_load(chimera::EntryPoint const * const entrypoint, chimera::Module const * const module, void* instance, const chimera::vec_t_LuaItem& params)
 {
     const int INIT_ROWS = 10;
     const int MAX_GROW = 1000;
@@ -212,30 +208,30 @@ chimera::vec_t_LuaItem fn_CsvTools_load(chimera::Module const * const module, vo
         data->resize(lineCount, true);
         struct chimera::simulation::T_VectorDef* vd = new struct chimera::simulation::T_VectorDef({data->size(), false, false, data});
         const std::string vectorVectorRealMetaName = std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER);
-        size_t type = module->getChimeraSystem()->getTypeSystem()->getParameterID(vectorVectorRealMetaName);
+        size_t type = module->getContext()->getParameterID(vectorVectorRealMetaName);
 
-        chimera::ParameterValue p = module->getChimeraSystem()->getTypeSystem()->createValue(type, vd);
+        chimera::ParameterValue p = module->getContext()->createValue(type, vd);
         result.push_back(p);
         //std::cout << "Load file " << ct->getFilename() << "\n" << std::endl;
     }
     return result;
 }
 
-chimera::vec_t_LuaItem fn_CsvTools_save(chimera::Module const * const, void* instance, const chimera::vec_t_LuaItem& params)
+chimera::vec_t_LuaItem fn_CsvTools_save(chimera::EntryPoint const * const entrypoint, chimera::Module const * const, void* instance, const chimera::vec_t_LuaItem& params)
 {
     CsvTools* ct = (CsvTools*)instance;
     std::cout << "Load file " << ct->getFilename() << "\n" << std::endl;
     return chimera::vec_t_LuaItem();
 }
 
-chimera::vec_t_LuaItem fn_CsvTools_read(chimera::Module const * const, void* instance, const chimera::vec_t_LuaItem& params)
+chimera::vec_t_LuaItem fn_CsvTools_read(chimera::EntryPoint const * const entrypoint, chimera::Module const * const, void* instance, const chimera::vec_t_LuaItem& params)
 {
     CsvTools* ct = (CsvTools*)instance;
     std::cout << "Load file " << ct->getFilename() << "\n" << std::endl;
     return chimera::vec_t_LuaItem();
 }
 
-chimera::vec_t_LuaItem fn_CsvTools_write(chimera::Module const * const, void* instance, const chimera::vec_t_LuaItem& params)
+chimera::vec_t_LuaItem fn_CsvTools_write(chimera::EntryPoint const * const entrypoint, chimera::Module const * const, void* instance, const chimera::vec_t_LuaItem& params)
 {
     CsvTools* ct = (CsvTools*)instance;
     std::cout << "Load file " << ct->getFilename() << "\n" << std::endl;

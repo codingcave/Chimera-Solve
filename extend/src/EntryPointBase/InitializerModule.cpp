@@ -4,11 +4,11 @@
 #include <vector>
 #include <list>
 
+#include "def.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
-#include "ParameterValueCollection.hpp"
 #include "StateSynchrony.hpp"
+#include "ParameterValueCollection.hpp"
 #include "Module.hpp"
 #include "interfaces/IEventListener.hpp"
 #include "event/Observer.hpp"
@@ -28,7 +28,7 @@ chimera::simulation::InitializerModule::~InitializerModule()
     //dtor
 }
 
-void* chimera::simulation::InitializerModule::getInstance(chimera::vec_t_LuaItem& parameters) const
+void* chimera::simulation::InitializerModule::getInstance(chimera::EntryPoint const * const entrypoint, chimera::vec_t_LuaItem& parameters) const
 {
     return (void*)getInitializerInstance(parameters);
 }

@@ -7,6 +7,7 @@
 #include <boost/numeric/ublas/vector.hpp>
 #include <complex>
 
+#include "def.hpp"
 #include "Naming.hpp"
 #include "ExtensionNaming.hpp"
 #include "StateSynchrony.hpp"
@@ -14,7 +15,6 @@
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "extendTypes.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
@@ -23,7 +23,7 @@
 #include "EntryPoint.hpp"
 #include "EntryPointSystem.hpp"
 #include "ChimeraSystem.hpp"
-
+#include "ChimeraContext.hpp"
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/TemplateOdeSystem.hpp"
 #include "Network/INetwork.hpp"
@@ -62,7 +62,10 @@ NetworkModule::NetworkModule()
 
 NetworkModule::~NetworkModule()
 {
-
+    if(_ep != nullptr)
+    {
+        delete _ep;
+    }
 }
 
 const std::string NetworkModule::getGUID() const
@@ -79,7 +82,7 @@ chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<dou
     type = param.getType();
     tagtype = (size_t)_callingEP;
 
-    if(getChimeraSystem()->getTypeSystem()->getParameterBase(type) == basetype && getChimeraSystem()->getTypeSystem()->getParameterTag(type) == tagtype)
+    if(getContext()->getParameterBase(type) == basetype && getContext()->getParameterTag(type) == tagtype)
     {
         chimera::simulation::AbstractSystemDynamic* sd = (chimera::simulation::AbstractSystemDynamic*)param.getValue();
         return dynamic_cast<chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >*>(sd);
@@ -96,7 +99,7 @@ TemplateCoupling<double, boost::numeric::ublas::vector<double> >* NetworkModule:
     type = param.getType();
     tagtype = (size_t)_ep;
 
-    if(getChimeraSystem()->getTypeSystem()->getParameterBase(type) == basetype && getChimeraSystem()->getTypeSystem()->getParameterTag(type) == tagtype)
+    if(getContext()->getParameterBase(type) == basetype && getContext()->getParameterTag(type) == tagtype)
     {
         AbstractCoupling* c = (AbstractCoupling*)param.getValue();
         return dynamic_cast<TemplateCoupling<double, boost::numeric::ublas::vector<double> >*>(c);
@@ -113,7 +116,7 @@ chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<std
     type = param.getType();
     tagtype = (size_t)_callingEP;
 
-    if(getChimeraSystem()->getTypeSystem()->getParameterBase(type) == basetype && getChimeraSystem()->getTypeSystem()->getParameterTag(type) == tagtype)
+    if(getContext()->getParameterBase(type) == basetype && getContext()->getParameterTag(type) == tagtype)
     {
         chimera::simulation::AbstractSystemDynamic* sd = (chimera::simulation::AbstractSystemDynamic*)param.getValue();
         return dynamic_cast<chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<std::complex<double> > >*>(sd);
@@ -130,7 +133,7 @@ TemplateCoupling<double, boost::numeric::ublas::vector<std::complex<double> > >*
     type = param.getType();
     tagtype = (size_t)_ep;
 
-    if(getChimeraSystem()->getTypeSystem()->getParameterBase(type) == basetype && getChimeraSystem()->getTypeSystem()->getParameterTag(type) == tagtype)
+    if(getContext()->getParameterBase(type) == basetype && getContext()->getParameterTag(type) == tagtype)
     {
         AbstractCoupling* c = (AbstractCoupling*)param.getValue();
         return dynamic_cast<TemplateCoupling<double, boost::numeric::ublas::vector<std::complex<double> > >*>(c);
@@ -138,7 +141,7 @@ TemplateCoupling<double, boost::numeric::ublas::vector<std::complex<double> > >*
     return nullptr;
 }
 
-void* NetworkModule::getInstance(chimera::vec_t_LuaItem& parameters) const
+void* NetworkModule::getInstance(chimera::EntryPoint const * const entrypoint, chimera::vec_t_LuaItem& parameters) const
 {
     chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >* odeSys1;
     chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<std::complex<double> > >* odeSys2;
@@ -178,7 +181,7 @@ void* NetworkModule::getInstance(chimera::vec_t_LuaItem& parameters) const
                 }
                 else
                 {
-                    size_t randomEntryPoint = (size_t)getChimeraSystem()->getEntryPointSystem()->getEntryPoint(chimera::simulation::Naming::EntryPoint_random);
+                    size_t randomEntryPoint = (size_t)getContext()->getEntryPoint(chimera::simulation::Naming::EntryPoint_random);
                     if(randomEntryPoint != 0)
                     {
                         if(p.second.getType() == chimera::systemtypes::PID_MODULE)
@@ -246,15 +249,15 @@ void* NetworkModule::getInstance(chimera::vec_t_LuaItem& parameters) const
                     switch(sysType)
                     {
                         case 1:
-                            return new Network_double_vecDouble(getChimeraSystem()->getTypeSystem(), odeSys1, number, coupling1);
+                            return new Network_double_vecDouble(getContext(), odeSys1, number, coupling1);
                         case 2:
-                            return new Network_double_vecComplex(getChimeraSystem()->getTypeSystem(), odeSys2, number, coupling2);
+                            return new Network_double_vecComplex(getContext(), odeSys2, number, coupling2);
                     }
                 }
             }
             case 1:
             {
-                size_t randomEntryPoint = (size_t)getChimeraSystem()->getEntryPointSystem()->getEntryPoint(chimera::simulation::Naming::EntryPoint_random);
+                size_t randomEntryPoint = (size_t)getContext()->getEntryPoint(chimera::simulation::Naming::EntryPoint_random);
 
                 std::vector<chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >*> oscillators1;
                 std::vector<chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<std::complex<double> > >*> oscillators2;
@@ -269,14 +272,14 @@ void* NetworkModule::getInstance(chimera::vec_t_LuaItem& parameters) const
                     if(inInit)
                     {
                         chimera::map_t_LuaItem* paramValue1 = new chimera::map_t_LuaItem();
-                        chimera::ParameterValue p1 = getChimeraSystem()->getTypeSystem()->createValue(chimera::systemtypes::PID_TABLE, paramValue1);
+                        chimera::ParameterValue p1 = getContext()->createValue(chimera::systemtypes::PID_TABLE, paramValue1);
                         initParams.push_back(p1);
                         for(auto p : *initMap)
                         {
-                            if(getChimeraSystem()->getTypeSystem()->getParameterBase(p.second.getType()) == chimera::systemtypes::PID_INSTANCE && getChimeraSystem()->getTypeSystem()->getParameterTag(p.second.getType()) == randomEntryPoint && randomEntryPoint != 0)
+                            if(getContext()->getParameterBase(p.second.getType()) == chimera::systemtypes::PID_INSTANCE && getContext()->getParameterTag(p.second.getType()) == randomEntryPoint && randomEntryPoint != 0)
                             {
                                 chimera::simulation::AbstractRandom* rnd = (chimera::simulation::AbstractRandom*)p.second.getValue();
-                                chimera::ParameterValue next = getChimeraSystem()->getTypeSystem()->createValue(rnd->getType(), rnd->getNext());
+                                chimera::ParameterValue next = getContext()->createValue(rnd->getType(), rnd->getNext());
                                 paramValue1->insert(
                                     std::make_pair(p.first, next)
                                 );
@@ -289,7 +292,7 @@ void* NetworkModule::getInstance(chimera::vec_t_LuaItem& parameters) const
                             }
                         }
                     }
-                    oscItem = (chimera::simulation::AbstractSystemDynamic*)sysMod->getInstance(initParams);
+                    oscItem = (chimera::simulation::AbstractSystemDynamic*)sysMod->getInstance(entrypoint, initParams);
 
 
                     if (i == 0) {
@@ -348,9 +351,9 @@ void* NetworkModule::getInstance(chimera::vec_t_LuaItem& parameters) const
                 switch (oscType)
                 {
                     case 1:
-                        return new MultiNetwork_double_vecDouble(getChimeraSystem()->getTypeSystem(), sysMod, oscillators1, coupling1);
+                        return new MultiNetwork_double_vecDouble(getContext(), sysMod, oscillators1, coupling1);
                     case 2:
-                        return new MultiNetwork_double_vecComplex(getChimeraSystem()->getTypeSystem(), sysMod, oscillators2, coupling2);
+                        return new MultiNetwork_double_vecComplex(getContext(), sysMod, oscillators2, coupling2);
                     default:
                         return nullptr;
                 }
@@ -380,34 +383,34 @@ void* NetworkModule::getInstance(chimera::vec_t_LuaItem& parameters) const
             return nullptr;
         }
 
-        return new Network_double_vecDouble(getChimeraSystem()->getTypeSystem(), odeSys1, number, coupling1);
+        return new Network_double_vecDouble(getContext(), odeSys1, number, coupling1);
     }
 
     return nullptr;
 }
 
-void NetworkModule::destroyInstance(void * const instance) const
+void NetworkModule::destroyInstance(chimera::EntryPoint const * const entrypoint, void * const instance) const
 {
     delete ((chimera::simulation::AbstractSystemDynamic*)instance);
 }
 
-const std::string NetworkModule::getVersion() const
+void NetworkModule::init(chimera::EntryPoint const * const entryPoint)
 {
-    return "1.0.0";
-}
-
-void NetworkModule::load(chimera::EntryPoint const * const entryPoint, void const * const params)
-{
-    _callingEP = entryPoint;
     if(_ep == nullptr) {
         _ep = new CouplingEntryPoint();
-        getChimeraSystem()->getEntryPointSystem()->addEntryPoint("coupling", _ep);
     }
 }
 
-void NetworkModule::unload()
+bool NetworkModule::load(chimera::EntryPoint const * const entryPoint, void const * const params)
 {
-    //getChimeraSystem()->getEntryPointSystem()->removeEntryPoint("coupling");
+    _callingEP = entryPoint;
+    getContext()->addEntryPoint("coupling", _ep);
+    return true;
+}
+
+void NetworkModule::unload(chimera::EntryPoint const * const entryPoint)
+{
+    getContext()->removeEntryPoint("coupling");
     //delete _ep;
     _ep = nullptr;
 }

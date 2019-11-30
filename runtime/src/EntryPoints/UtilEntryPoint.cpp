@@ -7,11 +7,11 @@
 
 //#include "interfaces/EventHandler/IParameterTypeEventHandler.hpp"
 //#include "RuntimeNames.hpp"
+#include "def.hpp"
 #include "ExtensionNaming.hpp"
 #include "StateSynchrony.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "ParameterValueCollection.hpp"
@@ -39,9 +39,4 @@ chimera::runtime::UtilEntryPoint::~UtilEntryPoint()
 const std::string chimera::runtime::UtilEntryPoint::getGUID() const
 {
     return chimera::simulation::Naming::EntryPoint_util;
-}
-
-const std::string chimera::runtime::UtilEntryPoint::getVersion() const
-{
-    return "1.0.0";
 }

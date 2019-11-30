@@ -7,6 +7,7 @@
 #include <limits>
 #include <complex>
 
+#include "def.hpp"
 #include "Naming.hpp"
 #include "ExtensionNaming.hpp"
 #include "StateSynchrony.hpp"
@@ -14,7 +15,6 @@
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "ParameterValueCollection.hpp"
@@ -22,6 +22,7 @@
 #include "EntryPoint.hpp"
 #include "EntryPointSystem.hpp"
 #include "ChimeraSystem.hpp"
+#include "ChimeraContext.hpp"
 #include "event/Observer.hpp"
 #include "EntryPointBase/AbstractEventProvider.hpp"
 #include "event/NotificationManager.hpp"
@@ -67,14 +68,9 @@ const std::string TimedObserverModule::getGUID() const
     return "Timed Observer";
 }
 
-void TimedObserverModule::destroyInstance(void* instance) const
+void TimedObserverModule::destroyInstance(chimera::EntryPoint const * const entrypoint, void* instance) const
 {
     delete ((TimedObserver*)instance);
-}
-
-const std::string TimedObserverModule::getVersion() const
-{
-    return "1.0.0";
 }
 
 chimera::simulation::AbstractEventManager* TimedObserverModule::getEventInstance(chimera::vec_t_LuaItem& parameters) const
@@ -90,7 +86,7 @@ chimera::simulation::AbstractEventManager* TimedObserverModule::getEventInstance
         chimera::map_t_LuaItem* paramMap = (chimera::map_t_LuaItem*)parameters[0].getValue();
         for(auto p : *paramMap)
         {
-            if(p.first == "observe" && p.second.getFlag(chimera::simulation::Naming::Flag_Observable))
+            if(p.first == "observe" && p.second.getAttribute(chimera::simulation::Naming::Attribute_Observable))
             {
                 inNM = true;
                 nm = (chimera::simulation::NotificationManager*)p.second.getValue();
@@ -120,7 +116,7 @@ chimera::simulation::AbstractEventManager* TimedObserverModule::getEventInstance
     }
     else
     {
-        if(parameters.size() > 0 && parameters[0].getFlag(chimera::simulation::Naming::Flag_Observable))
+        if(parameters.size() > 0 && parameters[0].getAttribute(chimera::simulation::Naming::Attribute_Observable))
         {
             inNM = true;
             nm = (chimera::simulation::NotificationManager*)parameters[0].getValue();
@@ -173,7 +169,7 @@ chimera::simulation::AbstractEventManager* TimedObserverModule::getEventInstance
         return nullptr;
     }
     auto result = new TimedObserver(nm, start, step, end);
-    getChimeraSystem()->getTypeSystem()->addDependency(result, nm);
+    getContext()->addDependency(result, nm);
     return result;
 }
 

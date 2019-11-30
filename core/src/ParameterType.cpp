@@ -6,7 +6,6 @@
 #include "def.hpp"
 #include "ParameterType.hpp"
 
-
 chimera::ParameterType::ParameterType():
     _id(-1),
     _name(""),
@@ -35,7 +34,7 @@ chimera::ParameterType::ParameterType(const std::string& name, const int& id, vo
     //ctor
 }
 
-chimera::ParameterType::ParameterType(const std::string& name, const int& id, void const * const origin, const struct T_ParameterDef& pdef, size_t base, size_t tag):
+chimera::ParameterType::ParameterType(const std::string& name, const int& id, void const * const origin, const struct T_ParameterDef& pdef, const size_t& base, const size_t& tag):
     _id(id),
     _name(name),
     _origin(origin),
@@ -49,7 +48,7 @@ chimera::ParameterType::ParameterType(const std::string& name, const int& id, vo
     //ctor
 }
 
-chimera::ParameterType::ParameterType(const std::string& name, const int& id, void const * const origin, const struct chimera::T_ParameterDef& pdef, const std::unordered_map<std::string, size_t>& flags):
+chimera::ParameterType::ParameterType(const std::string& name, const int& id, void const * const origin, const struct chimera::T_ParameterDef& pdef, const std::unordered_map<std::string, size_t>& attributes):
     _id(id),
     _name(name),
     _origin(origin),
@@ -59,12 +58,12 @@ chimera::ParameterType::ParameterType(const std::string& name, const int& id, vo
     _dispose(pdef.dispose),
     _base(0),
     _tag(0),
-    _flags(flags)
+    _attributes(attributes)
 {
     //ctor
 }
 
-chimera::ParameterType::ParameterType(const std::string& name, const int& id, void const * const origin, const struct T_ParameterDef& pdef, size_t base, size_t tag, const std::unordered_map<std::string, size_t>& flags):
+chimera::ParameterType::ParameterType(const std::string& name, const int& id, void const * const origin, const struct T_ParameterDef& pdef, const size_t& base, const size_t& tag, const std::unordered_map<std::string, size_t>& attributes):
     _id(id),
     _name(name),
     _origin(origin),
@@ -74,7 +73,7 @@ chimera::ParameterType::ParameterType(const std::string& name, const int& id, vo
     _dispose(pdef.dispose),
     _base(base),
     _tag(tag),
-    _flags(flags)
+    _attributes(attributes)
 {
     //ctor
 }
@@ -84,7 +83,7 @@ chimera::ParameterType::~ParameterType()
 
 }
 
-int chimera::ParameterType::getID() const
+size_t chimera::ParameterType::getID() const
 {
     return _id;
 }
@@ -118,9 +117,13 @@ void chimera::ParameterType::initialize(lua_State * const L, const int& id) cons
 {
     if(_initialize)
     {
+        // calls initialize function with 2 parameters
         lua_pushcfunction(L, _initialize);
+        // 1. table that will be used as meta table. If first type in the hirarchy, table will be empty. for derived types this will contain meta data from base types.
         lua_insert(L, -2);
+        // 2. type ID
         lua_pushinteger(L, id);
+        // expected to return a table, either the same as parameter 1, or a new one, that will be used as meta table.
         lua_call(L, 2, 1);
     }
 }
@@ -129,9 +132,13 @@ void chimera::ParameterType::pushValue(lua_State * const L, void * const value) 
 {
     if(_pushValue)
     {
+        // calls pushValue with 2 parameters
         lua_pushcfunction(L, _pushValue);
+        // 1. parameter ID
         lua_pushinteger(L, _id);
+        // 2. pointer to the object
         lua_pushlightuserdata(L, value);
+        // returns the new userdata for the value pointer. This function does net need to assign the meta table, as it will be overwritten by the one created for the type.
         lua_call(L, 2, 1);
     }
 }
@@ -140,72 +147,46 @@ void chimera::ParameterType::deleteValue(lua_State* const L, void * const value)
 {
     if(_deleteValue)
     {
+        // calls deleteValue with 2 parameters
         lua_pushcfunction(L, _deleteValue);
+        // 1. parameter ID
         lua_pushinteger(L, _id);
+        // 2. pointer to the object
         lua_pushlightuserdata(L, value);
+        // returns nothing, but has to delete the object at given pointer
         lua_call(L, 2, 0);
     }
 }
 
-bool chimera::ParameterType::castFrom(lua_State* const L, size_t type, void * const value) const
+size_t chimera::ParameterType::getAttribute(const std::string& attr) const
 {
-    lua_CFunction fn_cast = nullptr;
-    auto cast = _castFuntions.find(type);
-    if(cast != _castFuntions.end())
+    if (_attributes.size() > 0)
     {
-        fn_cast = cast->second;
-    } else {
-        cast = _castFuntions.find(0);
-        if(cast != _castFuntions.end())
+        auto attrValue = _attributes.find(attr);
+        if (attrValue != _attributes.end())
         {
-            fn_cast = cast->second;
-        }
-    }
-
-    if(fn_cast)
-    {
-        lua_pushcfunction(L, fn_cast);
-        lua_pushinteger(L, type);
-        lua_pushlightuserdata(L, value);
-        lua_call(L, 2, 1);
-        if(ParameterType::getType(L, -1) == _id)
-        {
-            return true;
-        }
-        else
-        {
-            lua_pop(L, 1);
-        }
-    }
-
-    return false;
-}
-
-size_t chimera::ParameterType::getFlag(const std::string& flag) const
-{
-    if (_flags.size() > 0)
-    {
-        auto flagValue = _flags.find (flag);
-        if (flagValue != _flags.end())
-        {
-            return flagValue->second;
+            return attrValue->second;
         }
     }
     return 0;
 }
 
-void chimera::ParameterType::addCast(size_t from, lua_CFunction fn_cast)
+void chimera::ParameterType::addCast(const size_t& fromType, fn_typecast cast)
 {
-    _castFuntions[from] = fn_cast;
+    _castFuntions[fromType] = cast;
 }
 
 void chimera::ParameterType::dispose(lua_State* const L) const
 {
     if(_dispose)
     {
+        // calls dispose function with 2 parameters
         lua_pushcfunction(L, _dispose);
+        // 1. the pointer to this parameter type
         lua_pushlightuserdata(L, (void*)this);
+        // 2. the tag value converted to a void pointer
         lua_pushlightuserdata(L, (void*)_tag);
+        // Returns nothing but is responsible for clean up of the type
         lua_call(L, 2, 0);
     }
 }
@@ -214,32 +195,32 @@ size_t chimera::ParameterType::getType(lua_State* const L, const int& index)
 {
     switch(lua_type(L, index))
     {
-    case LUA_TNONE:
-    case LUA_TNIL:
+        case LUA_TNONE:
+        case LUA_TNIL:
         {
             return chimera::systemtypes::PID_NIL;
         }
-    case LUA_TBOOLEAN:
+        case LUA_TBOOLEAN:
         {
             return chimera::systemtypes::PID_BOOLEAN;
         }
-    case LUA_TNUMBER:
+        case LUA_TNUMBER:
         {
             return chimera::systemtypes::PID_NUMBER;
         }
-    case LUA_TSTRING:
+        case LUA_TSTRING:
         {
             return chimera::systemtypes::PID_STRING;
         }
-    case LUA_TTABLE:
+        case LUA_TTABLE:
         {
             return chimera::systemtypes::PID_TABLE;
         }
-    case LUA_TFUNCTION:
+        case LUA_TFUNCTION:
         {
             return chimera::systemtypes::PID_FUNCTION;
         }
-    case LUA_TUSERDATA:
+        case LUA_TUSERDATA:
         {
             if(luaL_getmetafield(L, index, "__type"))
             {

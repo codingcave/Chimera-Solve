@@ -5,6 +5,7 @@
 #include <vector>
 #include <boost/numeric/ublas/vector.hpp>
 
+#include "def.hpp"
 #include "Naming.hpp"
 #include "ExtensionNaming.hpp"
 #include "StateSynchrony.hpp"
@@ -12,7 +13,6 @@
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "ParameterValueCollection.hpp"
@@ -20,6 +20,7 @@
 #include "EntryPoint.hpp"
 #include "EntryPointSystem.hpp"
 #include "ChimeraSystem.hpp"
+#include "ChimeraContext.hpp"
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/SystemDynamicModule.hpp"
 #include "EntryPointBase/TemplateOdeSystem.hpp"
@@ -54,7 +55,7 @@ CudaOscillatorModule::CudaOscillatorModule()
     //registerMethod("test", rk_test);
 }
 
-void* CudaOscillatorModule::getInstance(chimera::vec_t_LuaItem& parameters) const
+void* CudaOscillatorModule::getInstance(chimera::EntryPoint const * const entrypoint, chimera::vec_t_LuaItem& parameters) const
 {
     bool inA = false;
     bool inB = false;
@@ -97,7 +98,7 @@ void* CudaOscillatorModule::getInstance(chimera::vec_t_LuaItem& parameters) cons
         return nullptr;
     }
 
-    return new CudaOscillator(getChimeraSystem()->getTypeSystem(), a, b);
+    return new CudaOscillator(getContext(), a, b);
 }
 
 const std::string CudaOscillatorModule::getGUID() const
@@ -105,20 +106,15 @@ const std::string CudaOscillatorModule::getGUID() const
     return "Cuda Oscillator";
 }
 
-void CudaOscillatorModule::destroyInstance(void* instance) const
+void CudaOscillatorModule::destroyInstance(chimera::EntryPoint const * const entrypoint, void* instance) const
 {
     delete ((CudaOscillator*)instance);
 }
 
-const std::string CudaOscillatorModule::getVersion() const
-{
-    return "1.0.0";
-}
-
-CudaOscillator::CudaOscillator(chimera::ParameterTypeSystem* ps, double a, double b):
+CudaOscillator::CudaOscillator(chimera::ChimeraContext* context, double a, double b):
     _a(a),
     _b(b),
-    _ps(ps)
+    _context(context)
 {
 
 }
@@ -134,7 +130,7 @@ std::unordered_map<std::string, size_t> CudaOscillator::getFeatures() const
     std::unordered_map<std::string, size_t> features;
     features[chimera::simulation::Naming::Feature_time_type] = chimera::systemtypes::PID_NUMBER;
     static const std::string vectorRealMetaName = (std::string(chimera::simulation::Naming::Type_Vector) + "#" + std::string(chimera::typenames::TYPE_NUMBER));
-    features[chimera::simulation::Naming::Feature_state_type] = _ps->getParameterID(vectorRealMetaName);
+    features[chimera::simulation::Naming::Feature_state_type] = _context->getParameterID(vectorRealMetaName);
     features[chimera::simulation::Naming::Feature_size] = 2;
     return features;
 }

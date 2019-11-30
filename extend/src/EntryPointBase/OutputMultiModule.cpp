@@ -3,10 +3,10 @@
 #include <unordered_set>
 #include <vector>
 
+#include "def.hpp"
 #include "ExtensionNaming.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "StateSynchrony.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
@@ -26,14 +26,14 @@ chimera::simulation::OutputMultiModule::~OutputMultiModule()
     //dtor
 }
 
-void* chimera::simulation::OutputMultiModule::getInstance(chimera::vec_t_LuaItem& parameters) const
+void* chimera::simulation::OutputMultiModule::getInstance(chimera::EntryPoint const * const entrypoint, chimera::vec_t_LuaItem& parameters) const
 {
     return (void*)getOutputInstance(parameters);
 }
 
-size_t chimera::simulation::OutputMultiModule::getFlag(const std::string& flag) const
+size_t chimera::simulation::OutputMultiModule::getAttribute(const std::string& attr) const
 {
-    if (flag == chimera::simulation::Naming::Flag_MultiObserver)
+    if (attr == chimera::simulation::Naming::Attribute_MultiObserver)
     {
         return 1;
     }

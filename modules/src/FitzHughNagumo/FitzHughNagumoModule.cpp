@@ -6,12 +6,12 @@
 #include <boost/numeric/ublas/vector.hpp>
 #include "lua.hpp"
 
+#include "def.hpp"
 #include "StateSynchrony.hpp"
 #include "interfaces/ILogger.hpp"
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "ParameterValueCollection.hpp"
@@ -19,6 +19,7 @@
 #include "EntryPoint.hpp"
 #include "EntryPointSystem.hpp"
 #include "ChimeraSystem.hpp"
+#include "ChimeraContext.hpp"
 #include "EntryPointBase/AbstractSystemDynamic.hpp"
 #include "EntryPointBase/SystemDynamicModule.hpp"
 #include "EntryPointBase/TemplateOdeSystem.hpp"
@@ -54,7 +55,7 @@ FitzHughNagumoModule::FitzHughNagumoModule()
     //registerMethod("test", rk_test);
 }
 
-void* FitzHughNagumoModule::getInstance(chimera::vec_t_LuaItem& parameters) const
+void* FitzHughNagumoModule::getInstance(chimera::EntryPoint const * const entrypoint, chimera::vec_t_LuaItem& parameters) const
 {
     bool inA = false;
     bool inEpsilon = false;
@@ -97,7 +98,7 @@ void* FitzHughNagumoModule::getInstance(chimera::vec_t_LuaItem& parameters) cons
         return nullptr;
     }
 
-    return new FitzHughNagumo(getChimeraSystem()->getTypeSystem(), epsilon, a);
+    return new FitzHughNagumo(getContext(), epsilon, a);
 }
 
 const std::string FitzHughNagumoModule::getGUID() const
@@ -105,12 +106,7 @@ const std::string FitzHughNagumoModule::getGUID() const
     return "FitzHugh-Nagumo";
 }
 
-void FitzHughNagumoModule::destroyInstance(void* instance) const
+void FitzHughNagumoModule::destroyInstance(chimera::EntryPoint const * const entrypoint, void* instance) const
 {
     delete ((FitzHughNagumo*)instance);
-}
-
-const std::string FitzHughNagumoModule::getVersion() const
-{
-    return "1.0.0";
 }

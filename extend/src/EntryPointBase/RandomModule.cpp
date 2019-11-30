@@ -7,12 +7,12 @@
 #include <chrono>
 #include <random>
 
+#include "def.hpp"
 #include "StateSynchrony.hpp"
 #include "interfaces/ILogger.hpp"
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "ParameterValueCollection.hpp"
@@ -21,6 +21,7 @@
 #include "EntryPoint.hpp"
 #include "EntryPointSystem.hpp"
 #include "ChimeraSystem.hpp"
+#include "ChimeraContext.hpp"
 #include "event/Observer.hpp"
 //#include "event/NotificationManager.hpp"
 #include "EntryPointBase/AbstractRandomGenerator.hpp"
@@ -40,26 +41,28 @@ chimera::simulation::RandomModule::~RandomModule()
     }
 }
 
-void* chimera::simulation::RandomModule::getInstance(chimera::vec_t_LuaItem& parameters) const
+void* chimera::simulation::RandomModule::getInstance(chimera::EntryPoint const * const entrypoint, chimera::vec_t_LuaItem& parameters) const
 {
     return (void*)getRandomInstance(_generator, parameters);
 }
 
-chimera::vec_t_LuaItem instance_next(chimera::Module const * const module, void* instance, const chimera::vec_t_LuaItem& params)
+chimera::vec_t_LuaItem instance_next(chimera::EntryPoint const * const entrypoint, chimera::Module const * const module, void* instance, const chimera::vec_t_LuaItem& params)
 {
     chimera::simulation::AbstractRandom* rnd = (chimera::simulation::AbstractRandom*)instance;
     chimera::vec_t_LuaItem result;
-    result.push_back(module->getChimeraSystem()->getTypeSystem()->createValue(rnd->getType(), rnd->getNext()));
+    result.push_back(module->getContext()->createValue(rnd->getType(), rnd->getNext()));
     return result;
 }
 
-void chimera::simulation::RandomModule::load(EntryPoint const * const entryPoint, void const * const params)
+bool chimera::simulation::RandomModule::load(EntryPoint const * const entryPoint, void const * const params)
 {
     if(_generator == nullptr)
     {
         registerMethod("next", instance_next);
         _generator = new DefaultRandomGenerator();
+        return true;
     }
+    return false;
 }
 
 chimera::simulation::DefaultRandomGenerator::DefaultRandomGenerator()

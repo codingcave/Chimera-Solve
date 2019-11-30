@@ -11,11 +11,10 @@ namespace chimera {
                 IntegratorEntryPoint(InitializerEntryPoint* initializer);
                 virtual ~IntegratorEntryPoint();
                 virtual const std::string getGUID() const override;
-                virtual const std::string getVersion() const override;
+                virtual void const * const getModuleLoadParams() const override;
             protected:
                 virtual bool checkModule(chimera::Module const * const module) const override;
-                virtual void init(lua_State* L) override;
-                virtual void const * const getModuleLoadParams() const override;
+                virtual void init() override;
             private:
                 InitializerEntryPoint* _initializer;
         };

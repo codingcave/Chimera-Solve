@@ -14,7 +14,7 @@ class RungeKutta_double_vecvecDouble:
     public chimera::simulation::AbstractTemporalIntegrator
 {
     public:
-        RungeKutta_double_vecvecDouble(chimera::ParameterTypeSystem* ps, chimera::EntryPoint* init, chimera::simulation::TemplateOdeSystem<double, vec_vec_real>* system, double dt);
+        RungeKutta_double_vecvecDouble(chimera::ChimeraContext* context, chimera::EntryPoint* init, chimera::simulation::TemplateOdeSystem<double, vec_vec_real>* system, double dt);
         //RungeKutta_double_vecvecDouble();
         virtual ~RungeKutta_double_vecvecDouble();
         virtual void nextStep() override;
@@ -27,7 +27,7 @@ class RungeKutta_double_vecvecDouble:
         virtual bool finished() const override;
     protected:
     private:
-        chimera::ParameterTypeSystem* _ps;
+        chimera::ChimeraContext* _context;
         odeint::runge_kutta4<vec_vec_real>* _rk;
         RungeKuttaSystem<double, vec_vec_real>* _system;
         double _time;

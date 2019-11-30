@@ -6,18 +6,18 @@ class FitzHughNagumo:
     public chimera::simulation::TemplateOdeSystem<double, boost::numeric::ublas::vector<double> >
 {
     public:
-        explicit FitzHughNagumo(chimera::ParameterTypeSystem* ps, double epsilon, double a);
+        explicit FitzHughNagumo(chimera::ChimeraContext* context, double epsilon, double a);
         virtual ~FitzHughNagumo();
         virtual void operator()(const boost::numeric::ublas::vector<double>& x, boost::numeric::ublas::vector<double>& dxdt, const double& t) override;
 
         virtual std::unordered_map<std::string, size_t> getFeatures() const override;
         virtual const std::string getSystemName() const override;
 
-        double _epsilon;
-        double _a;
     protected:
     private:
-        chimera::ParameterTypeSystem* _ps;
+        chimera::ChimeraContext* _context;
+        double _epsilon;
+        double _a;
 };
 
 #endif // FITZHUGHNAGUMO_H

@@ -7,15 +7,15 @@
 #include <complex>
 #include "lua.hpp"
 
+#include "def.hpp"
 #include "StateSynchrony.hpp"
 #include "Naming.hpp"
-//#include "RuntimeNames.hpp"
 #include "ExtensionNaming.hpp"
+//#include "RuntimeNames.hpp"
 #include "interfaces/ILogger.hpp"
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "extendTypes.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
@@ -38,12 +38,9 @@ int chimera::runtime::types::luat_matrix_init(lua_State* const L)
     int type = lua_tointeger(L, 2);
     lua_pop(L, 1);
 
-    lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
-    lua_gettable(L, LUA_REGISTRYINDEX);
-    ChimeraSystem* chSys = (ChimeraSystem*)lua_touserdata(L, -1);
-    lua_pop(L, 1);
+    ChimeraRuntime* chimeraSystem = (ChimeraRuntime*)(*((void**)lua_getextraspace(L)));
 
-    if(chSys->getTypeSystem()->getParameterBase(type) == 0 && matrix_pid == 0) {
+    if(chimeraSystem->getTypeSystem()->getParameterBase(type) == 0 && matrix_pid == 0) {
         matrix_pid = type;
     }
 
@@ -121,16 +118,13 @@ int chimera::runtime::types::lua_matrix_iterator(lua_State* const L)
         {
             if(luaL_getmetafield(L, 1, "__type"))
             {
-                lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
-                lua_gettable(L, LUA_REGISTRYINDEX);
-                ChimeraRuntime* chSys = (ChimeraRuntime*)lua_touserdata(L, -1);
-                lua_pop(L, 1);
-                int itemtype = chSys->getTypeSystem()->getParameterTag(lua_tointeger(L, -1));
+                ChimeraRuntime* chimeraSystem = (ChimeraRuntime*)(*((void**)lua_getextraspace(L)));
+                int itemtype = chimeraSystem->getTypeSystem()->getParameterTag(lua_tointeger(L, -1));
                 lua_pushinteger(L, i);
                 struct chimera::simulation::T_MatrixRowDef** mrow = (struct chimera::simulation::T_MatrixRowDef **)lua_newuserdata(L, sizeof(struct chimera::simulation::T_MatrixRowDef*));
                 *mrow = new struct chimera::simulation::T_MatrixRowDef({i, m->cols, m->readonly, m->value});
-                static size_t matrixrow_pid = chSys->getTypeSystem()->getParameterID(chimera::simulation::Naming::Type_MatrixRow);
-                size_t metaType = chSys->getTypeLookup()->findType(matrixrow_pid, itemtype);
+                static size_t matrixrow_pid = chimeraSystem->getTypeSystem()->getParameterID(chimera::simulation::Naming::Type_MatrixRow);
+                size_t metaType = chimeraSystem->getTypeLookup()->findType(matrixrow_pid, itemtype);
 
                 lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_METATABLES);
                 lua_rawget(L, LUA_REGISTRYINDEX);
@@ -162,13 +156,10 @@ int chimera::runtime::types::lua_matrix_tostring(lua_State* const L)
     std::string text(chimera::simulation::Naming::Type_Matrix);
     if(luaL_getmetafield(L, 1, "__type"))
     {
-        lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
-        lua_gettable(L, LUA_REGISTRYINDEX);
-        ChimeraSystem* chSys = (ChimeraSystem*)lua_touserdata(L, -1);
-        lua_pop(L, 1);
-        int itemtype = chSys->getTypeSystem()->getParameterTag(lua_tointeger(L, -1));
+        ChimeraRuntime* chimeraSystem = (ChimeraRuntime*)(*((void**)lua_getextraspace(L)));
+        int itemtype = chimeraSystem->getTypeSystem()->getParameterTag(lua_tointeger(L, -1));
         text += "<";
-        text += chSys->getTypeSystem()->getParameterName(itemtype);
+        text += chimeraSystem->getTypeSystem()->getParameterName(itemtype);
         text += ">";
     }
     text += "(";
@@ -230,17 +221,13 @@ int chimera::runtime::types::lua_matrix_index(lua_State* const L)
                 {
                     if(luaL_getmetafield(L, 1, "__type"))
                     {
-                        lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
-                        lua_gettable(L, LUA_REGISTRYINDEX);
-                        ChimeraRuntime* chSys = (ChimeraRuntime*)lua_touserdata(L, -1);
-                        lua_pop(L, 1);
-
-                        int itemtype = chSys->getTypeSystem()->getParameterTag(lua_tointeger(L, -1));
+                        ChimeraRuntime* chimeraSystem = (ChimeraRuntime*)(*((void**)lua_getextraspace(L)));
+                        int itemtype = chimeraSystem->getTypeSystem()->getParameterTag(lua_tointeger(L, -1));
                         struct chimera::simulation::T_MatrixRowDef** mrow = (struct chimera::simulation::T_MatrixRowDef **)lua_newuserdata(L, sizeof(struct chimera::simulation::T_MatrixRowDef*));
                         *mrow = new struct chimera::simulation::T_MatrixRowDef({i, m->cols, m->readonly, m->value});
 
-                        static size_t matrixrow_pid = chSys->getTypeSystem()->getParameterID(chimera::simulation::Naming::Type_MatrixRow);
-                        size_t metaType = chSys->getTypeLookup()->findType(matrixrow_pid, itemtype);
+                        static size_t matrixrow_pid = chimeraSystem->getTypeSystem()->getParameterID(chimera::simulation::Naming::Type_MatrixRow);
+                        size_t metaType = chimeraSystem->getTypeLookup()->findType(matrixrow_pid, itemtype);
 
                         lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_METATABLES);
                         lua_rawget(L, LUA_REGISTRYINDEX);
@@ -268,14 +255,11 @@ int chimera::runtime::types::lua_matrix_newindex(lua_State* const L)
 
 int chimera::runtime::types::lua_matrix_eq(lua_State* const L)
 {
-    lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
-    lua_gettable(L, LUA_REGISTRYINDEX);
-    ChimeraSystem* chSys = (ChimeraSystem*)lua_touserdata(L, -1);
-    lua_pop(L, 1);
+    ChimeraRuntime* chimeraSystem = (ChimeraRuntime*)(*((void**)lua_getextraspace(L)));
 
     if(luaL_getmetafield(L, 1, "__type"))
     {
-        if(chSys->getTypeSystem()->getParameterBase(lua_tointeger(L, -1)) != matrix_pid)
+        if(chimeraSystem->getTypeSystem()->getParameterBase(lua_tointeger(L, -1)) != matrix_pid)
         {
             lua_pushboolean(L, false);
             return 1;
@@ -290,7 +274,7 @@ int chimera::runtime::types::lua_matrix_eq(lua_State* const L)
 
     if(luaL_getmetafield(L, 2, "__type"))
     {
-        if(chSys->getTypeSystem()->getParameterBase(lua_tointeger(L, -1)) != matrix_pid)
+        if(chimeraSystem->getTypeSystem()->getParameterBase(lua_tointeger(L, -1)) != matrix_pid)
         {
             lua_pushboolean(L, false);
             return 1;
@@ -343,13 +327,10 @@ int chimera::runtime::types::lua_matrix_eq(lua_State* const L)
 
 bool chimera::runtime::types::lua_matrix_newempty(lua_State* const L, int m, int n)
 {
-    lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
-    lua_gettable(L, LUA_REGISTRYINDEX);
-    ChimeraRuntime* chSys = (ChimeraRuntime*)lua_touserdata(L, -1);
-    lua_pop(L, 1);
+    ChimeraRuntime* chimeraSystem = (ChimeraRuntime*)(*((void**)lua_getextraspace(L)));
 
-    size_t innerType = chSys->getTypeSystem()->getParameterType(L, -1);
-    size_t metaType = chSys->getTypeLookup()->findType(matrix_pid, innerType);
+    size_t innerType = chimeraSystem->getTypeSystem()->getParameterType(L, -1);
+    size_t metaType = chimeraSystem->getTypeLookup()->findType(matrix_pid, innerType);
 
     if(metaType != 0)
     {
@@ -427,14 +408,11 @@ bool chimera::runtime::types::lua_matrix_arith2(lua_State* const L, int op)
     bool arg2 = false;
     int r, c;
 
-    lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
-    lua_gettable(L, LUA_REGISTRYINDEX);
-    ChimeraRuntime* chSys = (ChimeraRuntime*)lua_touserdata(L, -1);
-    lua_pop(L, 1);
+    ChimeraRuntime* chimeraSystem = (ChimeraRuntime*)(*((void**)lua_getextraspace(L)));
 
     if(luaL_getmetafield(L, 1, "__type"))
     {
-        if(chSys->getTypeSystem()->getParameterBase(lua_tointeger(L, -1)) != matrix_pid)
+        if(chimeraSystem->getTypeSystem()->getParameterBase(lua_tointeger(L, -1)) != matrix_pid)
         {
             arg1 = true;
         }
@@ -447,7 +425,7 @@ bool chimera::runtime::types::lua_matrix_arith2(lua_State* const L, int op)
 
     if(luaL_getmetafield(L, 2, "__type"))
     {
-        if(chSys->getTypeSystem()->getParameterBase(lua_tointeger(L, -1)) != matrix_pid)
+        if(chimeraSystem->getTypeSystem()->getParameterBase(lua_tointeger(L, -1)) != matrix_pid)
         {
             arg2 = true;
         }
@@ -785,13 +763,9 @@ int chimera::runtime::types::lua_matrix_set(lua_State* const L)
         if(luaL_getmetafield(L, lua_upvalueindex(1), "__type"))
         {
             int type = lua_tointeger(L, -1);
+            ChimeraRuntime* chimeraSystem = (ChimeraRuntime*)(*((void**)lua_getextraspace(L)));
 
-            lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
-            lua_gettable(L, LUA_REGISTRYINDEX);
-            ChimeraSystem* chSys = (ChimeraSystem*)lua_touserdata(L, -1);
-            lua_pop(L, 1);
-
-            if(chSys->getTypeSystem()->getParameterType(L, 3) != chSys->getTypeSystem()->getParameterTag(type))
+            if(chimeraSystem->getTypeSystem()->getParameterType(L, 3) != chimeraSystem->getTypeSystem()->getParameterTag(type))
             {
 #warning LOG (kekstoaster#1#): Invalid type argument `3`.
                 //LoggingSystem::Error("Invalid type argument `3`.");

@@ -8,15 +8,15 @@
 #include <cmath>
 #include "lua.hpp"
 
-#include "StateSynchrony.hpp"
+#include "def.hpp"
 #include "Naming.hpp"
 #include "ExtensionNaming.hpp"
 //#include "RuntimeNames.hpp"
+#include "StateSynchrony.hpp"
 #include "interfaces/ILogger.hpp"
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "extendTypes.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
@@ -41,11 +41,9 @@ static size_t vector_real_pid = 0;
 int chimera::runtime::types::luat_vector_vector_real_init(lua_State* const L)
 {
     vector_vector_real_pid = lua_tointeger(L, 2);
-    lua_pushstring(L, chimera::registrynames::LUA_REGISTRY_CHIMERA_INSTANCE);
-    lua_rawget(L, LUA_REGISTRYINDEX);
-    ChimeraRuntime* chSys = (ChimeraRuntime*)lua_touserdata(L, -1);
-    lua_pop(L, 2);
-    vector_real_pid = chSys->getTypeSystem()->getParameterTag(vector_vector_real_pid);
+    ChimeraRuntime* chimeraSystem = (ChimeraRuntime*)(*((void**)lua_getextraspace(L)));
+    lua_pop(L, 1);
+    vector_real_pid = chimeraSystem->getTypeSystem()->getParameterTag(vector_vector_real_pid);
 
     lua_pushcfunction (L, lua_vector_vector_real_get);
     lua_setfield(L, -2, "__get");

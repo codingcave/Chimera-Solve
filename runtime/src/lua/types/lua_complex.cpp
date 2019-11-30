@@ -6,13 +6,13 @@
 #include <complex>
 #include "lua.hpp"
 
+#include "def.hpp"
 #include "StateSynchrony.hpp"
 #include "Naming.hpp"
 #include "interfaces/ILogger.hpp"
 #include "LoggingSystem.hpp"
 #include "ParameterValue.hpp"
 #include "ParameterType.hpp"
-#include "def.hpp"
 #include "types/LuaFunctionWrapper.hpp"
 #include "ParameterTypeSystem.hpp"
 #include "types/lua_static.hpp"

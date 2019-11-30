@@ -8,8 +8,7 @@ class FunctionInitializerModule:
         FunctionInitializerModule();
         virtual ~FunctionInitializerModule();
         virtual const std::string getGUID() const override;
-        virtual void destroyInstance(void * const instance) const override;
-        virtual const std::string getVersion() const override;
+        virtual void destroyInstance(chimera::EntryPoint const * const entrypoint, void * const instance) const override;
         virtual chimera::simulation::AbstractInitializer* getInitializerInstance(chimera::vec_t_LuaItem& parameters) const override;
 };
 
@@ -17,12 +16,12 @@ class FunctionInitializer:
     public chimera::simulation::AbstractInitializer
 {
     public:
-        explicit FunctionInitializer(chimera::ParameterTypeSystem* ps, const chimera::ParameterValue& functionValue);
+        explicit FunctionInitializer(chimera::ChimeraContext* context, const chimera::ParameterValue& functionValue);
         virtual ~FunctionInitializer();
         virtual void initialize(chimera::simulation::AbstractSystemDynamic* system, void* state) override;
     protected:
     private:
-        chimera::ParameterTypeSystem* _ps;
+        chimera::ChimeraContext* _context;
         chimera::ParameterValue* _functionValue;
 };
 
